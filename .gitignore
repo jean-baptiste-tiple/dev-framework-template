@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Supabase local runtime
+.supabase/
+
+# Tests
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Turbopack
+.turbo/
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+
+# Claude Code
+.claude/

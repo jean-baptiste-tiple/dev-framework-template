@@ -1,0 +1,10 @@
+-- Seed data pour développement local
+-- Lancer avec : npx supabase db reset (applique migrations + seed)
+--
+-- Exemple :
+-- INSERT INTO public.profiles (id, email, full_name)
+-- VALUES
+--   ('00000000-0000-0000-0000-000000000001', 'dev@test.com', 'Dev User');
+--
+-- IMPORTANT : les UUIDs doivent correspondre aux users créés dans Supabase Auth
+-- Pour créer un user de test : utiliser le dashboard Supabase ou un script séparé
