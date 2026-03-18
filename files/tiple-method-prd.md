@@ -102,33 +102,49 @@ Ce projet suit la Tiple Method. La documentation dans docs/ est la source
 de vérité. Lis les fichiers pertinents avant chaque action.
 
 ## Règles absolues
-[7 règles non-négociables — voir section 3.1.1]
+[8 règles non-négociables — voir section 3.1.1]
 
 ## Règles Next.js + Supabase
 [5-6 règles techniques critiques — voir section 3.1.2]
 
-## Workflow quotidien
-[Résumé en 10 lignes du cycle story→dev→test→review]
+## Commandes
+/tm-plan — Cadrage complet (brief→PRD→archi→design→stories) — début de projet
+/tm-dev — Implémenter une story ou un bugfix/amélioration en mode libre
+/tm-review — Code review adversariale
+/tm-evolve — Évolution du scope + cascade impacts
+/tm-status — Sprint status
+/tm-sprint — Nouveau sprint
 
-## Quand le PRD évolue
-[Process en 7 étapes — résumé, pointe vers la checklist]
+## Workflow quotidien
+1. /tm-dev [story-id] ou /tm-dev (mode libre pour bugs/améliorations)
+2. Lire le contexte → coder → tester → commit
+3. À chaque commit : entrée dans docs/changelog.md
+4. Non-régression : tous les tests existants passent
+5. MAJ component-registry si nouveau composant/hook/action
+
+## Quand le scope change
+Lancer /tm-evolve — voir .tiple/checklists/prd-evolution.md
 
 ## Quand on crée un nouveau composant
-[4 étapes — vérifier registry, implémenter, ajouter au registry, respecter design system]
+1. Vérifier .tiple/conventions/component-registry.md — réutiliser si existe
+2. Respecter docs/design/system.md (tokens, patterns)
+3. Implémenter + tests
+4. Ajouter au registry
 
 ## Conventions
 [Pointe vers les fichiers dans .tiple/conventions/]
 ```
 
-#### 3.1.1 — Les 7 règles absolues
+#### 3.1.1 — Les 8 règles absolues
 
-1. Ne JAMAIS coder sans story en statut 🟢 Ready dans `docs/stories/`
-2. TOUJOURS lire avant de coder : la story, la maquette design référencée, `docs/architecture.md`, `.tiple/conventions/component-registry.md`, `.tiple/conventions/coding-standards.md`
+1. Ne JAMAIS coder une feature sans story en statut 🟢 Ready dans `docs/stories/`. Exception : les bugfixes et petites améliorations peuvent être faits en mode libre via `/tm-dev` sans story formelle.
+2. TOUJOURS lire avant de coder : la story (si applicable), la maquette design référencée, `docs/architecture.md`, `.tiple/conventions/component-registry.md`, `.tiple/conventions/coding-standards.md`
 3. Ne JAMAIS créer un composant/hook/util sans vérifier le component-registry d'abord — s'il existe, réutiliser
 4. Ne JAMAIS modifier un invariant d'architecture sans créer un ADR dans `docs/decisions/`
 5. Les tests sont écrits AVEC le code, pas après — unit tests d'abord, puis intégration, puis e2e si applicable
-6. Après implémentation : remplir la section "Post-implémentation" de la story
-7. Après implémentation : passer `.tiple/checklists/code-review.md` point par point
+6. Après implémentation d'une story : remplir la section "Post-implémentation" de la story
+7. Après implémentation d'une story : passer `.tiple/checklists/code-review.md` point par point
+8. À chaque commit, ajouter une entrée dans `docs/changelog.md` : date, scope, ce qui a été fait, pourquoi, problèmes rencontrés le cas échéant. Le changelog est la mémoire du projet.
 
 #### 3.1.2 — Règles techniques Next.js + Supabase
 
@@ -143,80 +159,176 @@ Ces règles sont dans le CLAUDE.md car Claude Code doit les avoir en tête en pe
 
 ### 3.2 — Slash Commands (`.claude/commands/`)
 
-Chaque phase de la méthode a une commande Claude Code. Les commandes sont des fichiers markdown dans `.claude/commands/` qui donnent les instructions à Claude Code quand on tape `/nom-commande`.
+Les commandes sont des fichiers markdown dans `.claude/commands/` qui donnent les instructions à Claude Code quand on tape `/nom-commande`. Préfixe `tm-` (Tiple Method) pour éviter les collisions.
 
-| Commande | Fichier | Ce qu'elle fait |
-|----------|---------|-----------------|
-| `/tm-brief` | `tm-brief.md` | Génère `docs/brief.md` par discussion interactive |
-| `/tm-prd` | `tm-prd.md` | Génère `docs/prd.md` depuis le brief + template |
-| `/tm-architecture` | `tm-architecture.md` | Génère `docs/architecture.md` depuis PRD + template |
-| `/tm-design-system` | `tm-design-system.md` | Initialise `docs/design/system.md` |
-| `/tm-gate` | `tm-gate.md` | Passe la readiness-gate checklist |
-| `/tm-epic` | `tm-epic.md` | Crée une epic dans `docs/epics/` |
-| `/tm-story` | `tm-story.md` | Crée une story dans `docs/stories/` |
-| `/tm-dev` | `tm-dev.md` | Implémente une story (le gros : lit tout, code, teste) |
-| `/tm-review` | `tm-review.md` | Passe la code-review checklist sur la dernière story |
-| `/tm-evolve` | `tm-evolve.md` | Process d'évolution PRD (impact analysis + cascade) |
-| `/tm-status` | `tm-status.md` | Affiche et met à jour le sprint status |
-| `/tm-sprint` | `tm-sprint.md` | Démarre un nouveau sprint |
+**Principe : 2 commandes au quotidien, 4 commandes occasionnelles.**
 
-Préfixe `tm-` (Tiple Method) pour éviter les collisions.
+| Commande | Fichier | Quand | Ce qu'elle fait |
+|----------|---------|-------|-----------------|
+| `/tm-plan` | `tm-plan.md` | Début de projet | Cadrage complet en une conversation fluide : brief → PRD → architecture → design system → stories. Gate de validation intégrée. |
+| `/tm-dev` | `tm-dev.md` | Quotidien | Implémente une story OU un bugfix/amélioration en mode libre. Lit le contexte, code, teste, met à jour le changelog et le registry. |
+| `/tm-review` | `tm-review.md` | Après dev | Code review avec checklist + review adversariale. Corrige les problèmes trouvés. |
+| `/tm-evolve` | `tm-evolve.md` | Quand le scope change | Évolution du PRD avec analyse d'impact cascade → MAJ architecture, stories, changelog. Crée les nouvelles stories nécessaires. |
+| `/tm-status` | `tm-status.md` | À la demande | Affiche le sprint actuel, les stories terminées/en cours/à venir, propose les prochaines actions. |
+| `/tm-sprint` | `tm-sprint.md` | Début de sprint | Initialise un nouveau sprint dans status.md avec dates, epic focus, stories sélectionnées. |
 
 #### Détail des commandes critiques
 
-**`/tm-dev` (la plus importante) :**
+**`/tm-plan` (cadrage initial) :**
 
 ```markdown
-# Implémente une story
+# Cadrage complet du projet — conversation fluide
+
+## Objectif
+Une seule conversation continue qui produit tous les documents de cadrage.
+Pas un formulaire — un dialogue. Claude pose des questions, l'utilisateur répond,
+les docs se construisent progressivement.
+
+## Process (conversation fluide, pas des étapes rigides)
+
+### Phase 1 — Comprendre le problème (→ docs/brief.md)
+- Poser les bonnes questions : quel problème ? pour qui ? pourquoi maintenant ?
+- Identifier les personas avec nom/rôle/besoin/frustration
+- Définir le scope IN/OUT du MVP
+- Identifier les contraintes (techniques, business, légales, RGPD)
+- Définir les métriques de succès (KPIs concrets, mesurables)
+- Lister les risques connus
+- Best practices : se concentrer sur les problèmes pas les solutions,
+  quantifier la douleur ("perd 2h/semaine" > "c'est lent")
+→ Générer docs/brief.md depuis .tiple/templates/brief.tmpl.md
+
+### Phase 2 — Structurer les exigences (→ docs/prd.md)
+- Transformer le brief en exigences fonctionnelles numérotées (FR-DOMAINE-01)
+- Chaque FR a : ID, description, priorité MoSCoW, critères d'acceptation mesurables
+- Ajouter les exigences non-fonctionnelles (NFR-01 : perf, sécu, accessibilité, RGPD)
+- Découper en Epics avec priorités et dépendances
+- Best practices : chaque FR doit être testable ("l'utilisateur peut X" pas "le système est bon"),
+  utiliser MoSCoW avec discipline (max 60% Must), lister explicitement le hors-scope
+→ Générer docs/prd.md depuis .tiple/templates/prd.tmpl.md
+
+### Phase 3 — Concevoir l'architecture (→ docs/architecture.md)
+- Modèle de données (tables, relations, diagramme Mermaid ER)
+- Server Actions nécessaires (par domaine)
+- Patterns d'auth et RLS policies
+- Points d'attention performance
+- Best practices : commencer simple (pas d'optimisation prématurée),
+  RLS dès le jour 1, un schema Zod = une source de vérité
+→ Générer docs/architecture.md depuis .tiple/templates/architecture.tmpl.md
+
+### Phase 4 — Définir le design system (→ docs/design/system.md)
+- Tokens : couleurs (palette + semantic), spacing, typography, radius, shadows
+- Composants réutilisables identifiés (à partir des features du PRD)
+- Patterns UI récurrents (listes filtrables, formulaires, cards, modals)
+- Responsive breakpoints
+- Best practices : tokens d'abord (pas de couleurs en dur),
+  identifier les patterns avant de coder, réutiliser Shadcn/ui au maximum
+→ Générer docs/design/system.md
+
+### Phase 5 — Découper en stories (→ docs/epics/ + docs/stories/)
+- Créer les epics depuis le PRD
+- Découper chaque epic en stories implémentables
+- Chaque story a : contexte, AC en Given/When/Then, fichiers à créer, tests attendus
+- Ordonner les stories par dépendance et priorité
+- Best practices : une story = un déploiement possible, taille S/M/L (pas XL),
+  les AC doivent être vérifiables par un test automatisé
+→ Générer docs/epics/*.md et docs/stories/*.md
+
+### Phase 6 — Gate de validation
+- Passer .tiple/checklists/readiness-gate.md
+- Vérifier la cohérence entre PRD ↔ architecture ↔ design ↔ stories
+- Si KO : corriger les incohérences avant de continuer
+- Résumer : prêt à coder, voici la première story à implémenter
+```
+
+**`/tm-dev` (la plus importante — usage quotidien) :**
+
+```markdown
+# Implémente du code — story OU mode libre
 
 ## Input
-Argument : identifiant de la story (ex: E01-S01) ou "next" pour la prochaine story Ready.
+- Identifiant de story (ex: E01-S01) → mode story
+- "next" → prochaine story 🟢 Ready
+- Aucun argument → mode libre (bugfix, amélioration, refacto)
 
-## Process
+## Mode Story (avec identifiant ou "next")
 1. Si "next" : lire .tiple/sprint/status.md, trouver la prochaine story 🟢 Ready
 2. Lire la story complète dans docs/stories/
 3. Vérifier la checklist .tiple/checklists/story-ready.md — si KO, signaler et s'arrêter
-4. Lire les refs de la story :
+4. Lire le contexte :
    - La maquette design référencée (si elle existe)
-   - docs/architecture.md (sections pertinentes citées dans la story)
+   - docs/architecture.md (sections pertinentes)
+   - docs/design/system.md (tokens, composants identifiés)
    - .tiple/conventions/component-registry.md
    - .tiple/conventions/coding-standards.md
    - .tiple/conventions/api-patterns.md
 5. Implémenter dans cet ordre :
-   a. Schemas partagés (Zod) si applicable
-   b. Logique backend (server actions, API routes)
-   c. Tests unitaires du backend
-   d. Composants UI
-   e. Tests unitaires des composants
-   f. Page/route
-   g. Tests d'intégration
-   h. Tests E2E si listés dans la story
-6. Vérifier que TOUS les tests existants passent (régression)
-7. Mettre à jour la story : section Post-implémentation (écarts, composants créés)
-8. Mettre à jour .tiple/conventions/component-registry.md si nouveaux composants/hooks/utils
-9. Mettre à jour .tiple/sprint/status.md (story → 🔵 Done)
-10. Résumer ce qui a été fait
+   a. Migration DB si nécessaire (supabase/migrations/)
+   b. Schemas Zod partagés (lib/schemas/)
+   c. Server Actions (lib/actions/) + tests unitaires
+   d. Composants UI (components/) + tests unitaires
+   e. Page/route (app/) + tests d'intégration
+   f. Tests E2E si listés dans la story
+6. À CHAQUE COMMIT : ajouter une entrée dans docs/changelog.md
+7. Vérifier la non-régression (tous les tests existants passent)
+8. Mettre à jour la story : section Post-implémentation
+9. Mettre à jour .tiple/conventions/component-registry.md
+10. Mettre à jour .tiple/sprint/status.md (story → ✅ Done)
+
+## Mode Libre (sans argument — bugfix, amélioration, refacto)
+1. L'utilisateur décrit le problème ou l'amélioration souhaitée
+2. Lire le contexte existant :
+   - docs/architecture.md
+   - docs/design/system.md
+   - .tiple/conventions/component-registry.md
+   - .tiple/conventions/coding-standards.md
+   - Les fichiers de code concernés
+3. Analyser le problème, proposer un plan (fichiers à modifier, approche)
+4. Implémenter :
+   - Respecter les mêmes conventions que le mode story
+   - Écrire les tests nécessaires
+   - Si un nouveau composant réutilisable est créé → l'ajouter au registry
+5. À CHAQUE COMMIT : ajouter une entrée dans docs/changelog.md
+6. Vérifier la non-régression
+
+## Format changelog (pour les deux modes)
+Chaque entrée :
+  ## [Date] — [Scope : story ID, bugfix, amélioration, refacto]
+  **Quoi :** Ce qui a été fait (concis)
+  **Pourquoi :** La raison (story, bug report, amélioration UX, dette technique...)
+  **Problèmes :** Ce qui a bloqué et comment c'a été résolu (si applicable)
+  **Fichiers :** Liste des fichiers créés/modifiés
+
+## Best practices appliquées systématiquement
+- Vérifier le component-registry AVANT de créer quoi que ce soit (DRY)
+- Server Components par défaut, "use client" le plus bas possible
+- Zod schema partagé = une seule source de vérité (form + action)
+- RLS sur toute nouvelle table, sans exception
+- Gestion des 3 états UI : loading, error, empty
+- Pas d'abstraction prématurée (factoriser à partir de 2 occurrences)
+- Imports dans l'ordre : next/react → libs externes → @/components → @/lib → @/types → relatifs
 ```
 
 **`/tm-review` :**
 
 ```markdown
-# Code review de la dernière story implémentée
+# Code review
 
 ## Input
-Argument : identifiant de la story (ex: E01-S01) ou "last" pour la dernière implémentée.
+Argument : identifiant de la story (ex: E01-S01), "last" pour la dernière, ou rien (review les derniers changements).
 
 ## Process
-1. Lire la story et sa section Post-implémentation
-2. Lire tous les fichiers créés/modifiés listés dans la story
+1. Identifier les fichiers à reviewer (story ou git diff)
+2. Lire tous les fichiers créés/modifiés
 3. Passer CHAQUE point de .tiple/checklists/code-review.md :
    - Pour chaque item : verdict ✅ ou ❌ avec explication si KO
-4. Faire une review adversariale :
-   - Chercher les edge cases non gérés
-   - Chercher les failles de sécurité
-   - Chercher les violations DRY (vérifier le component-registry)
-   - Chercher les incohérences avec l'architecture
-   - Chercher ce qui cassera quand la codebase grandira
+4. Review adversariale :
+   - Edge cases non gérés (null, vide, concurrent, permissions)
+   - Failles de sécurité (OWASP top 10 : injection, XSS, CSRF, auth bypass)
+   - Violations DRY (vérifier le component-registry)
+   - Problèmes de performance (N+1 queries, re-renders inutiles, bundles trop gros)
+   - Accessibilité (labels, keyboard nav, contrast)
+   - Incohérences avec l'architecture
+   - Ce qui cassera quand la codebase grandira
 5. Si des problèmes trouvés : les lister avec des fix concrets, et les appliquer
 6. Si des composants manquent dans le registry : les ajouter
 7. Résumer : X items OK, Y items fixés, Z items à discuter
@@ -225,7 +337,7 @@ Argument : identifiant de la story (ex: E01-S01) ou "last" pour la dernière imp
 **`/tm-evolve` :**
 
 ```markdown
-# Évolution du PRD
+# Évolution du PRD — quand le scope change
 
 ## Input
 L'utilisateur décrit le changement souhaité.
@@ -236,11 +348,13 @@ L'utilisateur décrit le changement souhaité.
    - Identifier les impacts sur architecture, epics, stories, design, DB, tests
 3. Pour chaque impact identifié :
    - Architecture → mettre à jour docs/architecture.md (+ ADR si invariant touché)
+   - Design system → mettre à jour docs/design/system.md si nouveaux patterns/tokens
    - Epics → mettre à jour les fichiers d'epic impactés
    - Stories existantes → créer des stories de refacto si nécessaire
    - Design → signaler si des maquettes sont à créer/mettre à jour
-4. Ajouter une entrée dans docs/changelog.md
-5. Lister les nouvelles stories à créer
+   - DB → estimer les migrations nécessaires
+4. Créer les nouvelles stories dans docs/stories/
+5. Ajouter une entrée dans docs/changelog.md
 6. Résumer tous les changements effectués
 ```
 
@@ -700,21 +814,36 @@ Exemple `docs/brief.md` :
 ```markdown
 # Brief Produit
 
-> Ce fichier sera généré par la commande `/tm-brief`.
+> Ce fichier sera généré par la commande `/tm-plan` (phase 1).
 > Template : .tiple/templates/brief.tmpl.md
->
-> Décris ton projet à Claude Code et il structurera le brief ici.
+```
+
+`docs/changelog.md` a un format spécifique (mis à jour automatiquement à chaque commit) :
+
+```markdown
+# Changelog
+
+<!-- Ce fichier est mis à jour automatiquement à chaque commit.
+     Format de chaque entrée :
+
+## [Date] — [Scope]
+**Quoi :** Ce qui a été fait
+**Pourquoi :** La raison / la story / le bug
+**Problèmes :** Ce qui a bloqué et comment c'a été résolu (si applicable)
+**Fichiers :** Liste des fichiers créés/modifiés
+-->
 ```
 
 ### 3.8 — README.md
 
 Le README du template explique :
 1. Ce qu'est la Tiple Method (3 phrases)
-2. Comment démarrer (clone, personnaliser CLAUDE.md, `npm run dev` ou équivalent)
-3. Le workflow en un schéma ASCII
-4. La liste des commandes `/tm-*` avec description 1 ligne chacune
-5. La structure des dossiers
-6. Le lien vers le guide complet de la méthode (si on le publie)
+2. Comment démarrer (clone, personnaliser CLAUDE.md, `pnpm install`, `pnpm dev`)
+3. Le workflow en un schéma ASCII (2 phases : `/tm-plan` une fois → `/tm-dev` en boucle)
+4. La liste des 6 commandes `/tm-*` avec description et usage
+5. Les 3 cas d'usage quotidiens : story planifiée, bugfix, amélioration
+6. La structure des dossiers
+7. Le lien vers le guide complet de la méthode (si on le publie)
 
 ### 3.9 — .gitignore
 
@@ -757,18 +886,12 @@ tiple-method-template/
 │
 ├── .claude/
 │   └── commands/
-│       ├── tm-brief.md
-│       ├── tm-prd.md
-│       ├── tm-architecture.md
-│       ├── tm-design-system.md
-│       ├── tm-gate.md
-│       ├── tm-epic.md
-│       ├── tm-story.md
-│       ├── tm-dev.md
-│       ├── tm-review.md
-│       ├── tm-evolve.md
-│       ├── tm-status.md
-│       └── tm-sprint.md
+│       ├── tm-plan.md                 # Cadrage complet (brief→PRD→archi→design→stories→gate)
+│       ├── tm-dev.md                  # Implémenter (story ou mode libre)
+│       ├── tm-review.md              # Code review + review adversariale
+│       ├── tm-evolve.md              # Évolution PRD + cascade impacts
+│       ├── tm-status.md              # Sprint status
+│       └── tm-sprint.md              # Nouveau sprint
 │
 ├── docs/
 │   ├── brief.md                    # Stub
@@ -893,7 +1016,7 @@ Les 5 fichiers `.tiple/conventions/*.md` pré-remplis avec les patterns Next.js 
 Dépendances : E01.
 
 ### E06 — Slash Commands `P0`
-Les 12 fichiers `.claude/commands/tm-*.md`. Les commandes `/tm-dev` et `/tm-review` doivent référencer les patterns Next.js/Supabase dans leur process.
+Les 6 fichiers `.claude/commands/tm-*.md`. `/tm-plan` est la commande de cadrage (fusionne brief+PRD+archi+design+stories+gate). `/tm-dev` est la commande quotidienne (story + mode libre pour bugs/améliorations, avec changelog à chaque commit). `/tm-review` fait la review adversariale. `/tm-evolve` gère les changements de scope.
 Dépendances : E03, E04, E05 (les commandes référencent les templates, checklists, et conventions).
 
 ### E07 — Validation end-to-end `P1`
@@ -921,7 +1044,7 @@ Dépendances : E01-E06 toutes.
 |--------|--------|------------|
 | CLAUDE.md trop long → Claude Code ignore des parties | Élevé | Garder le CLAUDE.md < 150 lignes. Les règles Next.js/Supabase (section 3.1.2) sont le seul ajout technique inline — le reste pointe vers les fichiers conventions/ |
 | Templates trop prescriptifs → rigides pour certains projets | Moyen | Sections `<!-- PERSONNALISER -->` explicites. Garder les templates comme guides, pas comme formulaires |
-| Trop de slash commands → confusion | Faible | Préfixe `tm-` uniforme. README avec tableau récapitulatif |
+| Slash commands mal comprises → mauvais usage | Faible | 6 commandes seulement. 2 au quotidien (/tm-dev, /tm-status). README avec cas d'usage concrets |
 | Les checklists sont ignorées en pratique | Moyen | Les intégrer dans les slash commands (`/tm-dev` appelle automatiquement la story-ready checklist) |
 | Dépendances npm obsolètes dans package.json | Moyen | Lister les versions majeures uniquement (ex: `"next": "^15"` pas `"15.1.3"`). Mettre à jour le template tous les trimestres |
 | Supabase clients mal configurés → bugs auth subtils | Élevé | Le scaffolding inclut les clients fonctionnels testés. Le middleware est pré-écrit. Documenter les pièges connus dans coding-standards.md |

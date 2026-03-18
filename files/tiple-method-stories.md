@@ -19,7 +19,7 @@ Créer toute l'arborescence de dossiers avec les `.gitkeep` là où les dossiers
 **Fichiers à créer :**
 - `.gitignore`
 - `.env.example`
-- `docs/brief.md` (stub : 3 lignes, pointe vers `/tm-brief`)
+- `docs/brief.md` (stub : 3 lignes, pointe vers `/tm-plan`)
 - `docs/prd.md` (stub)
 - `docs/architecture.md` (stub)
 - `docs/changelog.md` (structure vide avec header + format d'entrée en exemple commenté)
@@ -59,7 +59,7 @@ Créer le CLAUDE.md < 150 lignes avec toutes les sections décrites dans le PRD 
 - [ ] Section Projet avec placeholder à remplir
 - [ ] Section Stack (Next.js 15 + Supabase + TS + Tailwind + Shadcn)
 - [ ] Section Méthode (1 phrase + pointeur docs/)
-- [ ] 7 règles absolues (section 3.1.1 du PRD)
+- [ ] 8 règles absolues (section 3.1.1 du PRD, incluant la règle changelog)
 - [ ] 6 règles techniques Next.js + Supabase (section 3.1.2 du PRD)
 - [ ] Workflow quotidien (résumé 10 lignes)
 - [ ] Process évolution PRD (résumé 7 étapes)
@@ -84,7 +84,7 @@ Créer le README qui explique le template : ce que c'est, comment démarrer, le 
 - [ ] Titre + description 3 phrases
 - [ ] Quick start (clone, pnpm install, configurer .env, pnpm dev)
 - [ ] Schéma ASCII du workflow (phases 1→8)
-- [ ] Tableau des 12 commandes /tm-* avec description 1 ligne
+- [ ] Tableau des 6 commandes /tm-* avec description et cas d'usage
 - [ ] Arborescence des dossiers (version simplifiée)
 - [ ] Section "Personnaliser le template" (quoi changer après clone)
 
@@ -283,69 +283,74 @@ Les 5 fichiers de conventions, pré-remplis avec les patterns Next.js + Supabase
 
 ## E06 — Slash Commands
 
-### E06-S01 — Commandes de planification (brief, prd, architecture, design-system, gate)
-
-**Status :** 🟢 Ready
-**Estimation :** M
-
-**Fichiers à créer :**
-- `.claude/commands/tm-brief.md` — Discussion interactive → produit docs/brief.md
-- `.claude/commands/tm-prd.md` — Lit brief + template → produit docs/prd.md
-- `.claude/commands/tm-architecture.md` — Lit PRD + template → produit docs/architecture.md
-- `.claude/commands/tm-design-system.md` — Initialise docs/design/system.md
-- `.claude/commands/tm-gate.md` — Passe la readiness-gate checklist
-
-**Acceptance Criteria :**
-- [ ] Chaque commande < 100 lignes
-- [ ] Chaque commande indique quels fichiers lire en input
-- [ ] Chaque commande indique quel fichier produire en output
-- [ ] /tm-brief est conversationnel (pas un formulaire)
-- [ ] /tm-prd et /tm-architecture référencent leurs templates respectifs
-- [ ] /tm-gate liste explicitement chaque item de la checklist à vérifier
-
----
-
-### E06-S02 — Commandes d'exécution (epic, story, dev, review)
+### E06-S01 — Commande de cadrage (/tm-plan)
 
 **Status :** 🟢 Ready
 **Estimation :** L
 
 **Ce qu'il faut faire :**
-Les 4 commandes les plus critiques. `/tm-dev` et `/tm-review` sont les plus complexes — voir le PRD section 3.2 pour le détail.
+Créer la commande `/tm-plan` qui fusionne l'ancien brief + PRD + architecture + design system + epic/story + gate en une seule conversation fluide. C'est la commande la plus longue mais elle est utilisée une seule fois par projet.
 
 **Fichiers à créer :**
-- `.claude/commands/tm-epic.md` — Lit PRD + archi → crée docs/epics/E0X-*.md + MAJ _index.md
-- `.claude/commands/tm-story.md` — Lit epic + archi + conventions → crée docs/stories/E0X-S0X-*.md
-- `.claude/commands/tm-dev.md` — Le gros : lit story + tout le contexte, implémente, teste, MAJ registry + sprint
-- `.claude/commands/tm-review.md` — Lit story + code + checklists, review adversariale, fixes
+- `.claude/commands/tm-plan.md` — Cadrage complet en conversation fluide (brief → PRD → architecture → design system → stories → gate)
 
 **Acceptance Criteria :**
-- [ ] /tm-dev accepte un identifiant de story ou "next"
-- [ ] /tm-dev lit dans cet ordre : story → story-ready checklist → maquette → architecture → component-registry → coding-standards → api-patterns
-- [ ] /tm-dev implémente dans l'ordre : schemas → backend → tests unit backend → UI → tests unit UI → page → tests integ → tests e2e
+- [ ] La commande guide une conversation fluide, pas un formulaire étape par étape
+- [ ] Phase 1 (brief) : pose des questions sur le problème, les users, le scope → génère docs/brief.md via .tiple/templates/brief.tmpl.md
+- [ ] Phase 2 (PRD) : transforme le brief en exigences numérotées FR/NFR → génère docs/prd.md via .tiple/templates/prd.tmpl.md
+- [ ] Phase 3 (architecture) : modèle de données, Server Actions, RLS → génère docs/architecture.md via .tiple/templates/architecture.tmpl.md
+- [ ] Phase 4 (design system) : tokens, composants réutilisables, patterns UI → génère docs/design/system.md
+- [ ] Phase 5 (stories) : découpe en epics et stories implémentables → génère docs/epics/*.md et docs/stories/*.md via templates
+- [ ] Phase 6 (gate) : passe .tiple/checklists/readiness-gate.md, vérifie la cohérence entre tous les docs
+- [ ] Inclut des best practices à chaque phase (quantifier la douleur, AC mesurables, pas d'optimisation prématurée, tokens-first pour le design)
+- [ ] Les transitions entre phases sont naturelles, pas des "Étape 1 terminée, passons à l'étape 2"
+
+---
+
+### E06-S02 — Commandes d'exécution (/tm-dev, /tm-review)
+
+**Status :** 🟢 Ready
+**Estimation :** L
+
+**Ce qu'il faut faire :**
+Les 2 commandes d'exécution quotidiennes. `/tm-dev` est la commande la plus critique — elle supporte deux modes : story (implémentation planifiée) et libre (bugfix, amélioration, refacto). `/tm-review` fait la code review avec checklist et review adversariale.
+
+**Fichiers à créer :**
+- `.claude/commands/tm-dev.md` — Implémente une story OU un bugfix/amélioration en mode libre, avec changelog à chaque commit
+- `.claude/commands/tm-review.md` — Code review avec checklist + review adversariale + corrections
+
+**Acceptance Criteria :**
+- [ ] /tm-dev accepte : identifiant de story, "next", ou rien (mode libre)
+- [ ] Mode story : lit story → story-ready checklist → design → architecture → design system → component-registry → coding-standards → api-patterns
+- [ ] Mode libre : l'utilisateur décrit le bug/amélioration → Claude lit le contexte existant → propose un plan → implémente
+- [ ] /tm-dev implémente dans l'ordre : migration → schemas Zod → Server Actions + tests → UI + tests → page + tests integ → e2e
+- [ ] /tm-dev ajoute une entrée dans docs/changelog.md À CHAQUE COMMIT (pas à la fin)
 - [ ] /tm-dev vérifie la non-régression (tous les tests existants passent)
-- [ ] /tm-dev met à jour : story (post-implémentation), component-registry, sprint status
-- [ ] /tm-review accepte un identifiant ou "last"
+- [ ] /tm-dev met à jour : story (post-implémentation, si mode story), component-registry, sprint status
+- [ ] /tm-dev inclut les best practices : DRY (check registry), Server Components par défaut, Zod partagé, RLS, 3 états UI
+- [ ] /tm-review accepte un identifiant, "last", ou rien (review les derniers changements)
 - [ ] /tm-review passe chaque point de code-review.md avec verdict ✅/❌
-- [ ] /tm-review fait une review adversariale (edge cases, sécu, DRY, archi)
+- [ ] /tm-review fait une review adversariale (edge cases, sécu OWASP, DRY, perf N+1, accessibilité, archi)
 - [ ] /tm-review corrige les problèmes trouvés (pas juste les lister)
 
 ---
 
-### E06-S03 — Commandes transversales (evolve, status, sprint)
+### E06-S03 — Commandes transversales (/tm-evolve, /tm-status, /tm-sprint)
 
 **Status :** 🟢 Ready
 **Estimation :** S
 
 **Fichiers à créer :**
-- `.claude/commands/tm-evolve.md` — Process évolution PRD (impact analysis + cascade)
+- `.claude/commands/tm-evolve.md` — Évolution PRD avec analyse d'impact cascade + création nouvelles stories
 - `.claude/commands/tm-status.md` — Affiche .tiple/sprint/status.md, propose les prochaines actions
 - `.claude/commands/tm-sprint.md` — Initialise un nouveau sprint dans status.md
 
 **Acceptance Criteria :**
-- [ ] /tm-evolve suit le process en 6 étapes du PRD : modifier PRD → checklist prd-evolution → cascader impacts → MAJ changelog
-- [ ] /tm-evolve vérifie les impacts sur : architecture, epics, stories, design, DB (migrations)
+- [ ] /tm-evolve suit le process du PRD : modifier PRD → checklist prd-evolution → cascader impacts (archi, design system, epics, stories, DB) → créer nouvelles stories → MAJ changelog
+- [ ] /tm-evolve vérifie les impacts sur : architecture, design system, epics, stories, DB (migrations)
+- [ ] /tm-evolve crée un ADR si un invariant d'architecture est touché
 - [ ] /tm-status affiche le sprint actuel avec les statuts de chaque story
+- [ ] /tm-status propose la prochaine action (quelle story lancer, ou si review nécessaire)
 - [ ] /tm-sprint crée une nouvelle section dans status.md avec dates, epic focus, tableau stories vide
 
 ---
