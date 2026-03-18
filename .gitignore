@@ -33,5 +33,9 @@ npm-debug.log*
 *.swp
 *.swo
 
+# TypeScript
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
 # Turbo
 .turbo/
