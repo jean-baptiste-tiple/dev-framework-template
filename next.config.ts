@@ -1,7 +1,7 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* Ajouter la config spécifique au projet ici */
+  // Configuration minimale — personnaliser par projet
 }
 
 export default nextConfig

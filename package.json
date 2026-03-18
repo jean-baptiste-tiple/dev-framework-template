@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "db:types": "npx supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > src/types/database.ts",
+    "db:types": "npx supabase gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" > src/types/database.ts",
     "db:migrate": "npx supabase migration new",
     "db:push": "npx supabase db push",
     "db:reset": "npx supabase db reset"
@@ -36,14 +36,14 @@
     "tailwindcss": "^4",
     "@tailwindcss/postcss": "^4",
     "postcss": "^8",
+    "eslint": "^9",
+    "eslint-config-next": "^15",
+    "@eslint/eslintrc": "^3",
     "vitest": "^3",
     "@vitejs/plugin-react": "^4",
     "@testing-library/react": "^16",
     "@testing-library/jest-dom": "^6",
     "jsdom": "^26",
-    "@playwright/test": "^1",
-    "eslint": "^9",
-    "eslint-config-next": "^15",
-    "@eslint/eslintrc": "^3"
+    "@playwright/test": "^1"
   }
 }

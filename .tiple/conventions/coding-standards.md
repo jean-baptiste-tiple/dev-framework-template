@@ -27,7 +27,7 @@ src/
 │   │   └── projects/
 │   │       ├── page.tsx          # Liste projets
 │   │       └── [id]/page.tsx     # Détail projet
-│   ├── api/                      # Route handlers (si nécessaire, préférer Server Actions)
+│   ├── api/                      # Route handlers (webhooks/cron uniquement)
 │   ├── layout.tsx                # Root layout (providers, fonts, metadata)
 │   └── not-found.tsx
 ├── components/
@@ -40,7 +40,8 @@ src/
 │   ├── schemas/                  # Zod schemas (PARTAGÉS front + back)
 │   ├── supabase/
 │   │   ├── client.ts             # Supabase browser client
-│   │   └── server.ts             # Supabase server client (cookies)
+│   │   ├── server.ts             # Supabase server client (cookies)
+│   │   └── admin.ts              # Supabase service_role (si nécessaire)
 │   └── utils/                    # Fonctions utilitaires pures
 ├── types/                        # Types TypeScript partagés
 │   ├── database.ts               # Types générés depuis Supabase (npx supabase gen types)
@@ -50,27 +51,10 @@ src/
 
 ## Server Components vs Client Components
 
-- **Par défaut : Server Component** (pas de `"use client"`)
-- Passer en Client Component SEULEMENT si : `useState`, `useEffect`, event handlers, browser APIs, hooks custom qui utilisent du state
-- Règle : pousser le `"use client"` le plus bas possible dans l'arbre
+- **Par défaut : Server Component** (pas de "use client")
+- Passer en Client Component SEULEMENT si : useState, useEffect, event handlers, browser APIs, hooks custom qui utilisent du state
+- Règle : pousser le "use client" le plus bas possible dans l'arbre
 - Pattern : Server Component parent (fetch data) → Client Component enfant (interactivité)
-
-```tsx
-// ✅ BON — Server Component fetch, Client Component interagit
-// app/(dashboard)/projects/page.tsx (Server Component)
-export default async function ProjectsPage() {
-  const supabase = await createClient()
-  const { data: projects } = await supabase.from("projects").select("*")
-  return <ProjectList projects={projects ?? []} />
-}
-
-// components/projects/project-list.tsx (Client Component)
-"use client"
-export function ProjectList({ projects }: { projects: Project[] }) {
-  const [search, setSearch] = useState("")
-  // ...interactivité
-}
-```
 
 ## Server Actions
 
@@ -80,7 +64,6 @@ export function ProjectList({ projects }: { projects: Project[] }) {
 - Pattern standard :
 
 ```typescript
-// lib/actions/projects.ts
 "use server"
 
 import { revalidatePath } from "next/cache"
@@ -90,7 +73,7 @@ import { createProjectSchema } from "@/lib/schemas/project"
 export async function createProjectAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Non authentifié" }
+  if (!user) throw new Error("Non authentifié")
 
   const parsed = createProjectSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { error: parsed.error.flatten() }
@@ -112,7 +95,7 @@ export async function createProjectAction(formData: FormData) {
 - JAMAIS de client Supabase côté client pour les mutations → Server Actions
 - Le browser client est UNIQUEMENT pour : realtime subscriptions, storage uploads, auth listeners
 - Le server client (avec cookies) est pour : Server Components (fetch), Server Actions (mutations), Route Handlers
-- Le `service_role` client est UNIQUEMENT pour : opérations admin qui bypass RLS (cron jobs, webhooks — ADR obligatoire)
+- Le service_role client est UNIQUEMENT pour : les opérations admin qui bypass RLS (cron jobs, webhooks)
 
 ## DRY
 
@@ -128,7 +111,7 @@ export async function createProjectAction(formData: FormData) {
 
 ## Error Handling
 
-- Jamais de `catch` vide
+- Jamais de catch vide
 - Server Actions retournent `{ data }` ou `{ error }` — jamais de throw côté client
 - Composants UI : toujours gérer loading + error + empty states
 - Supabase : toujours vérifier le `.error` de la réponse

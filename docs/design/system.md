@@ -1,52 +1,52 @@
 # Design System
 
-> Initialisé par `/tm-design-system`. Définit les tokens visuels du projet.
+> Ce fichier sera généré par la commande `/tm-plan` (phase 4).
 
 ## Tokens
 
-### Colors
-<!-- PERSONNALISER : définir la palette du projet -->
+### Couleurs
+<!-- PERSONNALISER : définir la palette et les couleurs sémantiques -->
 | Token | Valeur | Usage |
 |-------|--------|-------|
-| `--primary` | `#000000` | Actions principales, liens |
-| `--secondary` | `#666666` | Actions secondaires |
-| `--background` | `#ffffff` | Fond principal |
-| `--foreground` | `#0a0a0a` | Texte principal |
-| `--muted` | `#f5f5f5` | Fonds secondaires |
-| `--destructive` | `#ef4444` | Erreurs, suppressions |
+| --primary | | Couleur principale (CTA, liens) |
+| --secondary | | Couleur secondaire |
+| --destructive | | Actions destructives |
+| --muted | | Fonds neutres, texte secondaire |
+| --accent | | Surbrillance, sélection |
 
-### Typography
-<!-- PERSONNALISER : définir les tailles et fonts -->
+### Typographie
 | Token | Valeur | Usage |
 |-------|--------|-------|
-| Font principale | Inter | Corps de texte |
-| `text-sm` | 14px | Labels, captions |
-| `text-base` | 16px | Corps de texte |
-| `text-lg` | 18px | Sous-titres |
-| `text-xl` | 20px | Titres de section |
-| `text-2xl` | 24px | Titres de page |
+| --font-sans | Inter | Corps de texte |
+| --font-mono | | Code, données techniques |
 
 ### Spacing
-| Token | Valeur | Usage |
-|-------|--------|-------|
-| `gap-1` | 4px | Espacement minimal |
-| `gap-2` | 8px | Espacement interne compact |
-| `gap-4` | 16px | Espacement standard |
-| `gap-6` | 24px | Espacement entre sections |
-| `gap-8` | 32px | Espacement large |
+| Token | Valeur |
+|-------|--------|
+| --space-1 | 4px |
+| --space-2 | 8px |
+| --space-3 | 12px |
+| --space-4 | 16px |
+| --space-6 | 24px |
+| --space-8 | 32px |
 
 ### Radius
 | Token | Valeur | Usage |
 |-------|--------|-------|
-| `rounded-sm` | 4px | Badges, tags |
-| `rounded-md` | 6px | Boutons, inputs |
-| `rounded-lg` | 8px | Cards |
-| `rounded-xl` | 12px | Modales, containers |
+| --radius-sm | 4px | Badges, tags |
+| --radius-md | 8px | Cards, inputs |
+| --radius-lg | 12px | Modals, panels |
 
 ### Breakpoints
-| Token | Valeur | Usage |
-|-------|--------|-------|
-| `sm` | 640px | Mobile landscape |
-| `md` | 768px | Tablette |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Desktop large |
+| Nom | Valeur | Usage |
+|-----|--------|-------|
+| sm | 640px | Mobile landscape |
+| md | 768px | Tablette |
+| lg | 1024px | Desktop |
+| xl | 1280px | Large desktop |
+
+## Composants identifiés
+<!-- Rempli pendant /tm-plan phase 4 — lister les composants récurrents identifiés -->
+
+## Patterns UI récurrents
+<!-- Rempli pendant /tm-plan phase 4 — lister les patterns (listes filtrables, formulaires, cards, modals) -->

@@ -1,40 +1,33 @@
-# E[XX] — [Titre de l'epic]
+# Epic [ID] — [Titre]
+
+<!-- INSTRUCTIONS : Créé par /tm-plan (phase 5) ou /tm-evolve. -->
 
 | Champ | Valeur |
 |-------|--------|
 | **ID** | E[XX] |
 | **Priorité** | P0 / P1 / P2 |
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
-| **Dépendances** | <!-- ex: E01, E02 — ou "Aucune" --> |
-| **PRD Refs** | <!-- ex: FR-AUTH-01, FR-AUTH-02 --> |
+| **PRD Refs** | FR-XXX-01, FR-XXX-02 |
+| **Dépendances** | E[XX] (si applicable) |
 
 ## Objectif
 
-<!-- 1-2 phrases : pourquoi cette epic existe et quelle valeur elle apporte. -->
+<!-- 1-2 phrases. Pourquoi cette epic existe. -->
 
 ## Périmètre
 
 ### IN
-<!-- Ce que cette epic couvre. Être spécifique. -->
--
+<!-- Ce qui est inclus dans cette epic -->
 
 ### OUT
-<!-- Ce que cette epic ne couvre PAS explicitement. -->
--
+<!-- Ce qui est explicitement exclu -->
 
-## Stories prévues
+## Stories
 
-<!-- Liste ordonnée des stories à créer.
-     Format : ID provisoire — Titre — Estimation (S/M/L) -->
-
-1. E[XX]-S01 — <!-- Titre --> — S
-2. E[XX]-S02 — <!-- Titre --> — M
-3. E[XX]-S03 — <!-- Titre --> — M
+| ID | Titre | Estimation | Statut | Dépendances |
+|----|-------|-----------|--------|-------------|
+| E[XX]-S01 | | S/M/L | ⬜ | — |
 
 ## Design requis
 
-<!-- Checklist des maquettes nécessaires avant de commencer les stories.
-     Cocher quand la maquette existe dans docs/design/screens/ ou docs/design/flows/ -->
-
-- [ ] <!-- ex: Écran de login (docs/design/screens/login.md) -->
-- [ ] <!-- ex: Flow d'inscription (docs/design/flows/signup-flow.md) -->
+- [ ] <!-- Maquette/flow nécessaire avant de coder -->

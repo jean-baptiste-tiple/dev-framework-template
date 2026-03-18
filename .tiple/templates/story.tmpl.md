@@ -1,83 +1,74 @@
-# E[XX]-S[XX] — [Titre de la story]
+# Story [ID] — [Titre]
+
+<!-- INSTRUCTIONS : Créé par /tm-plan (phase 5) ou /tm-evolve.
+     Ce template est le plus important — il doit contenir TOUT ce dont
+     Claude Code a besoin pour implémenter de manière autonome.
+     IMPORTANT : Vérifier .tiple/conventions/component-registry.md avant de créer. -->
 
 ## Meta
 
 | Champ | Valeur |
 |-------|--------|
-| **Epic** | E[XX] — [Titre epic] |
-| **Status** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
+| **Epic** | E[XX] — [Titre] |
+| **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Priorité** | Must / Should / Could |
-| **Design ref** | <!-- ex: docs/design/screens/login.md — ou "N/A" --> |
+| **Design ref** | docs/design/screens/[fichier] (si applicable) |
 | **Estimation** | S / M / L |
 
 ## Contexte
 
-<!-- Pourquoi cette story existe. Quel problème résout-elle ?
-     Liens vers les documents de référence. -->
+<!-- Pourquoi cette story existe. Quel problème elle résout. -->
 
-- **PRD** : <!-- ex: FR-AUTH-01, FR-AUTH-02 -->
-- **Architecture** : <!-- ex: sections 4 (modèle de données), 6 (auth) -->
-- **Design** : <!-- ex: docs/design/screens/login.md -->
+**Refs :**
+- PRD : FR-XXX-01, FR-XXX-02
+- Architecture : section [X]
+- Design : [fichier maquette si applicable]
 
-## Acceptance Criteria
+## Critères d'acceptation
 
-<!-- Format Given/When/Then. Chaque critère est une checkbox.
-     Être spécifique et testable. -->
+<!-- Format Given/When/Then. Chaque AC doit être vérifiable par un test. -->
 
-- [ ] **Given** [contexte initial], **when** [action], **then** [résultat attendu]
-- [ ] **Given** [contexte initial], **when** [action], **then** [résultat attendu]
-- [ ] **Given** [contexte initial], **when** [action], **then** [résultat attendu]
+- [ ] **Given** [contexte] **When** [action] **Then** [résultat attendu]
+- [ ] **Given** [contexte] **When** [action] **Then** [résultat attendu]
 
 ## Implémentation
 
-<!-- IMPORTANT : vérifier .tiple/conventions/component-registry.md avant de créer
-     un composant, hook, ou util. S'il existe déjà, réutiliser. -->
-
 ### Fichiers à créer
-<!-- Liste des nouveaux fichiers avec leur rôle. -->
-- `src/...` — <!-- rôle -->
+<!-- Liste avec le chemin complet -->
+- `src/...`
 
 ### Fichiers à modifier
-<!-- Liste des fichiers existants à modifier. -->
-- `src/...` — <!-- nature de la modification -->
+- `src/...`
 
 ### Patterns à suivre
-<!-- Refs vers les conventions pertinentes. -->
-- `.tiple/conventions/coding-standards.md` — <!-- section spécifique -->
-- `.tiple/conventions/api-patterns.md` — <!-- section spécifique -->
+- Voir `.tiple/conventions/coding-standards.md` — section [X]
+- Voir `.tiple/conventions/api-patterns.md` — section [X]
 
 ## Tests attendus
 
 ### Unit tests
-- [ ] <!-- ex: loginAction valide les inputs avec loginSchema -->
-- [ ] <!-- ex: loginAction retourne { error } si credentials invalides -->
+- [ ] <!-- Décrire chaque test unitaire attendu -->
 
 ### Integration tests
-- [ ] <!-- ex: LoginForm affiche une erreur si email invalide -->
-- [ ] <!-- ex: LoginForm redirige vers /dashboard après login réussi -->
+- [ ] <!-- Décrire chaque test d'intégration attendu -->
 
-### E2E tests
-<!-- Uniquement si le parcours est critique. Sinon supprimer cette section. -->
-- [ ] <!-- ex: Parcours complet login → dashboard → logout -->
+### E2E tests (si applicable)
+- [ ] <!-- Décrire chaque test E2E attendu -->
 
 ## Post-implémentation
 
-<!-- Rempli APRÈS le développement. Ne pas supprimer cette section. -->
+<!-- Rempli APRÈS le dev par /tm-dev -->
 
 ### Écarts avec le design
-<!-- Différences entre la maquette et l'implémentation finale. -->
-- Aucun / <!-- décrire les écarts -->
+<!-- Lister les écarts et pourquoi -->
 
 ### Écarts avec l'architecture
-<!-- Si un invariant a été touché, créer un ADR dans docs/decisions/. -->
-- Aucun / <!-- décrire les écarts + ref ADR -->
+<!-- Si un invariant a été modifié → ADR créé ? -->
 
 ### Composants créés
-<!-- À ajouter dans .tiple/conventions/component-registry.md -->
+<!-- Lister pour ajout au component-registry -->
 | Composant/Hook/Action | Path | Notes |
-|-----------------------|------|-------|
-| | | |
+|----------------------|------|-------|
 
 ### Notes
-<!-- Observations, dette technique identifiée, suggestions pour la suite. -->
--
+<!-- Observations, dette technique identifiée, suggestions -->
