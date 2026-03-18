@@ -1,101 +1,80 @@
 # PRD — [Nom du projet]
 
-> Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder
+<!-- INSTRUCTIONS : Ce PRD est généré par /tm-plan (phase 2) depuis le brief.
+     Chaque requirement a un ID unique, une priorité MoSCoW, et des AC mesurables.
+     Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder -->
 
-## 1. Vue d'ensemble ⬜
+**Statut global :** 🔶 Draft
+**Dernière MAJ :** [date]
+
+## 1. Vue d'ensemble
 
 ### Résumé exécutif
-<!-- 3-5 phrases : quoi, pour qui, pourquoi, comment. -->
+<!-- 3-5 phrases. Problème, solution, valeur. -->
 
 ### Vision
-<!-- Où va le produit à 6-12 mois ? Une phrase inspirante mais réaliste. -->
+<!-- En une phrase : où va ce produit à 6-12 mois ? -->
 
-## 2. Personas ⬜
+## 2. Personas
 
-<!-- Enrichis depuis le brief. Ajouter contexte d'usage et scénarios. -->
+<!-- Enrichis depuis le brief. Ajouter les parcours utilisateur clés. -->
 
-### Persona 1 — [Nom]
-- **Rôle** :
-- **Contexte d'usage** : <!-- Quand et comment utilise-t-il le produit ? -->
-- **Besoin principal** :
-- **Frustration actuelle** :
-- **Scénario type** : <!-- Décrire un parcours concret en 3-4 étapes. -->
+| Persona | Rôle | Objectif principal | Parcours clé |
+|---------|------|-------------------|--------------|
 
-### Persona 2 — [Nom]
-- **Rôle** :
-- **Contexte d'usage** :
-- **Besoin principal** :
-- **Frustration actuelle** :
-- **Scénario type** :
+## 3. Exigences fonctionnelles
 
-## 3. Functional Requirements ⬜
+<!-- Regroupées par domaine. Chaque FR a :
+     - ID unique : FR-[DOMAINE]-[XX]
+     - Description claire (l'utilisateur peut X)
+     - Priorité MoSCoW : Must / Should / Could / Won't
+     - Critères d'acceptation mesurables
+     - Statut : ✅ 🔶 ⬜
 
-<!-- Regrouper par domaine fonctionnel. Chaque FR a :
-     - Un ID unique : FR-DOMAINE-01
-     - Une description claire
-     - Une priorité MoSCoW : Must / Should / Could / Won't
-     - Des acceptance criteria -->
+     Best practice : max 60% de Must, chaque FR doit être testable. -->
 
-### 3.1 — [Domaine 1 : ex. Authentification]
+### [Domaine 1] — [Nom]
 
 | ID | Description | Priorité | Statut |
-|----|-------------|----------|--------|
-| FR-AUTH-01 | <!-- ex: L'utilisateur peut s'inscrire avec email + mot de passe --> | Must | ⬜ |
-| FR-AUTH-02 | | | ⬜ |
+|----|------------|----------|--------|
+| FR-XXX-01 | | Must | 🔶 |
 
-**Acceptance Criteria FR-AUTH-01 :**
-- [ ] <!-- Given/When/Then -->
+**Critères d'acceptation FR-XXX-01 :**
+- [ ] Given ... When ... Then ...
+- [ ] Given ... When ... Then ...
 
-### 3.2 — [Domaine 2]
+### [Domaine 2] — [Nom]
+<!-- Répéter la même structure -->
 
-| ID | Description | Priorité | Statut |
-|----|-------------|----------|--------|
-| FR-XXX-01 | | | ⬜ |
+## 4. Exigences non-fonctionnelles
 
-<!-- Ajouter autant de domaines que nécessaire. -->
+| ID | Catégorie | Description | Cible | Statut |
+|----|-----------|------------|-------|--------|
+| NFR-01 | Performance | | | 🔶 |
+| NFR-02 | Sécurité | | | 🔶 |
+| NFR-03 | Accessibilité | | | 🔶 |
+| NFR-04 | RGPD | | | 🔶 |
 
-## 4. Non-Functional Requirements ⬜
-
-| ID | Catégorie | Description | Priorité |
-|----|-----------|-------------|----------|
-| NFR-01 | Performance | <!-- ex: Temps de chargement < 2s sur 3G --> | Must |
-| NFR-02 | Sécurité | <!-- ex: Auth Supabase, RLS sur toutes les tables --> | Must |
-| NFR-03 | Accessibilité | <!-- ex: WCAG 2.1 AA minimum --> | Should |
-| NFR-04 | RGPD | <!-- ex: Données hébergées en EU, droit à l'oubli --> | Must |
-| NFR-05 | Scalabilité | <!-- ex: Supporter 1000 utilisateurs concurrents --> | Could |
-
-## 5. Epics ⬜
-
-<!-- Liste des epics avec priorité et dépendances inter-epics. -->
+## 5. Epics
 
 | ID | Titre | Priorité | Dépendances | Statut |
 |----|-------|----------|-------------|--------|
-| E01 | | P0 | — | ⬜ |
-| E02 | | P0 | E01 | ⬜ |
-| E03 | | P1 | E01, E02 | ⬜ |
+| E01 | | P0 | — | 🔶 |
 
-## 6. Hors scope ⬜
+## 6. Hors scope
 
-<!-- Lister explicitement ce qui ne sera PAS fait dans cette version.
-     Chaque item doit être clair et non ambigu. -->
--
+<!-- Liste explicite de ce qui n'est PAS dans ce produit. -->
 
-## 7. Hypothèses & Risques ⬜
+## 7. Hypothèses & Risques
 
 ### Hypothèses
-<!-- Ce qu'on tient pour vrai sans preuve formelle.
-     Ex: "Les utilisateurs ont un compte email". -->
--
+<!-- Ce qu'on tient pour vrai sans preuve. Ex: "Les utilisateurs ont un smartphone récent." -->
 
 ### Risques
-| Risque | Probabilité | Impact | Mitigation |
-|--------|-------------|--------|------------|
-| | | | |
+| Risque | Impact | Mitigation |
+|--------|--------|------------|
 
-## 8. Métriques de succès ⬜
+## 8. Métriques de succès
 
-<!-- KPIs mesurables avec objectifs chiffrés et horizon temporel.
-     Ex: "Taux d'inscription > 20% des visiteurs — J+30". -->
-| Métrique | Objectif | Horizon |
-|----------|----------|---------|
-| | | |
+| Métrique | Baseline | Cible | Échéance |
+|----------|----------|-------|----------|

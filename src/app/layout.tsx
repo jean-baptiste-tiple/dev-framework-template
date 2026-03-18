@@ -6,10 +6,10 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Mon Projet",
-    default: "Mon Projet",
+    default: "Mon App",
+    template: "%s | Mon App",
   },
-  description: "Description du projet — à personnaliser",
+  description: "Description du projet",
 }
 
 export default function RootLayout({

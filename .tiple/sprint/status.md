@@ -1,18 +1,18 @@
 # Sprint Status
 
-> Mis à jour par `/tm-status` et `/tm-sprint`.
+<!-- Géré par /tm-sprint et /tm-status -->
 
-<!-- Structure d'un sprint :
+## Sprint actuel
 
-## Sprint X — [YYYY-MM-DD] → [YYYY-MM-DD]
+> Pas de sprint actif. Lancer `/tm-sprint` pour initialiser.
 
-**Epic focus :** E0X — Titre
+### Informations
+- **Début :** —
+- **Fin prévue :** —
+- **Epic focus :** —
 
-| Story | Titre | Statut | Assigné | Notes |
-|-------|-------|--------|---------|-------|
-| E0X-S01 | ... | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done | ... | ... |
+### Stories
 
-**Rétrospective :**
-- Ce qui a bien marché : ...
-- Ce qui peut être amélioré : ...
--->
+| ID | Titre | Statut | Assigné |
+|----|-------|--------|---------|
+<!-- Rempli par /tm-sprint -->

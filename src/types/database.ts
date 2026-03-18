@@ -1,8 +1,8 @@
 // Types auto-générés par Supabase CLI
 // Régénérer avec : pnpm db:types
 //
-// Ce fichier est un placeholder. Après avoir configuré Supabase et créé
-// vos tables, lancez `pnpm db:types` pour générer les types réels.
+// Ce fichier est un placeholder. Il sera écrasé par la commande ci-dessus
+// une fois le projet Supabase configuré.
 
 export type Json =
   | string

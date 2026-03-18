@@ -1,27 +1,14 @@
 # Story Ready — Definition of Ready
 
-> Vérifier AVANT de commencer l'implémentation d'une story.
+<!-- Vérifier AVANT de commencer l'implémentation d'une story.
+     Appelé automatiquement par /tm-dev. -->
 
-## La story est complète
-
-- [ ] Le statut est 🟢 Ready (pas ⬜ Draft)
-- [ ] Les acceptance criteria sont en format Given/When/Then
-- [ ] Les acceptance criteria sont testables (pas vagues)
-- [ ] La section "Implémentation" liste les fichiers à créer et modifier
-- [ ] La section "Tests attendus" liste les tests unit et integ minimum
-- [ ] Les patterns à suivre sont référencés (conventions)
-
-## Les dépendances sont satisfaites
-
-- [ ] Les stories précédentes de l'epic sont ✅ Done (ou pas de dépendance)
-- [ ] La maquette design référencée existe (ou "N/A")
-- [ ] Les sections d'architecture référencées sont à jour
-- [ ] Le modèle de données nécessaire est en place (migration existante)
-
-## Le contexte est clair
-
-- [ ] J'ai lu la story complète
-- [ ] J'ai lu la maquette design (si applicable)
-- [ ] J'ai lu les sections d'architecture référencées
-- [ ] J'ai vérifié `.tiple/conventions/component-registry.md` pour éviter les doublons
-- [ ] J'ai lu `.tiple/conventions/coding-standards.md`
+- [ ] La story a le statut 🟢 Ready
+- [ ] Les critères d'acceptation sont en format Given/When/Then
+- [ ] Chaque AC est vérifiable par un test automatisé
+- [ ] La section "Implémentation" liste les fichiers à créer/modifier
+- [ ] La section "Tests attendus" liste les tests à écrire
+- [ ] Les refs PRD et architecture sont renseignées
+- [ ] La maquette design est disponible (si ref design renseignée)
+- [ ] Les dépendances avec d'autres stories sont résolues (stories prérequises = ✅ Done)
+- [ ] Le component-registry a été vérifié (pas de composant à dupliquer)

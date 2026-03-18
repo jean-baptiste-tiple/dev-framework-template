@@ -1,11 +1,11 @@
 # Changelog
 
-> Journal des évolutions du projet. Mis à jour automatiquement par `/tm-evolve`.
+<!-- Ce fichier est mis à jour à chaque commit via /tm-dev.
+     Format de chaque entrée :
 
-<!-- Format d'entrée :
-## [YYYY-MM-DD] — Titre du changement
-- **Type** : Ajout / Modification / Suppression
-- **Sections impactées** : PRD, Architecture, Epics, Stories, Design, DB
-- **Résumé** : Description du changement et de son impact
-- **Stories créées/modifiées** : E0X-S0X, ...
+## [Date] — [Scope]
+**Quoi :** Ce qui a été fait
+**Pourquoi :** La raison / la story / le bug
+**Problèmes :** Ce qui a bloqué et comment c'a été résolu (si applicable)
+**Fichiers :** Liste des fichiers créés/modifiés
 -->

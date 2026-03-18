@@ -81,30 +81,24 @@ tiple-method-template/
 │
 │── ─── MÉTHODE ──────────────────────
 │
-├── .claude/commands/                  # 12 slash commands tm-*
-│   ├── tm-brief.md                    # Phase 1 : Brief interactif
-│   ├── tm-prd.md                      # Phase 2 : PRD depuis brief
-│   ├── tm-architecture.md             # Phase 3 : Architecture depuis PRD
-│   ├── tm-design-system.md            # Phase 4 : Design system
-│   ├── tm-gate.md                     # Gate : Readiness check
-│   ├── tm-epic.md                     # Phase 5 : Créer une epic
-│   ├── tm-story.md                    # Phase 5 : Créer une story
-│   ├── tm-dev.md                      # Phase 6 : Implémenter une story
-│   ├── tm-review.md                   # Phase 7 : Code review
-│   ├── tm-evolve.md                   # Transversal : Évolution PRD
-│   ├── tm-status.md                   # Sprint : Afficher le status
-│   └── tm-sprint.md                   # Sprint : Nouveau sprint
+├── .claude/commands/                  # 6 slash commands tm-*
+│   ├── tm-plan.md                     # Cadrage complet (brief→PRD→archi→design→stories→gate)
+│   ├── tm-dev.md                      # Implémenter (story ou mode libre : bugfix/amélioration)
+│   ├── tm-review.md                   # Code review + review adversariale
+│   ├── tm-evolve.md                   # Évolution PRD + cascade impacts
+│   ├── tm-status.md                   # Sprint status
+│   └── tm-sprint.md                   # Nouveau sprint
 │
 ├── .tiple/
-│   ├── templates/                     # 6 templates de documents markdown
-│   ├── checklists/                    # 5 checklists quality gates
-│   ├── conventions/                   # 5 fichiers conventions pré-remplis
+│   ├── templates/                     # 6 templates de documents markdown (brief, prd, architecture, epic, story, adr)
+│   ├── checklists/                    # 5 checklists quality gates (readiness, story-ready, story-done, code-review, prd-evolution)
+│   ├── conventions/                   # 5 fichiers conventions pré-remplis (tech-stack, coding-standards, testing, registry, api-patterns)
 │   └── sprint/status.md              # Sprint tracking
 │
 ├── docs/                              # Documentation vivante du projet
-│   ├── brief.md                       # Stub → /tm-brief
-│   ├── prd.md                         # Stub → /tm-prd
-│   ├── architecture.md                # Stub → /tm-architecture
+│   ├── brief.md                       # Stub → /tm-plan (phase 1)
+│   ├── prd.md                         # Stub → /tm-plan (phase 2)
+│   ├── architecture.md                # Stub → /tm-plan (phase 3)
 │   ├── changelog.md                   # Journal des évolutions
 │   ├── design/                        # Maquettes, design system, user flows
 │   ├── epics/                         # Epics détaillées
@@ -283,30 +277,29 @@ Les commandes ne sont PAS du code exécutable. Ce sont des instructions que Clau
 
 ### Dépendances entre commandes
 
+**Commandes principales (séquentielles) :**
+
 ```
-/tm-brief → produit docs/brief.md
-    ↓
-/tm-prd → lit brief.md, produit docs/prd.md
-    ↓
-/tm-architecture → lit prd.md, produit docs/architecture.md
-    ↓
-/tm-design-system → produit docs/design/system.md
-    ↓
-/tm-gate → vérifie que tout est prêt (readiness-gate checklist)
-    ↓
-/tm-epic → lit prd.md + architecture.md, produit docs/epics/E0X-*.md
-    ↓
-/tm-story → lit epic + architecture + conventions, produit docs/stories/E0X-S0X-*.md
-    ↓
-/tm-dev → lit story + design + architecture + conventions + registry, produit du code dans src/
-    ↓
-/tm-review → lit story + code produit + checklists, produit un rapport + fixes
-    ↓
-/tm-status → met à jour .tiple/sprint/status.md
+/tm-plan → conversation fluide qui produit :
+    ├── docs/brief.md          (phase 1 : comprendre le problème)
+    ├── docs/prd.md            (phase 2 : structurer les exigences)
+    ├── docs/architecture.md   (phase 3 : concevoir l'architecture)
+    ├── docs/design/system.md  (phase 4 : définir le design system)
+    ├── docs/epics/*.md        (phase 5 : découper en epics)
+    ├── docs/stories/*.md      (phase 5 : découper en stories)
+    └── gate check             (phase 6 : vérifier la cohérence)
+        ↓
+/tm-dev [story-id | "next" | rien]
+    ├── Mode story : lit story + contexte → code → test → commit + changelog → MAJ registry + sprint
+    └── Mode libre : décrit bug/amélioration → lit contexte → code → test → commit + changelog
+        ↓
+/tm-review [story-id | "last" | rien]
+    └── review checklist + adversariale → corrections → rapport
 ```
 
-Commandes transversales (à tout moment) :
-- `/tm-evolve` → modifie docs/prd.md + cascade vers architecture/epics/stories
+**Commandes transversales (à tout moment) :**
+- `/tm-evolve` → modifie docs/prd.md + cascade vers architecture/design system/epics/stories + nouvelles stories
+- `/tm-status` → affiche le sprint en cours, propose la prochaine action
 - `/tm-sprint` → initialise un nouveau sprint dans .tiple/sprint/status.md
 
 ---
