@@ -55,7 +55,7 @@ src/
 │   └── [feature]/                # Composants spécifiques à une feature
 ├── hooks/                        # Custom hooks
 ├── lib/
-│   ├── actions/                  # Server Actions (par domaine)
+│   ├── actions/                  # Server Actions (par parcours)
 │   ├── schemas/                  # Zod schemas partagés
 │   ├── supabase/                 # Clients Supabase (server.ts, client.ts)
 │   └── utils/                    # Fonctions utilitaires pures
@@ -88,9 +88,9 @@ erDiagram
 
 ## 5. Server Actions
 
-<!-- À REMPLIR — lister les actions par domaine -->
+<!-- À REMPLIR — lister les actions par parcours -->
 
-### [Domaine]
+### [Parcours]
 | Action | Input (Zod) | Output | Description |
 |--------|-------------|--------|-------------|
 

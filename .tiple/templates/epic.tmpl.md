@@ -7,7 +7,9 @@
 | **ID** | E[XX] |
 | **Priorité** | P0 / P1 / P2 |
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
+| **Parcours** | [Nom du parcours PRD — section 4.X] |
 | **PRD Refs** | FR-XXX-01, FR-XXX-02 |
+| **Écrans** | docs/design/screens/[fichier].jsx |
 | **Dépendances** | E[XX] (si applicable) |
 
 ## Objectif
@@ -30,4 +32,5 @@
 
 ## Design requis
 
-- [ ] <!-- Maquette/flow nécessaire avant de coder -->
+- [ ] <!-- Écran JSX créé dans docs/design/screens/ -->
+- [ ] <!-- Composants partagés identifiés dans docs/design/components/ -->

@@ -10,9 +10,10 @@
 | Champ | Valeur |
 |-------|--------|
 | **Epic** | E[XX] — [Titre] |
+| **Parcours** | [Nom du parcours PRD — section 4.X] |
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Priorité** | Must / Should / Could |
-| **Design ref** | docs/design/screens/[fichier] (si applicable) |
+| **Écran(s)** | docs/design/screens/[fichier].jsx |
 | **Estimation** | S / M / L |
 
 ## Contexte
@@ -20,9 +21,9 @@
 <!-- Pourquoi cette story existe. Quel problème elle résout. -->
 
 **Refs :**
-- PRD : FR-XXX-01, FR-XXX-02
+- PRD : FR-XXX-01, FR-XXX-02 (parcours [X])
 - Architecture : section [X]
-- Design : [fichier maquette si applicable]
+- Écran(s) JSX : docs/design/screens/[fichier].jsx
 
 ## Critères d'acceptation
 
@@ -59,8 +60,8 @@
 
 <!-- Rempli APRÈS le dev par /tm-dev -->
 
-### Écarts avec le design
-<!-- Lister les écarts et pourquoi -->
+### Écarts avec l'écran JSX
+<!-- Lister les écarts entre l'implémentation et l'écran JSX, et pourquoi -->
 
 ### Écarts avec l'architecture
 <!-- Si un invariant a été modifié → ADR créé ? -->
