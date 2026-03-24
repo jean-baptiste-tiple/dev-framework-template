@@ -14,6 +14,7 @@
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Priorité** | Must / Should / Could |
 | **Écran(s)** | docs/design/screens/[fichier].jsx |
+| **Conventions** | auth, database, forms, security (tags depuis `.tiple/conventions/_index.md`) |
 | **Estimation** | S / M / L |
 
 ## Contexte

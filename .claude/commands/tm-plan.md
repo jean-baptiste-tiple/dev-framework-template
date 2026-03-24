@@ -61,6 +61,7 @@ Définir :
 Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.
 
 → Générer `docs/architecture.md` depuis `.tiple/templates/architecture.tmpl.md`
+→ Consulter `.tiple/conventions/_index.md` pour identifier les conventions techniques à respecter
 
 ### Phase 4 — Valider le design (→ docs/design/)
 
@@ -103,6 +104,11 @@ Depuis le PRD :
 - Découper chaque epic en stories dans `docs/stories/` depuis `.tiple/templates/story.tmpl.md`
   - Chaque story référence : parcours, FR, écran(s) JSX, architecture
   - Chaque story a : contexte, AC en Given/When/Then, fichiers à créer, tests attendus
+  - **Chaque story déclare ses tags Conventions** dans le champ Meta :
+    - Lire `.tiple/conventions/_index.md` pour la liste des tags disponibles
+    - Sélectionner les tags pertinents selon le périmètre technique de la story
+    - Exemples : story de formulaire → `api, forms, security` / story de dashboard → `nextjs, state, performance`
+    - Ces tags seront utilisés par `/tm-dev` pour charger automatiquement les conventions
 - Ordonner par dépendance et priorité
 
 Une story = un déploiement possible. Taille S/M/L, pas XL.

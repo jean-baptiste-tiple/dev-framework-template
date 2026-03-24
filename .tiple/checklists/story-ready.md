@@ -11,4 +11,5 @@
 - [ ] Les refs PRD (parcours + FR) et architecture sont renseignées
 - [ ] Le(s) écran(s) JSX référencés existent dans `docs/design/screens/`
 - [ ] Les dépendances avec d'autres stories sont résolues (stories prérequises = ✅ Done)
+- [ ] Le champ **Conventions** (tags) est renseigné dans la section Meta (voir `.tiple/conventions/_index.md`)
 - [ ] Le component-registry a été vérifié (pas de composant à dupliquer)

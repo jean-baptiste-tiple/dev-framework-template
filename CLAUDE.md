@@ -12,12 +12,23 @@ Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de v
 
 ## Règles absolues
 1. Ne JAMAIS coder sans story en statut 🟢 Ready dans `docs/stories/`
-2. TOUJOURS lire avant de coder : la story, le(s) écran(s) JSX référencés (`docs/design/screens/`), `docs/architecture.md`, `.tiple/conventions/component-registry.md`, `.tiple/conventions/coding-standards.md`
+2. TOUJOURS lire avant de coder : la story, le(s) écran(s) JSX référencés (`docs/design/screens/`), `docs/architecture.md`, et les **conventions par tags** (voir ci-dessous)
 3. Ne JAMAIS créer un composant/hook/util sans vérifier le component-registry d'abord — s'il existe, réutiliser
 4. Ne JAMAIS modifier un invariant d'architecture sans créer un ADR dans `docs/decisions/`
 5. Les tests sont écrits AVEC le code, pas après — unit tests d'abord, puis intégration, puis e2e si applicable
 6. Après implémentation : remplir la section "Post-implémentation" de la story
 7. Après implémentation : passer `.tiple/checklists/code-review.md` point par point
+
+## Conventions par tags (chargement intelligent)
+
+Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées **automatiquement** selon le contexte :
+
+- **Index :** `.tiple/conventions/_index.md` liste tous les tags et les fichiers associés
+- **Base (toujours lues) :** `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Mode story (`/tm-dev E01-S01`) :** le champ `Conventions` de la story déclare les tags → les fichiers correspondants sont chargés
+- **Mode libre (`/tm-dev` ou `/tm-fix`) :** les tags sont déduits des fichiers touchés (ex: `lib/actions/` → `api`, `supabase/migrations/` → `database`)
+
+Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
 ## Règles avant push
 1. **`pnpm type-check`** doit passer sans erreur

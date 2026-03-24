@@ -116,4 +116,125 @@ export async function createProjectAction(formData: FormData) {
 - Composants UI : toujours gérer loading + error + empty states
 - Supabase : toujours vérifier le `.error` de la réponse
 
-<!-- PERSONNALISER : ajouter les conventions spécifiques au projet -->
+## Error Handling avancé
+
+### Server Actions — pattern try/catch
+```typescript
+"use server"
+export async function riskyAction(formData: FormData): Promise<ActionResult<Data>> {
+  try {
+    // ... logique
+  } catch (error) {
+    // Logger l'erreur côté serveur (détails techniques)
+    console.error("[riskyAction]", error)
+    // Retourner un message user-friendly côté client
+    return { error: "Une erreur est survenue. Réessayez." }
+  }
+}
+```
+
+### Mapping des erreurs
+```typescript
+// lib/utils/errors.ts
+const ERROR_MESSAGES: Record<string, string> = {
+  AUTH_REQUIRED: "Vous devez être connecté",
+  VALIDATION_ERROR: "Données invalides",
+  NOT_FOUND: "Élément introuvable",
+  FORBIDDEN: "Accès non autorisé",
+  DUPLICATE: "Cet élément existe déjà",
+  INTERNAL_ERROR: "Une erreur est survenue",
+}
+```
+
+### Règle : ne JAMAIS exposer les erreurs techniques au client
+- Pas de `error.message` Supabase brut
+- Pas de stack traces
+- Pas de noms de tables/colonnes
+
+## Comments & Documentation
+
+### Quand commenter
+- **OUI :** Logique métier non-évidente, décisions d'architecture, workarounds
+- **NON :** Code auto-documenté (bon naming), re-description du code
+
+### Format
+```typescript
+// Bon : explique le POURQUOI
+// Le rate limit est plus strict sur /login car c'est la cible principale des brute force
+const LOGIN_RATE_LIMIT = 5
+
+// Mauvais : décrit le QUOI (redondant avec le code)
+// Incrémente le compteur
+counter++
+```
+
+### JSDoc — uniquement sur les fonctions exportées complexes
+```typescript
+/**
+ * Calcule le prix total avec taxes et réductions.
+ * Les réductions sont appliquées AVANT les taxes.
+ */
+export function calculateTotal(items: CartItem[], discount?: number): number {
+  // ...
+}
+```
+
+## File Size & Complexity
+
+| Métrique | Limite | Action si dépassé |
+|----------|--------|-------------------|
+| Lignes par fichier | ~300 | Extraire des sous-composants/utils |
+| Paramètres par fonction | 3-4 max | Utiliser un objet params |
+| Niveaux d'imbrication | 3 max | Early return, extraction |
+| Composant React | ~150 lignes | Extraire en sous-composants |
+
+## Early Returns
+
+```typescript
+// BON : early returns
+export async function updateItem(id: string, data: ItemData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "Non authentifié" }
+
+  const parsed = itemSchema.safeParse(data)
+  if (!parsed.success) return { error: "Données invalides" }
+
+  // Logique principale sans indentation
+  const { error } = await supabase.from("items").update(parsed.data).eq("id", id)
+  if (error) return { error: "Échec de la mise à jour" }
+  return { data: { success: true } }
+}
+
+// MAUVAIS : imbrication profonde
+export async function updateItem(id: string, data: ItemData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const parsed = itemSchema.safeParse(data)
+    if (parsed.success) {
+      // ... 3 niveaux d'indentation
+    }
+  }
+}
+```
+
+## TypeScript Strict Rules
+
+- **`const` par défaut**, `let` uniquement si réassignation nécessaire, jamais `var`
+- **Jamais de `any`** — utiliser `unknown` + type guard si type inconnu
+- **Pas de `as` assertion** sauf si nécessaire (et documenté)
+- **Enums :** préférer `as const` + type inféré aux `enum`
+
+```typescript
+// Préféré : const object
+const ORDER_STATUS = {
+  PENDING: "pending",
+  CONFIRMED: "confirmed",
+  DELIVERED: "delivered",
+} as const
+type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
+
+// Éviter : TypeScript enum
+enum OrderStatus { Pending, Confirmed, Delivered }
+```

@@ -43,19 +43,37 @@
 - [ ] Les tests vérifient le comportement, pas l'implémentation
 - [ ] Supabase est mocké dans les tests unitaires
 - [ ] Les tests existants passent toujours (non-régression)
+- [ ] Le naming des tests suit la convention (`describe/it` — voir `testing-strategy.md`)
 
 ## Design & UX
 
 - [ ] L'implémentation respecte l'écran JSX référencé (si applicable)
 - [ ] Les tokens du design system sont utilisés (pas de couleurs/spacing en dur)
 - [ ] Les 3 états sont gérés : loading, error, empty
-- [ ] L'accessibilité est respectée (labels, keyboard nav, contrast)
+- [ ] L'accessibilité est respectée (labels, keyboard nav, contrast — voir `accessibility-patterns.md`)
+- [ ] Les toasts/feedbacks suivent les patterns (voir `feedback-patterns.md`)
+
+## Performance
+
+- [ ] Pas de N+1 queries (utiliser les jointures Supabase)
+- [ ] Les images utilisent `next/image` avec `width/height` ou `fill+sizes`
+- [ ] Les composants lourds sont lazy-loaded si non-critiques
+- [ ] Les données parallèles sont fetchées avec `Promise.all`
 
 ## Architecture
 
 - [ ] La structure des fichiers suit les conventions (coding-standards.md)
 - [ ] Pas de violation des invariants d'architecture
 - [ ] Les Server Actions suivent le pattern standard (auth → validate → execute → revalidate → return)
+- [ ] Le state est au bon endroit (server > URL > state > context — voir `state-management.md`)
+- [ ] Les migrations DB ont un rollback documenté (si applicable)
+
+## Sécurité
+
+- [ ] Pas de secrets exposés (API keys, tokens, PII dans les logs)
+- [ ] Les erreurs Supabase ne sont pas exposées brutes au client
+- [ ] Les inputs sont validés côté serveur avec Zod
+- [ ] Rate limiting en place sur les actions sensibles (login, signup, reset)
 
 ## Documentation
 
