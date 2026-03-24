@@ -28,7 +28,7 @@ pnpm dev
 |----------|----------|-------------|
 | `/tm-init` | A — Nouveau projet | Brief → PRD → Architecture → Design → Epics/Stories → Gate → Sprint |
 | `/tm-feature` | B — Nouvelle feature | Evolve PRD si besoin → Stories → Dev/Review loop |
-| `/tm-fix` | C — Bug fix | Story allégée → Dev → Review rapide |
+| `/tm-fix` | C — Bug fix | Story allégée ou mode libre → Dev (conventions auto) → Review rapide |
 
 ## Commandes atomiques
 
@@ -44,6 +44,7 @@ Les commandes composites orchestrent ces commandes atomiques, qui restent utilis
 | `/tm-epic` | Crée une epic dans `docs/epics/` |
 | `/tm-story` | Crée une story dans `docs/stories/` |
 | `/tm-dev` | Implémente une story (lit tout, code, teste) |
+| `/tm-fix` | Corrige un bug ou petite modification (avec chargement auto des conventions) |
 | `/tm-review` | Code review checklist sur la dernière story |
 | `/tm-evolve` | Process d'évolution du PRD (impact + cascade) |
 | `/tm-status` | Affiche et met à jour le sprint status |
@@ -53,11 +54,11 @@ Les commandes composites orchestrent ces commandes atomiques, qui restent utilis
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
-├── .claude/commands/            # 15 slash commands /tm-* (3 composites + 12 atomiques)
+├── .claude/commands/            # Slash commands /tm-* (3 composites + atomiques)
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
-│   ├── conventions/             # 5 fichiers conventions (pré-remplis)
+│   ├── conventions/             # Conventions techniques par tags (22 fichiers, voir _index.md)
 │   └── sprint/status.md         # Sprint tracking
 ├── docs/
 │   ├── brief.md                 # Brief produit
@@ -84,6 +85,24 @@ Après le clone, modifier :
 5. **`package.json`** — Nom du projet, dépendances spécifiques
 
 Puis lancer `/tm-init` pour démarrer la phase de planification (ou `/tm-brief` pour commencer étape par étape).
+
+## Conventions par tags
+
+Les conventions techniques sont dans `.tiple/conventions/` et chargées **automatiquement** selon le contexte :
+
+- **Base (toujours chargées)** : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Par tags** : chaque story déclare ses tags (ex: `auth`, `database`, `api`) → les fichiers de conventions correspondants sont chargés automatiquement
+- **Index** : `.tiple/conventions/_index.md` liste tous les tags disponibles et les fichiers associés
+
+**Chargement selon le mode :**
+
+| Mode | Chargement des conventions |
+|------|----------------------------|
+| `/tm-dev E01-S01` | Tags déclarés dans le champ `Conventions` de la story |
+| `/tm-dev` (libre) | Tags déduits des fichiers touchés (ex: `lib/actions/` → `api`) |
+| `/tm-fix` | Même déduction automatique que le mode libre |
+
+Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
 ## CI/CD
 
@@ -158,7 +177,8 @@ Ce workflow se fait une seule fois, au démarrage du projet. Il produit toute la
 │  Pour chaque epic du PRD :                               │
 │    /tm-epic → crée docs/epics/E0X-titre.md              │
 │    /tm-story (×N) → crée docs/stories/E0X-S0X-titre.md │
-│  Chaque story doit être 🟢 Ready avec AC testables.     │
+│  Chaque story doit être 🟢 Ready avec AC testables      │
+│  et ses tags Conventions renseignés.                     │
 └────────────────────┬────────────────────────────────────┘
                      ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -234,22 +254,23 @@ Une feature = un changement fonctionnel significatif qui nécessite une ou plusi
 
 ### Workflow C — Bug fix ou petite modification
 
-Pour les corrections de bugs, ajustements UI, ou modifications mineures d'une feature existante. Pas besoin de créer une epic — une story suffit.
+Pour les corrections de bugs, ajustements UI, ou modifications mineures d'une feature existante. Deux modes possibles :
 
+**Mode story** (bug significatif) :
 ```
 1. Créer une story de fix
    └─ /tm-story E0X "Fix : description du bug"
        Contenu allégé :
        - Meta : estimation S, priorité Must
        - Contexte : décrire le bug / la modification demandée
+       - Conventions : tags pertinents (ex: api, database)
        - AC : Given [situation actuelle], When [action], Then [comportement corrigé]
        - Implémentation : fichiers à modifier (pas à créer en général)
        - Tests : ajouter le test qui couvre le cas corrigé
 
 2. Implémenter
    └─ /tm-dev E0X-S0X
-       → Lire la story
-       → Identifier le code concerné
+       → Lire la story + charger conventions par tags
        → Écrire le test qui reproduit le bug (red)
        → Corriger le code (green)
        → Vérifier la non-régression (pnpm test)
@@ -260,8 +281,12 @@ Pour les corrections de bugs, ajustements UI, ou modifications mineures d'une fe
        → Focus sur : le fix résout-il vraiment le bug ?
        → Pas d'effets de bord ? Pas de régression ?
        → Registry à jour si composant modifié ?
+```
 
-Variante — modification très mineure (typo, padding, couleur) :
-   Pas besoin de story. Modifier directement, vérifier
-   que pnpm type-check && pnpm test passent, commit.
+**Mode libre** (modification mineure, typo, padding, couleur) :
+```
+/tm-fix → décris le problème
+   → Déduit les tags depuis les fichiers touchés
+   → Charge les conventions pertinentes automatiquement
+   → Corrige, vérifie pnpm type-check && pnpm test, commit
 ```
