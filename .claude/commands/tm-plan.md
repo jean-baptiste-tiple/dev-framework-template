@@ -3,11 +3,22 @@
 Une seule conversation continue qui produit tous les documents de cadrage.
 Pas un formulaire — un dialogue naturel.
 
+## Pré-requis : livrables du framework Design
+
+Le framework Design (en amont) produit les livrables suivants qui servent d'**input** à ce cadrage :
+- **Design tokens** → `docs/design/system.md`
+- **Maquettes JSX par écran** → `docs/design/screens/*.jsx`
+- **Composants partagés JSX** → `docs/design/components/*.jsx`
+- **Flows utilisateur** → intégrés dans les parcours du PRD
+- **App spec** → alimente le brief et le PRD
+
+Vérifier que ces fichiers sont présents avant de démarrer. Si absents, demander à l'utilisateur de les fournir.
+
 ## Process
 
 ### Phase 1 — Comprendre le problème (→ docs/brief.md)
 
-Poser les bonnes questions :
+Lire l'app spec fournie par le framework Design, puis compléter par des questions :
 - Quel problème résout-on ? Pour qui ? Pourquoi maintenant ?
 - Qui sont les utilisateurs ? (personas avec nom/rôle/besoin/frustration)
 - Quel est le scope MVP ? (IN/OUT explicites)
@@ -21,18 +32,18 @@ Quantifier la douleur : "perd 2h/semaine" > "c'est lent".
 
 ### Phase 2 — Structurer le PRD par parcours (→ docs/prd.md)
 
-Transformer le brief en PRD organisé par **parcours utilisateur** :
+Transformer le brief + les livrables Design en PRD organisé par **parcours utilisateur** :
 
-1. **Identifier les parcours** depuis les personas et le scope MVP
+1. **Identifier les parcours** depuis les personas, le scope MVP et les flows du framework Design
    - Chaque parcours = un objectif utilisateur complet (ex: "S'authentifier", "Gérer son menu")
 2. **Pour chaque parcours, définir :**
-   - Le flow Mermaid (enchaînement des écrans)
-   - Les écrans nécessaires (nom + description, les fichiers JSX seront créés en phase 4)
+   - Le flow Mermaid (repris/adapté depuis les flows du framework Design)
+   - Les écrans (référencer les fichiers JSX existants dans `docs/design/screens/`)
    - Les FR avec ID `FR-[PARCOURS]-[XX]`, description, priorité MoSCoW, AC en Given/When/Then
    - Les NFR liés au parcours (performance, sécurité, accessibilité)
 3. **Vérifier la cohérence :**
-   - Chaque FR est rattachée à un écran
-   - Chaque écran est dans un flow
+   - Chaque FR est rattachée à un écran JSX existant
+   - Chaque écran JSX est dans un flow
    - Max 60% de Must
    - Chaque FR est testable
 4. **Résumé du modèle de données** : entités inférées des parcours
@@ -51,21 +62,21 @@ Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.
 
 → Générer `docs/architecture.md` depuis `.tiple/templates/architecture.tmpl.md`
 
-### Phase 4 — Design : tokens + intégration des maquettes JSX (→ docs/design/)
+### Phase 4 — Valider le design (→ docs/design/)
+
+Les livrables Design (tokens, JSX, composants) sont déjà fournis par le framework Design en amont.
+Cette phase **valide et inventorie**, elle ne génère pas.
 
 #### 4a. Design System (→ docs/design/system.md)
-Définir :
+Vérifier que `docs/design/system.md` est complet :
 - Tokens : couleurs (palette + semantic), spacing, typography, radius, shadows
-- Composants réutilisables identifiés (depuis les parcours du PRD)
-- Patterns UI récurrents (listes, formulaires, cards, modals)
+- Composants réutilisables identifiés
+- Patterns UI récurrents
 - Responsive breakpoints
 
-Tokens d'abord, pas de couleurs en dur. Réutiliser Shadcn/ui au maximum.
+Compléter si nécessaire avec les infos du PRD. Tokens d'abord, pas de couleurs en dur. Réutiliser Shadcn/ui au maximum.
 
 #### 4b. Maquettes JSX (→ docs/design/screens/)
-Les maquettes JSX sont **fournies par l'utilisateur** (existantes ou créées en amont).
-Elles servent de spec visuelle — Claude les **lit**, il ne les génère pas.
-
 Pour chaque écran listé dans les parcours du PRD :
 - Vérifier que le fichier `.jsx` existe dans `docs/design/screens/`
 - Vérifier la cohérence avec les parcours du PRD (routes, actions, données)
@@ -73,7 +84,6 @@ Pour chaque écran listé dans les parcours du PRD :
 - Lire les conventions dans `docs/design/guide.md`
 
 #### 4c. Composants partagés (→ docs/design/components/)
-Identifier les composants utilisés dans plusieurs écrans :
 - Vérifier que les composants partagés sont dans `docs/design/components/`
 - Mettre à jour `docs/design/components/_index.md`
 
@@ -81,8 +91,8 @@ Identifier les composants utilisés dans plusieurs écrans :
 Mettre à jour l'inventaire des écrans avec le tableau :
 écran → fichier JSX → parcours → persona → description
 
-→ Générer `docs/design/system.md`
-→ Lire et valider les fichiers JSX dans `docs/design/screens/` et `docs/design/components/`
+→ Valider `docs/design/system.md` (compléter si besoin)
+→ Valider les fichiers JSX dans `docs/design/screens/` et `docs/design/components/`
 → Mettre à jour `docs/design/screens/_index.md` et `docs/design/components/_index.md`
 
 ### Phase 5 — Découper en stories (→ docs/epics/ + docs/stories/)
