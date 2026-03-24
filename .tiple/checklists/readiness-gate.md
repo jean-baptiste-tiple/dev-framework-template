@@ -36,6 +36,8 @@
 - [ ] `.tiple/conventions/tech-stack.md` est à jour
 - [ ] `.tiple/conventions/coding-standards.md` est personnalisé si nécessaire
 - [ ] `.tiple/conventions/component-registry.md` existe avec la structure de base
+- [ ] `.tiple/conventions/_index.md` est à jour (index des tags → fichiers de conventions)
+- [ ] Chaque story 🟢 Ready a son champ **Conventions** (tags) renseigné
 
 ## Infra minimale
 
