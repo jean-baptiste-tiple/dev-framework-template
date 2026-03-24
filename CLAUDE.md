@@ -73,12 +73,18 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 3. Ajouter au component-registry (nom, path, props, notes)
 4. Respecter `docs/design/system.md` pour les tokens visuels
 
-## Commandes composites (raccourcis)
-- `/tm-init` — Initialisation complète d'un nouveau projet (brief → PRD → archi → design → epics/stories → gate → sprint)
-- `/tm-feature` — Ajouter une feature (evolve si besoin → stories → dev/review loop)
-- `/tm-fix` — Corriger un bug ou petite modification (story allégée → dev → review rapide)
+## Commandes disponibles
+
+3 slash commands dans `.claude/commands/` :
+
+| Commande | Usage | Description |
+|----------|-------|-------------|
+| `/tm-plan` | Nouveau projet / nouvelle feature | Cadrage complet : brief → PRD → archi → design → epics/stories → gate |
+| `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine), ou sans arg (mode libre) |
+| `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions |
 
 ## Conventions
+- Index des tags : `.tiple/conventions/_index.md`
 - Coding standards : `.tiple/conventions/coding-standards.md`
 - Stack technique : `.tiple/conventions/tech-stack.md`
 - Stratégie de tests : `.tiple/conventions/testing-strategy.md`
