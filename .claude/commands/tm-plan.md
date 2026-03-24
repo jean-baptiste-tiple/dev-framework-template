@@ -51,7 +51,7 @@ Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.
 
 → Générer `docs/architecture.md` depuis `.tiple/templates/architecture.tmpl.md`
 
-### Phase 4 — Design : tokens + maquettes JSX (→ docs/design/)
+### Phase 4 — Design : tokens + intégration des maquettes JSX (→ docs/design/)
 
 #### 4a. Design System (→ docs/design/system.md)
 Définir :
@@ -63,15 +63,18 @@ Définir :
 Tokens d'abord, pas de couleurs en dur. Réutiliser Shadcn/ui au maximum.
 
 #### 4b. Maquettes JSX (→ docs/design/screens/)
+Les maquettes JSX sont **fournies par l'utilisateur** (existantes ou créées en amont).
+Elles servent de spec visuelle — Claude les **lit**, il ne les génère pas.
+
 Pour chaque écran listé dans les parcours du PRD :
-- Créer un fichier `.jsx` dans `docs/design/screens/`
-- Utiliser les composants de `docs/design/guide.md` (Screen, Card, Form, Input, Button, etc.)
-- Annoter avec `data-*` pour les variants, actions, navigation
-- Référencer les tokens du design system (pas de valeurs en dur)
+- Vérifier que le fichier `.jsx` existe dans `docs/design/screens/`
+- Vérifier la cohérence avec les parcours du PRD (routes, actions, données)
+- Si un écran du PRD n'a pas de JSX → le signaler à l'utilisateur
+- Lire les conventions dans `docs/design/guide.md`
 
 #### 4c. Composants partagés (→ docs/design/components/)
 Identifier les composants utilisés dans plusieurs écrans :
-- Créer un fichier `.jsx` par composant partagé dans `docs/design/components/`
+- Vérifier que les composants partagés sont dans `docs/design/components/`
 - Mettre à jour `docs/design/components/_index.md`
 
 #### 4d. Inventaire (→ docs/design/screens/_index.md)
@@ -79,8 +82,8 @@ Mettre à jour l'inventaire des écrans avec le tableau :
 écran → fichier JSX → parcours → persona → description
 
 → Générer `docs/design/system.md`
-→ Générer les fichiers JSX dans `docs/design/screens/` et `docs/design/components/`
-→ Générer `docs/design/screens/_index.md` et `docs/design/components/_index.md`
+→ Lire et valider les fichiers JSX dans `docs/design/screens/` et `docs/design/components/`
+→ Mettre à jour `docs/design/screens/_index.md` et `docs/design/components/_index.md`
 
 ### Phase 5 — Découper en stories (→ docs/epics/ + docs/stories/)
 
