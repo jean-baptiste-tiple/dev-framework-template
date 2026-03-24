@@ -6,16 +6,27 @@
 ## Documents
 
 - [ ] `docs/brief.md` est rempli et validé
-- [ ] `docs/prd.md` est rempli, chaque FR a un ID et des AC
+- [ ] `docs/prd.md` est rempli, organisé par parcours utilisateur
 - [ ] `docs/architecture.md` est rempli, modèle de données défini
 - [ ] `docs/design/system.md` a les tokens (couleurs, typo, spacing)
 - [ ] Au moins 1 epic existe dans `docs/epics/`
 - [ ] Au moins 1 story 🟢 Ready existe dans `docs/stories/`
 
+## Parcours & Design
+
+- [ ] Chaque parcours du PRD a un flow Mermaid
+- [ ] Chaque parcours a ses écrans listés avec fichier JSX
+- [ ] Les écrans JSX existent dans `docs/design/screens/`
+- [ ] `docs/design/screens/_index.md` est à jour (inventaire)
+- [ ] Les composants partagés sont dans `docs/design/components/`
+- [ ] `docs/design/guide.md` est présent
+
 ## Cohérence
 
-- [ ] Chaque FR du PRD est couvert par au moins une story
-- [ ] Chaque story référence les FRs du PRD qu'elle implémente
+- [ ] Chaque FR du PRD est dans un parcours et rattachée à un écran
+- [ ] Chaque FR du PRD est couverte par au moins une story
+- [ ] Chaque story référence les FRs et le parcours qu'elle implémente
+- [ ] Chaque story référence le(s) écran(s) JSX correspondant(s)
 - [ ] Le modèle de données couvre les entités nécessaires aux stories Ready
 - [ ] Les RLS policies sont définies pour chaque table du modèle
 - [ ] Les stories ont des AC en format Given/When/Then

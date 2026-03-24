@@ -8,7 +8,7 @@
 - [ ] Chaque AC est vérifiable par un test automatisé
 - [ ] La section "Implémentation" liste les fichiers à créer/modifier
 - [ ] La section "Tests attendus" liste les tests à écrire
-- [ ] Les refs PRD et architecture sont renseignées
-- [ ] La maquette design est disponible (si ref design renseignée)
+- [ ] Les refs PRD (parcours + FR) et architecture sont renseignées
+- [ ] Le(s) écran(s) JSX référencés existent dans `docs/design/screens/`
 - [ ] Les dépendances avec d'autres stories sont résolues (stories prérequises = ✅ Done)
 - [ ] Le component-registry a été vérifié (pas de composant à dupliquer)

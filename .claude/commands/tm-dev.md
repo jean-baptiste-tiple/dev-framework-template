@@ -14,7 +14,8 @@
 2. Lire la story complète dans `docs/stories/`
 3. Vérifier `.tiple/checklists/story-ready.md` — si KO, signaler et s'arrêter
 4. Lire le contexte :
-   - La maquette design référencée (si elle existe)
+   - Le(s) écran(s) JSX référencés dans la story (`docs/design/screens/*.jsx`)
+   - Le guide de lecture JSX (`docs/design/guide.md`)
    - `docs/architecture.md` (sections pertinentes)
    - `docs/design/system.md` (tokens, composants)
    - `.tiple/conventions/component-registry.md`
