@@ -55,7 +55,7 @@ Transformer le brief + les livrables Design en PRD organisé par **parcours util
 Définir :
 - Modèle de données (tables, relations, diagramme Mermaid ER)
 - RLS policies pour chaque table
-- Server Actions nécessaires (par parcours/domaine)
+- Server Actions nécessaires (par parcours)
 - Points d'attention performance
 
 Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.

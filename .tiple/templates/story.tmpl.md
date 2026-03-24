@@ -61,7 +61,7 @@
 <!-- Rempli APRÈS le dev par /tm-dev -->
 
 ### Écarts avec l'écran JSX
-<!-- Lister les écarts entre l'implémentation et la maquette JSX, et pourquoi -->
+<!-- Lister les écarts entre l'implémentation et l'écran JSX, et pourquoi -->
 
 ### Écarts avec l'architecture
 <!-- Si un invariant a été modifié → ADR créé ? -->

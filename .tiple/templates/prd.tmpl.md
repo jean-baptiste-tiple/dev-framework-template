@@ -71,9 +71,9 @@ graph LR
 
 | ID | Description | Priorité | Écran(s) | Statut |
 |----|------------|----------|----------|--------|
-| FR-XXX-01 | | Must | [fichier].jsx | 🔶 |
+| FR-[PARCOURS]-01 | | Must | [fichier].jsx | 🔶 |
 
-**Critères d'acceptation FR-XXX-01 :**
+**Critères d'acceptation FR-[PARCOURS]-01 :**
 - [ ] Given ... When ... Then ...
 - [ ] Given ... When ... Then ...
 
@@ -81,7 +81,7 @@ graph LR
 
 | ID | Catégorie | Description | Cible | Écran(s) | Statut |
 |----|-----------|------------|-------|----------|--------|
-| NFR-XXX-01 | Performance | | | [fichier].jsx | 🔶 |
+| NFR-[PARCOURS]-01 | Performance | | | [fichier].jsx | 🔶 |
 
 ---
 
