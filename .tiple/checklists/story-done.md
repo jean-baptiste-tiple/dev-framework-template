@@ -17,6 +17,12 @@
 - [ ] Les tests E2E listés dans la story sont écrits et passent (si applicable)
 - [ ] TOUS les tests existants passent (non-régression)
 
+## Vérification triple (OBLIGATOIRE)
+
+- [ ] **`pnpm type-check`** passe sans erreur
+- [ ] **`pnpm lint`** passe sans erreur
+- [ ] **`pnpm test`** — TOUS les tests passent (non-régression)
+
 ## Documentation
 
 - [ ] La section "Post-implémentation" de la story est remplie
@@ -24,10 +30,18 @@
 - [ ] Le changelog est à jour
 - [ ] Un ADR est créé si un invariant d'architecture a été modifié
 
-## Qualité
+## Code Review (OBLIGATOIRE)
 
-- [ ] `pnpm type-check` passe sans erreur
-- [ ] `pnpm lint` passe sans erreur
+- [ ] La checklist `code-review.md` a été passée point par point par un **agent reviewer isolé** (`/tm-review`)
+- [ ] DRY & Réutilisation : vérifié
+- [ ] Qualité du code : vérifié
+- [ ] Sécurité : vérifié
+- [ ] Tests : vérifié
+- [ ] Design & UX : vérifié
+- [ ] Architecture : vérifié
+- [ ] Documentation : vérifié
+- [ ] Les problèmes HAUTE/MOYENNE identifiés sont corrigés
+- [ ] La vérification triple a été relancée après les corrections
 - [ ] Les 3 états UI sont gérés (loading, error, empty) pour les composants data-driven
 - [ ] L'implémentation respecte l'écran JSX référencé
 - [ ] Les conventions tagées dans la story ont été respectées

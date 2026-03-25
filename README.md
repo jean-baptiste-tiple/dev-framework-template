@@ -22,19 +22,21 @@ pnpm dev
 
 ## Commandes
 
-3 slash commands couvrent tous les cas d'usage :
+3 slash commands principales + 2 commandes de qualité :
 
 | Commande | Usage | Description |
 |----------|-------|-------------|
 | `/tm-plan` | Nouveau projet ou feature | Cadrage complet : brief → PRD → architecture → design → epics/stories → gate |
 | `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine 🟢 Ready), ou sans arg (mode libre) |
 | `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions par tags |
+| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (obligatoire avant review) |
+| `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point |
 
 ## Structure
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
-├── .claude/commands/            # 3 slash commands : /tm-plan, /tm-dev, /tm-fix
+├── .claude/commands/            # 5 slash commands : /tm-plan, /tm-dev, /tm-fix, /tm-verify, /tm-review
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
@@ -148,11 +150,14 @@ Ce workflow se fait une seule fois, au démarrage du projet. `/tm-plan` orchestr
 │    /tm-dev E0X-S0X (ou /tm-dev next)                    │
 │      → lit story + archi + conventions par tags          │
 │      → implémente : Zod → actions → tests → UI → page   │
-│      → vérifie non-régression (pnpm test)                │
-│      → MAJ story, registry, sprint status                │
-│      → passe code-review.md                              │
+│      → vérification triple :                             │
+│          pnpm type-check + pnpm lint + pnpm test         │
+│      → code review par agent isolé :                     │
+│          .tiple/checklists/code-review.md point par point│
+│      → si problèmes HAUTE/MOYENNE : fix + re-verify     │
+│      → MAJ story, registry, sprint status, changelog     │
 │                                                          │
-│  Répéter jusqu'à sprint terminé.                         │
+│  Répéter /tm-dev jusqu'à sprint terminé.                │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -173,14 +178,16 @@ Une feature = un changement fonctionnel significatif qui nécessite une ou plusi
 
 3. Implémenter story par story
    └─ /tm-dev E0X-S0X
+       → Charge conventions par tags de la story
        → Zod schemas → Server Actions → tests unit
        → composants UI → tests unit UI → page → tests integ
-       → vérif non-régression
-       → MAJ story + registry + sprint status
-       → code-review.md
+       → vérification triple : type-check + lint + test
+       → code review par agent isolé (regard neuf)
+       → si problèmes HAUTE/MOYENNE : fix + re-verify
+       → MAJ story + registry + sprint status + changelog
 
 4. Vérifier
-   └─ pnpm type-check && pnpm test → tout passe
+   └─ pnpm type-check && pnpm lint && pnpm test → tout passe
 ```
 
 ### Workflow C — Bug fix (`/tm-fix` ou `/tm-dev`)
@@ -196,9 +203,11 @@ Pour les corrections de bugs, ajustements UI, ou modifications mineures. Deux mo
 
 2. /tm-dev E0X-S0X
    → Charge conventions par tags de la story
-   → Test red → fix → test green → non-régression
-
-3. Passer code-review.md
+   → Test red → fix → test green
+   → Vérification triple : type-check + lint + test
+   → Code review par agent isolé (focus bug fix)
+   → Si problèmes HAUTE/MOYENNE : fix + re-verify
+   → MAJ story + sprint status + changelog
 ```
 
 **Modification mineure** (sans story) :
@@ -206,5 +215,8 @@ Pour les corrections de bugs, ajustements UI, ou modifications mineures. Deux mo
 /tm-fix → décris le problème
    → Déduit les tags depuis les fichiers touchés
    → Charge les conventions pertinentes automatiquement
-   → Corrige, vérifie pnpm type-check && pnpm test, commit
+   → Corrige + tests
+   → Vérification triple : type-check + lint + test
+   → Code review par agent isolé
+   → Changelog
 ```

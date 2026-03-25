@@ -50,12 +50,22 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 2. Lire la story complète + ses refs (parcours PRD, écrans JSX, archi, conventions)
 3. Vérifier `.tiple/checklists/story-ready.md`
 4. Implémenter : schemas Zod → backend → tests unit → UI → tests unit UI → page → tests integ
-5. Vérifier que TOUS les tests passent (non-régression)
-6. Mettre à jour la story (post-implémentation)
-7. Mettre à jour `.tiple/conventions/component-registry.md` si nouveaux composants
-8. Mettre à jour `.tiple/sprint/status.md` → story ✅ Done
-9. Passer `.tiple/checklists/code-review.md`
-10. Résumer ce qui a été fait
+5. Écrire les tests (unit + integ) au fur et à mesure
+6. Vérifier que les tests de la story passent
+7. **Vérification triple** (OBLIGATOIRE — `/tm-verify`) :
+   - `pnpm type-check` → doit passer sans erreur
+   - `pnpm lint` → doit passer sans erreur
+   - `pnpm test` → tous les tests doivent passer (non-régression)
+8. **Code Review en agent isolé** (OBLIGATOIRE — `/tm-review`) :
+   - Lancer un agent autonome séparé (regard neuf, sans biais d'implémentation)
+   - L'agent passe `.tiple/checklists/code-review.md` point par point
+   - Couvrir : sécurité, qualité, DRY, tests, conventions, architecture, documentation
+   - Si problèmes HAUTE/MOYENNE → corriger puis relancer l'étape 7, puis nouveau review agent
+9. Mettre à jour la story (post-implémentation)
+10. Mettre à jour `.tiple/conventions/component-registry.md` si nouveaux composants
+11. Mettre à jour `.tiple/sprint/status.md` → story ✅ Done
+12. Ajouter une entrée dans `docs/changelog.md` si changement significatif
+13. Résumer ce qui a été fait
 
 ## Quand le PRD évolue
 1. Modifier `docs/prd.md` — parcours concerné, statut 🔶 Draft

@@ -39,3 +39,7 @@ tsconfig.tsbuildinfo
 
 # Turbo
 .turbo/
+
+# Claude Code
+.claude/*
+!.claude/commands/
