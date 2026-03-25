@@ -1,7 +1,7 @@
 # Index des Epics
 
-> Créer une epic avec `/tm-epic`. Ce fichier est mis à jour automatiquement.
+> Généré par `/tm-plan` (phase 5). Vue d'ensemble des epics du projet.
 
 | ID | Titre | Priorité | Statut | Dépendances |
 |----|-------|----------|--------|-------------|
-<!-- Les epics seront listées ici au fur et à mesure de leur création -->
+<!-- Rempli automatiquement lors du /tm-plan -->

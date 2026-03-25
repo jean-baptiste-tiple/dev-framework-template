@@ -1,101 +1,126 @@
 # PRD — [Nom du projet]
 
-> Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder
+<!-- INSTRUCTIONS : Ce PRD est généré par /tm-plan (phase 2) depuis le brief.
+     Organisé par PARCOURS UTILISATEUR : chaque parcours regroupe ses écrans,
+     flows, exigences fonctionnelles et non-fonctionnelles.
+     Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder -->
 
-## 1. Vue d'ensemble ⬜
+**Statut global :** 🔶 Draft
+**Dernière MAJ :** [date]
+
+## 1. Vision
 
 ### Résumé exécutif
-<!-- 3-5 phrases : quoi, pour qui, pourquoi, comment. -->
+<!-- 3-5 phrases. Problème, solution, valeur. -->
 
 ### Vision
-<!-- Où va le produit à 6-12 mois ? Une phrase inspirante mais réaliste. -->
+<!-- En une phrase : où va ce produit à 6-12 mois ? -->
 
-## 2. Personas ⬜
+## 2. Personas
 
-<!-- Enrichis depuis le brief. Ajouter contexte d'usage et scénarios. -->
+<!-- Enrichis depuis le brief. Chaque persona liste ses parcours clés. -->
 
-### Persona 1 — [Nom]
-- **Rôle** :
-- **Contexte d'usage** : <!-- Quand et comment utilise-t-il le produit ? -->
-- **Besoin principal** :
-- **Frustration actuelle** :
-- **Scénario type** : <!-- Décrire un parcours concret en 3-4 étapes. -->
+| Persona | Rôle | Objectif principal | Parcours clés |
+|---------|------|-------------------|---------------|
 
-### Persona 2 — [Nom]
-- **Rôle** :
-- **Contexte d'usage** :
-- **Besoin principal** :
-- **Frustration actuelle** :
-- **Scénario type** :
+## 3. Design System (résumé)
 
-## 3. Functional Requirements ⬜
+<!-- Résumé des tokens clés. Détail complet dans docs/design/system.md -->
 
-<!-- Regrouper par domaine fonctionnel. Chaque FR a :
-     - Un ID unique : FR-DOMAINE-01
-     - Une description claire
-     - Une priorité MoSCoW : Must / Should / Could / Won't
-     - Des acceptance criteria -->
+| Token | Valeur | Usage |
+|-------|--------|-------|
+| --primary | | Couleur principale |
+| --font-sans | | Corps de texte |
+| --space-4 | 16px | Espacement standard |
 
-### 3.1 — [Domaine 1 : ex. Authentification]
+**Composants partagés :** voir `docs/design/components/_index.md`
+**Design system complet :** voir `docs/design/system.md`
 
-| ID | Description | Priorité | Statut |
-|----|-------------|----------|--------|
-| FR-AUTH-01 | <!-- ex: L'utilisateur peut s'inscrire avec email + mot de passe --> | Must | ⬜ |
-| FR-AUTH-02 | | | ⬜ |
+## 4. Parcours utilisateur
 
-**Acceptance Criteria FR-AUTH-01 :**
-- [ ] <!-- Given/When/Then -->
+<!-- Le cœur du PRD. Chaque parcours est un bloc auto-suffisant :
+     flow + écrans + FR + NFR. Un LLM peut lire un seul parcours
+     et avoir tout le contexte pour l'implémenter.
 
-### 3.2 — [Domaine 2]
+     Conventions :
+     - FR-[PARCOURS]-[XX] : exigence fonctionnelle
+     - NFR-[PARCOURS]-[XX] : exigence non-fonctionnelle liée au parcours
+     - Priorité MoSCoW : Must / Should / Could / Won't
+     - Max 60% de Must. Chaque FR doit être testable.
+     - Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder -->
 
-| ID | Description | Priorité | Statut |
-|----|-------------|----------|--------|
-| FR-XXX-01 | | | ⬜ |
+### 4.X [Nom du parcours]
 
-<!-- Ajouter autant de domaines que nécessaire. -->
+**Persona :** [Nom]
+**Objectif :** <!-- Ce que l'utilisateur accomplit dans ce parcours -->
 
-## 4. Non-Functional Requirements ⬜
+#### Flow
 
-| ID | Catégorie | Description | Priorité |
-|----|-----------|-------------|----------|
-| NFR-01 | Performance | <!-- ex: Temps de chargement < 2s sur 3G --> | Must |
-| NFR-02 | Sécurité | <!-- ex: Auth Supabase, RLS sur toutes les tables --> | Must |
-| NFR-03 | Accessibilité | <!-- ex: WCAG 2.1 AA minimum --> | Should |
-| NFR-04 | RGPD | <!-- ex: Données hébergées en EU, droit à l'oubli --> | Must |
-| NFR-05 | Scalabilité | <!-- ex: Supporter 1000 utilisateurs concurrents --> | Could |
+```mermaid
+graph LR
+    %% Diagramme du parcours utilisateur
+```
 
-## 5. Epics ⬜
+#### Écrans
 
-<!-- Liste des epics avec priorité et dépendances inter-epics. -->
+| Écran | Fichier JSX | Description |
+|-------|-------------|-------------|
+| | docs/design/screens/[fichier].jsx | |
 
-| ID | Titre | Priorité | Dépendances | Statut |
-|----|-------|----------|-------------|--------|
-| E01 | | P0 | — | ⬜ |
-| E02 | | P0 | E01 | ⬜ |
-| E03 | | P1 | E01, E02 | ⬜ |
+#### Exigences fonctionnelles
 
-## 6. Hors scope ⬜
+| ID | Description | Priorité | Écran(s) | Statut |
+|----|------------|----------|----------|--------|
+| FR-[PARCOURS]-01 | | Must | [fichier].jsx | 🔶 |
 
-<!-- Lister explicitement ce qui ne sera PAS fait dans cette version.
-     Chaque item doit être clair et non ambigu. -->
--
+**Critères d'acceptation FR-[PARCOURS]-01 :**
+- [ ] Given ... When ... Then ...
+- [ ] Given ... When ... Then ...
 
-## 7. Hypothèses & Risques ⬜
+#### Exigences non-fonctionnelles
+
+| ID | Catégorie | Description | Cible | Écran(s) | Statut |
+|----|-----------|------------|-------|----------|--------|
+| NFR-[PARCOURS]-01 | Performance | | | [fichier].jsx | 🔶 |
+
+---
+
+<!-- Répéter la structure ### 4.X pour chaque parcours -->
+
+## 5. Modèle de données (résumé)
+
+<!-- Vue consolidée des entités. Détail complet dans docs/architecture.md -->
+
+```mermaid
+erDiagram
+    %% Diagramme ER résumé
+```
+
+| Entité | Parcours concernés | Description |
+|--------|-------------------|-------------|
+
+## 6. Epics
+
+<!-- Les epics regroupent les stories par parcours. -->
+
+| ID | Titre | Parcours | Priorité | Dépendances | Statut |
+|----|-------|----------|----------|-------------|--------|
+| E01 | | [Parcours] | P0 | — | 🔶 |
+
+## 7. Hors scope
+
+<!-- Liste explicite de ce qui n'est PAS dans ce produit. -->
+
+## 8. Hypothèses & Risques
 
 ### Hypothèses
-<!-- Ce qu'on tient pour vrai sans preuve formelle.
-     Ex: "Les utilisateurs ont un compte email". -->
--
+<!-- Ce qu'on tient pour vrai sans preuve. -->
 
 ### Risques
-| Risque | Probabilité | Impact | Mitigation |
-|--------|-------------|--------|------------|
-| | | | |
+| Risque | Impact | Mitigation |
+|--------|--------|------------|
 
-## 8. Métriques de succès ⬜
+## 9. Métriques de succès
 
-<!-- KPIs mesurables avec objectifs chiffrés et horizon temporel.
-     Ex: "Taux d'inscription > 20% des visiteurs — J+30". -->
-| Métrique | Objectif | Horizon |
-|----------|----------|---------|
-| | | |
+| Métrique | Parcours | Baseline | Cible | Échéance |
+|----------|----------|----------|-------|----------|

@@ -1,58 +1,68 @@
-# /tm-fix — Bug fix ou petite modification
+# Corriger un bug / petite modification
 
-> Workflow allégé pour corriger un bug ou faire une modification mineure.
-> Usage : `/tm-fix "Description du bug ou de la modification"`
-> Pour les modifications très mineures (typo, padding, couleur) : pas besoin de story.
+## Input
 
-## Étapes
+- **Description du problème** ou de la modification demandée
+- **Fichier(s) concerné(s)** (optionnel — sinon Claude cherche)
 
-### Si modification très mineure (typo, padding, couleur)
+---
 
-1. Modifier directement le code
-2. **Vérification triple** (OBLIGATOIRE) :
-   - `pnpm type-check` → doit passer
-   - `pnpm lint` → doit passer
-   - `pnpm test` → doit passer (non-régression)
-3. Commit et c'est fait
+## Workflow
 
-### Si bug fix ou modification plus conséquente
+### Phase 1 — Contexte
 
-#### Phase 1 — Story allégée
+1. Comprendre le problème (reproduire si possible)
+2. **Charger les conventions pertinentes :**
+   - Lire `.tiple/conventions/_index.md` (index des conventions)
+   - Lire les **conventions de base** (toujours) : `coding-standards.md`, `component-registry.md`
+   - Analyser les fichiers concernés → **déduire les tags** depuis l'index :
+     - Fichiers dans `lib/actions/` ou `lib/schemas/` → tags `api`, `forms`
+     - Fichiers dans `lib/supabase/` ou `supabase/migrations/` → tags `database`, `supabase`
+     - Fichiers dans `app/` (layouts, pages, routes) → tag `nextjs`
+     - Fichiers dans `components/` avec state/effects → tag `state`
+     - Fichiers d'auth (`middleware.ts`, `(auth)/`) → tag `auth`
+     - Fichiers de test → tag `testing`
+   - Charger les conventions correspondantes
+3. Lire le contexte :
+   - `docs/architecture.md` (sections pertinentes)
+   - Les fichiers de code concernés
 
-1. Créer une story de fix dans `docs/stories/` :
-   - Meta : estimation S, priorité Must
-   - Contexte : décrire le bug / la modification
-   - AC : Given [situation actuelle], When [action], Then [comportement corrigé]
-   - Implémentation : fichiers à modifier
-   - Tests : le test qui couvre le cas corrigé
+### Phase 2 — Implémentation
 
-#### Phase 2 — Implémentation
+4. Corriger le bug / implémenter la modification
+5. Écrire ou mettre à jour les tests
 
-2. Lire la story
-3. Identifier le code concerné
-4. Écrire le test qui reproduit le bug (red)
-5. Corriger le code (green)
-6. Vérifier que le test passe
+### Phase 3 — Vérification triple (OBLIGATOIRE)
 
-#### Phase 3 — Vérification triple (OBLIGATOIRE)
+6. **`pnpm type-check`** — Doit passer sans erreur.
+7. **`pnpm lint`** — Doit passer sans erreur.
+8. **`pnpm test`** — Tous les tests doivent passer (non-régression).
 
-7. **`pnpm type-check`** → doit passer
-8. **`pnpm lint`** → doit passer
-9. **`pnpm test`** → tous les tests doivent passer (non-régression)
+> Maximum 3 cycles de correction. Au-delà, signaler le blocage.
 
-> Si erreurs → corriger et relancer. Maximum 3 cycles.
+### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
 
-#### Phase 4 — Code Review (OBLIGATOIRE)
+9. Lancer un **agent reviewer autonome** (voir `.claude/commands/tm-review.md`) — focus sur :
+   - Le fix résout-il vraiment le bug ?
+   - Pas d'effets de bord ? Pas de régression ?
+   - Sécurité : le fix n'introduit pas de faille ?
+   - Registry à jour si composant modifié ?
+10. Si ❌ CHANGES REQUESTED → corriger puis relancer phase 3, puis nouveau review agent
 
-10. Lancer un **agent reviewer autonome** (voir `.claude/commands/tm-review.md`) — focus sur :
-    - Le fix résout-il vraiment le bug ?
-    - Pas d'effets de bord ? Pas de régression ?
-    - Sécurité : le fix n'introduit pas de faille ?
-    - Registry à jour si composant modifié ?
-11. Si ❌ CHANGES REQUESTED → corriger puis relancer phase 3, puis nouveau review agent
+### Phase 5 — Finalisation
 
-#### Phase 5 — Finalisation
+11. Entrée dans `docs/changelog.md`
+12. Si nouveau composant réutilisable → ajouter au component-registry
 
-12. Mettre à jour la story (post-implémentation)
-13. Mettre à jour `.tiple/sprint/status.md` → story ✅ Done
-14. Résumer ce qui a été fait
+## Ce n'est PAS un /tm-fix si…
+
+- La modification touche plusieurs fichiers et nécessite une story → utiliser `/tm-dev`
+- La modification change l'architecture → créer un ADR + story
+- C'est une nouvelle feature → utiliser `/tm-dev` avec story
+
+## Rappels
+
+- Vérifier le component-registry AVANT de créer un composant
+- Server Components par défaut
+- Zod schema partagé = une seule source de vérité
+- Ne pas casser les tests existants

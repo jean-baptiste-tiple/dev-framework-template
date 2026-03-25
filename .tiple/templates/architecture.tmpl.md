@@ -1,13 +1,18 @@
 # Architecture — [Nom du projet]
 
+<!-- INSTRUCTIONS : Ce document est généré par /tm-plan (phase 3) depuis le PRD.
+     Les sections "Invariants" sont pré-remplies avec la stack Tiple Method.
+     Les sections "À remplir" sont spécifiques au projet. -->
+
+**Dernière MAJ :** [date]
+
 ## 1. Vue d'ensemble
 
-<!-- Diagramme Mermaid haut niveau montrant les composants principaux
-     et leurs interactions. Adapter au projet. -->
+<!-- Diagramme Mermaid haut niveau de l'architecture -->
 
 ```mermaid
 graph TB
-    Browser[Browser] --> Next[Next.js App]
+    Client[Browser] --> Next[Next.js App]
     Next --> SA[Server Actions]
     Next --> SC[Server Components]
     SA --> Supa[Supabase]
@@ -19,139 +24,119 @@ graph TB
 
 ## 2. Stack technique
 
+<!-- INVARIANT — ne pas modifier sans ADR -->
+
 | Techno | Version | Rôle | Justification |
 |--------|---------|------|---------------|
 | Next.js | 15 (App Router) | Framework fullstack | SSR/SSG, Server Components, Server Actions |
-| TypeScript | 5.x (strict) | Typage | Sécurité du code, autocomplétion |
-| Supabase | Cloud | Backend-as-a-Service | Auth, DB PostgreSQL, RLS, Realtime, Storage |
+| TypeScript | 5.x (strict) | Typage | Sécurité du code, autocomplétion, refactoring |
+| Supabase | Cloud | BaaS | Auth, PostgreSQL, RLS, Realtime, Storage |
 | Tailwind CSS | 4.x | Styling | Utility-first, purge auto |
 | Shadcn/ui | latest | Composants UI | Copy-paste, accessibles, Radix-based |
 | Zod | 3.x | Validation | Schemas partagés front/back |
 | React Hook Form | 7.x | Formulaires | Performance, intégration Zod |
 | Vitest | latest | Tests unit/integ | Rapide, compatible ESM |
-| Playwright | latest | Tests E2E | Cross-browser, fiable |
+| Playwright | latest | Tests E2E | Cross-browser, auto-wait |
 | pnpm | 9.x | Package manager | Rapide, strict |
 
-<!-- PERSONNALISER : ajouter les libs spécifiques au projet -->
-
 ## 3. Structure du projet
+
+<!-- INVARIANT — structure standard Tiple Method -->
 
 ```
 src/
 ├── app/                          # Routes Next.js (App Router)
-│   ├── (auth)/                   # Groupe : pages publiques (login, signup)
-│   ├── (dashboard)/              # Groupe : pages authentifiées
-│   ├── api/                      # Route handlers (webhooks uniquement)
-│   ├── layout.tsx                # Root layout
-│   └── not-found.tsx
+│   ├── (auth)/                   # Pages publiques (login, signup)
+│   ├── (dashboard)/              # Pages authentifiées
+│   └── api/                      # Route handlers (webhooks uniquement)
 ├── components/
 │   ├── ui/                       # Composants Shadcn/ui
 │   ├── shared/                   # Composants métier réutilisables
 │   └── [feature]/                # Composants spécifiques à une feature
 ├── hooks/                        # Custom hooks
 ├── lib/
-│   ├── actions/                  # Server Actions (par domaine)
+│   ├── actions/                  # Server Actions (par parcours)
 │   ├── schemas/                  # Zod schemas partagés
 │   ├── supabase/                 # Clients Supabase (server.ts, client.ts)
 │   └── utils/                    # Fonctions utilitaires pures
 ├── types/                        # Types TypeScript partagés
-└── middleware.ts                  # Auth middleware Supabase
+└── middleware.ts                  # Auth middleware
 ```
 
 ## 4. Modèle de données
 
-<!-- Diagramme ER Mermaid. À remplir quand les entités sont définies. -->
+<!-- À REMPLIR — spécifique au projet -->
 
 ```mermaid
 erDiagram
-    %% Exemple — adapter au projet :
-    %% USERS ||--o{ PROJECTS : owns
-    %% PROJECTS {
-    %%     uuid id PK
-    %%     uuid user_id FK
-    %%     text name
-    %%     timestamp created_at
-    %% }
+    %% Ajouter les tables et relations du projet
 ```
 
-<!-- PERSONNALISER : définir les tables, relations, et contraintes.
-     Chaque table doit avoir des RLS policies documentées. -->
+### Tables
+
+<!-- Pour chaque table :
+| Colonne | Type | Nullable | Default | Description |
+|---------|------|----------|---------|-------------|
+-->
 
 ### RLS Policies
 
-<!-- Documenter les policies RLS pour chaque table :
-| Table | Policy | Rôle | Règle |
-|-------|--------|------|-------|
-| projects | select | authenticated | user_id = auth.uid() |
-| projects | insert | authenticated | user_id = auth.uid() |
+<!-- Pour chaque table, lister les policies RLS :
+| Table | Policy | Opération | Condition |
+|-------|--------|-----------|-----------|
 -->
 
-## 5. API Design
+## 5. Server Actions
 
-### Server Actions (mutations)
+<!-- À REMPLIR — lister les actions par parcours -->
 
-Chaque Server Action suit le pattern standard :
-1. Vérifier l'auth (`supabase.auth.getUser()`)
-2. Valider l'input (schema Zod)
-3. Exécuter la mutation (Supabase)
-4. Revalider le cache (`revalidatePath`)
-5. Retourner `{ data }` ou `{ error }`
-
-Voir `.tiple/conventions/api-patterns.md` pour les détails et exemples.
-
-### Format de réponse standard
-
-```typescript
-type ActionResult<T> =
-  | { data: T; error?: never }
-  | { data?: never; error: string }
-```
+### [Parcours]
+| Action | Input (Zod) | Output | Description |
+|--------|-------------|--------|-------------|
 
 ## 6. Auth & Sécurité
 
-### Authentification
-- **Provider** : Supabase Auth (email/password par défaut)
-- **Session** : JWT stocké dans cookies httpOnly (via `@supabase/ssr`)
-- **Refresh** : Automatique via le middleware Next.js
+<!-- INVARIANT — pattern standard Tiple Method -->
 
-### Middleware (`src/middleware.ts`)
-- Rafraîchit le token Supabase à chaque requête
-- Redirige vers `/login` si non authentifié sur les routes protégées
-- Exclut : `/login`, `/signup`, `/auth/callback`, assets statiques
+### Flux d'authentification
+- Supabase Auth (email/password par défaut, extensible OAuth)
+- Middleware Next.js : refresh token + redirect si non authentifié
+- Server Actions : toujours revérifier auth (le middleware ne suffit pas)
 
-### RLS (Row Level Security)
-- Activé sur **toute** table sans exception
-- Chaque table a au minimum une policy `SELECT` et `INSERT` pour `authenticated`
-- Le `service_role` client est interdit sauf cas documenté (ADR obligatoire)
+### RLS
+- Activé sur TOUTE table, sans exception
+- Le service_role client est interdit sauf cas documenté (ADR)
+- Chaque nouvelle table = nouvelles policies RLS
+
+### Sécurité applicative
+- Validation Zod côté serveur (jamais faire confiance au client)
+- Pas de secrets dans le code client (NEXT_PUBLIC_ = public)
+- Rate limiting sur les actions sensibles
 
 ## 7. Infrastructure & Déploiement
 
-<!-- PERSONNALISER : adapter au projet -->
-- **Hébergement** : <!-- ex: Vercel, Coolify, Docker -->
-- **Base de données** : Supabase Cloud (PostgreSQL)
-- **Domaine** : <!-- ex: app.monprojet.com -->
-- **Environnements** : dev (local) → staging → production
+<!-- À REMPLIR — spécifique au projet -->
+- **Hébergement :** <!-- Vercel, Coolify, Docker... -->
+- **Supabase :** <!-- Cloud, self-hosted -->
+- **CI/CD :** <!-- GitHub Actions, etc. -->
+- **Environnements :** <!-- dev, staging, prod -->
 
-## 8. Invariants
+## Invariants
 
-Ces choix ne changent PAS sans ADR dans `docs/decisions/` :
-
+Ces choix ne changent JAMAIS sans ADR documenté :
 - Next.js 15 App Router (pas Pages Router)
 - TypeScript strict mode
 - Supabase pour auth + DB + RLS
-- Server Actions pour les mutations (pas d'API routes sauf webhooks)
-- Zod pour toute validation (schemas partagés front/back)
-- Migrations SQL versionnées dans `supabase/migrations/`
-- Shadcn/ui comme base composants
+- Server Actions pour les mutations
+- Zod pour toute validation
+- Migrations SQL versionnées
 
-## 9. Flexible
+## Flexible
 
 Ces choix peuvent être modifiés par projet sans ADR :
-
 - Composants Shadcn installés
-- Provider d'emails transactionnels
+- Provider d'emails
 - Provider de paiement
-- State management client (aucun par défaut)
+- State management client
 - Stratégie de cache
-- Déploiement (Vercel, Coolify, Docker...)
-- Supabase Edge Functions
+- Déploiement

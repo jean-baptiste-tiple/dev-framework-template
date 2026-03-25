@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        setAll(cookiesToSet: { name: string; value: string; options: Record<string, unknown> }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -29,12 +29,10 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Rafraîchir le token — IMPORTANT : ne pas supprimer
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Rediriger vers /login si non authentifié sur les routes protégées
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&

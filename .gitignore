@@ -3,9 +3,9 @@ node_modules/
 
 # Next.js
 .next/
+out/
 dist/
 build/
-out/
 
 # Environment
 .env
@@ -15,10 +15,9 @@ out/
 # Supabase local runtime
 .supabase/
 
-# Tests
+# Testing
 test-results/
 playwright-report/
-playwright/.cache/
 coverage/
 
 # OS
@@ -28,19 +27,18 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-pnpm-debug.log*
 
 # IDE
 .idea/
-.vscode/
 *.swp
 *.swo
 
-# Turbopack
-.turbo/
-
-# TypeScript build info
+# TypeScript
 tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Turbo
+.turbo/
 
 # Claude Code
 .claude/*

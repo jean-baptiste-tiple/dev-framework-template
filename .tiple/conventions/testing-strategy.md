@@ -2,125 +2,54 @@
 
 ## Setup
 
-- `vitest.config.ts` avec `@vitejs/plugin-react`, alias `@/`
+- `vitest.config.ts` avec `@vitejs/plugin-react`, resolve alias `@/`
 - `@testing-library/react` + `@testing-library/jest-dom`
 - Playwright installé avec `npx playwright install`
 
 ## Unit Tests (Vitest)
 
-### Quoi tester
-- Server Actions (mock Supabase) — inputs valides, invalides, erreurs
-- Zod schemas — valeurs valides, edge cases, messages d'erreur custom
-- Hooks custom — comportement, états, effets
-- Utils — fonctions pures, cas limites
+- **Quoi :** Server Actions (mock Supabase), Zod schemas (edge cases), hooks custom, utils
+- **Où :** `tests/unit/` ou colocalisés (fichier.test.ts à côté du fichier)
+- **Mock Supabase :** `vi.mock("@/lib/supabase/server")` → retourner des réponses fake
+- **Couverture cible :** >80% sur `lib/actions/` et `lib/schemas/`
 
-### Où
-- `tests/unit/` ou colocalisés (`fichier.test.ts` à côté du fichier)
-
-### Mocker Supabase
+### Exemple mock Supabase
 
 ```typescript
-// tests/unit/actions/projects.test.ts
-import { vi, describe, it, expect } from "vitest"
-import { createProjectAction } from "@/lib/actions/projects"
+import { vi } from "vitest"
 
-// Mock le module Supabase server
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => ({
     auth: {
       getUser: vi.fn(() => ({
-        data: { user: { id: "user-123" } },
+        data: { user: { id: "test-user-id", email: "test@test.com" } },
       })),
     },
     from: vi.fn(() => ({
-      insert: vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(() => ({
-            data: { id: "project-1", name: "Test" },
-            error: null,
-          })),
-        })),
-      })),
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(() => ({ data: { id: 1 }, error: null })),
     })),
   })),
 }))
-
-// Mock revalidatePath
-vi.mock("next/cache", () => ({
-  revalidatePath: vi.fn(),
-}))
-
-describe("createProjectAction", () => {
-  it("crée un projet avec des données valides", async () => {
-    const formData = new FormData()
-    formData.set("name", "Mon projet")
-    const result = await createProjectAction(formData)
-    expect(result.data).toBeDefined()
-  })
-})
 ```
-
-### Couverture cible
-- \>80% sur `lib/actions/` et `lib/schemas/`
 
 ## Integration Tests (Vitest + Testing Library)
 
-### Quoi tester
-- Composants form complets : render → fill → submit → vérifier résultat
-- Composants avec état : interactions user, transitions d'état
-
-### Mocking
-- Supabase client mocké
-- Server Actions mockées pour les tests composants
-
-### Où
-- `tests/integration/`
-
-```typescript
-// tests/integration/login-form.test.tsx
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { LoginForm } from "@/components/auth/login-form"
-
-describe("LoginForm", () => {
-  it("affiche une erreur si email invalide", async () => {
-    render(<LoginForm />)
-    const user = userEvent.setup()
-
-    await user.type(screen.getByLabelText(/email/i), "pas-un-email")
-    await user.click(screen.getByRole("button", { name: /connexion/i }))
-
-    expect(screen.getByText(/email invalide/i)).toBeInTheDocument()
-  })
-})
-```
+- **Quoi :** Composants form complets (render → fill → submit → vérifier résultat)
+- **Mock :** Supabase client mocké, Server Actions mockées pour les tests composants
+- **Où :** `tests/integration/`
 
 ## E2E Tests (Playwright)
 
-### Quoi tester
-- Parcours critiques uniquement : login, CRUD principal, parcours de valeur core
-- Pas de tests pour chaque edge case — c'est le rôle des unit/integ
-
-### Environnement
-- Supabase local (`npx supabase start`) ou projet staging dédié
-- Seed : script dans `supabase/seed.sql` pour données reproductibles
-
-### Où
-- `tests/e2e/`
-- Convention : un fichier par feature (`auth.spec.ts`, `projects.spec.ts`)
-
-```typescript
-// tests/e2e/auth.spec.ts
-import { test, expect } from "@playwright/test"
-
-test("login avec credentials valides", async ({ page }) => {
-  await page.goto("/login")
-  await page.fill('[name="email"]', "test@example.com")
-  await page.fill('[name="password"]', "password123")
-  await page.click('button[type="submit"]')
-  await expect(page).toHaveURL("/dashboard")
-})
-```
+- **Quoi :** Parcours critiques uniquement (login, CRUD principal, parcours de valeur core)
+- **Env :** Supabase local (`npx supabase start`) ou projet staging dédié
+- **Seed :** Script de seed pour données de test reproductibles
+- **Où :** `tests/e2e/`
+- **Convention :** un fichier par feature (`auth.spec.ts`, `projects.spec.ts`)
 
 ## Non-régression
 
@@ -134,4 +63,126 @@ test("login avec credentials valides", async ({ page }) => {
 - Le CSS / le rendu pixel-perfect (les tests e2e vérifient les flows, pas le style)
 - Les fonctions Supabase internes (RLS, triggers) → testées via l'app, pas en isolation
 
-<!-- PERSONNALISER : ajouter les stratégies spécifiques au projet -->
+## Naming Conventions
+
+```typescript
+// describe = unité testée (composant, action, schema)
+// it/test = comportement attendu en anglais
+describe("createProjectAction", () => {
+  it("should create a project with valid data", async () => {})
+  it("should return error when user is not authenticated", async () => {})
+  it("should return error when name is empty", async () => {})
+})
+
+describe("CreateProjectForm", () => {
+  it("should render all form fields", () => {})
+  it("should show validation errors on submit with empty fields", async () => {})
+  it("should disable submit button while pending", async () => {})
+})
+```
+
+**Règle :** Un `it` = un comportement. Pas de `it("should work")`.
+
+## File Organization
+
+```
+tests/
+├── unit/
+│   ├── actions/           # Tests des Server Actions
+│   │   └── project.test.ts
+│   ├── schemas/           # Tests des schemas Zod
+│   │   └── project.test.ts
+│   ├── hooks/             # Tests des hooks custom
+│   │   └── use-debounce.test.ts
+│   └── utils/             # Tests des fonctions utilitaires
+│       └── format-date.test.ts
+├── integration/
+│   ├── components/        # Tests des composants avec interactions
+│   │   └── create-project-form.test.tsx
+│   └── pages/             # Tests des pages complètes
+│       └── projects-page.test.tsx
+├── e2e/
+│   ├── auth.spec.ts       # Un fichier par parcours
+│   ├── projects.spec.ts
+│   └── fixtures/          # Page Objects et helpers
+│       ├── auth.fixture.ts
+│       └── base.fixture.ts
+├── factories/             # Générateurs de données de test
+│   ├── user.factory.ts
+│   └── project.factory.ts
+└── setup.ts               # Setup global Vitest
+```
+
+## Mock Data Factories
+
+```typescript
+// tests/factories/user.factory.ts
+import type { User } from "@/types"
+
+let counter = 0
+
+export function createMockUser(overrides?: Partial<User>): User {
+  counter++
+  return {
+    id: `user-${counter}`,
+    email: `user${counter}@test.com`,
+    full_name: `Test User ${counter}`,
+    role: "user",
+    created_at: new Date().toISOString(),
+    ...overrides,
+  }
+}
+
+// Usage dans les tests
+const admin = createMockUser({ role: "admin" })
+const user = createMockUser({ email: "custom@test.com" })
+```
+
+## Playwright Fixtures
+
+```typescript
+// tests/e2e/fixtures/auth.fixture.ts
+import { test as base, type Page } from "@playwright/test"
+
+type AuthFixtures = {
+  authenticatedPage: Page
+}
+
+export const test = base.extend<AuthFixtures>({
+  authenticatedPage: async ({ page }, use) => {
+    await page.goto("/login")
+    await page.fill('[name="email"]', "test@test.com")
+    await page.fill('[name="password"]', "password123")
+    await page.click('button[type="submit"]')
+    await page.waitForURL("/dashboard")
+    await use(page)
+  },
+})
+
+// Usage
+test("should display projects list", async ({ authenticatedPage }) => {
+  await authenticatedPage.goto("/projects")
+  await expect(authenticatedPage.getByRole("heading")).toContainText("Projets")
+})
+```
+
+## Coverage Targets
+
+| Dossier | Cible | Justification |
+|---------|-------|---------------|
+| `lib/actions/` | > 80% | Logique métier critique |
+| `lib/schemas/` | > 90% | Validation = filet de sécurité |
+| `hooks/` | > 70% | Logique réutilisable |
+| `components/` | > 60% | Comportement, pas rendu |
+| `lib/utils/` | > 90% | Fonctions pures = facile à tester |
+
+## Anti-patterns
+
+| Anti-pattern | Pourquoi c'est mauvais | Faire plutôt |
+|-------------|----------------------|-------------|
+| Tester l'implémentation | Casse à chaque refacto | Tester le comportement |
+| `expect(component).toMatchSnapshot()` partout | Faux positifs, snapshots géants | Snapshots ciblés (petits composants) |
+| Tester les détails CSS | Fragile, aucune valeur | Tester les interactions |
+| Mock de tout | Test ne teste rien | Mock uniquement les frontières (DB, API) |
+| Test qui dépend d'un autre | Non-déterministe | Chaque test est indépendant |
+| `await sleep(1000)` | Lent et fragile | `waitFor`, `findBy` |

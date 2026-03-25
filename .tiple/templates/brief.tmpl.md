@@ -1,50 +1,45 @@
 # Brief Produit — [Nom du projet]
 
+<!-- INSTRUCTIONS : Ce brief est généré par /tm-plan (phase 1).
+     Chaque section doit être remplie avec des informations concrètes, pas des généralités.
+     Quantifier la douleur ("perd 2h/semaine" > "c'est lent"). -->
+
 ## Problème
+
 <!-- Quel problème résout-on ? Pour qui ? Pourquoi maintenant ?
-     Être spécifique : décrire la douleur actuelle, pas la solution. -->
+     Être spécifique : pas "améliorer la productivité" mais "les commerciaux passent 3h/jour à copier des données entre 2 outils". -->
 
 ## Solution
-<!-- 2-3 phrases max. Comment le produit résout le problème ?
-     Rester haut niveau — pas de détails techniques. -->
+
+<!-- 2-3 phrases max. Ce qu'on construit et comment ça résout le problème. -->
 
 ## Utilisateurs cibles
 
-### Persona 1 — [Nom]
-- **Rôle** : <!-- ex: Responsable marketing dans une PME -->
-- **Besoin principal** : <!-- Ce qu'il veut accomplir -->
-- **Frustration actuelle** : <!-- Ce qui l'empêche aujourd'hui -->
-
-### Persona 2 — [Nom]
-<!-- Ajouter autant de personas que nécessaire. 2-3 max pour un MVP. -->
-- **Rôle** :
-- **Besoin principal** :
-- **Frustration actuelle** :
+| Persona | Rôle | Besoin principal | Frustration actuelle |
+|---------|------|-----------------|---------------------|
+<!-- Ex: Marie | Commerciale terrain | Accéder aux fiches client en mobilité | Doit ouvrir son laptop pour chaque RDV -->
 
 ## Scope MVP
 
-### IN — Ce que le MVP inclut
-<!-- Liste à puces des fonctionnalités core.
-     Être précis : "Inscription par email" plutôt que "Gestion des comptes". -->
--
+### IN — Ce qu'on livre
+<!-- Liste numérotée des fonctionnalités incluses dans le MVP -->
 
-### OUT — Ce que le MVP n'inclut PAS
-<!-- Expliciter ce qu'on ne fait pas pour éviter le scope creep. -->
--
+### OUT — Ce qu'on ne fait PAS
+<!-- Liste explicite de ce qui est exclu. Important pour éviter le scope creep. -->
 
 ## Contraintes
-<!-- Contraintes techniques, business, légales, temporelles.
-     Ex: "RGPD — données hébergées en EU", "Budget : 0€ d'infra au départ". -->
--
+
+<!-- Techniques, business, légales, RGPD, budget, délais.
+     Ex: "Doit être accessible WCAG 2.1 AA", "RGPD : données hébergées en EU" -->
 
 ## Métriques de succès
-<!-- KPIs concrets et mesurables.
-     Ex: "100 utilisateurs inscrits en 30 jours", "Temps moyen de complétion < 2 min". -->
--
+
+| KPI | Cible | Comment mesurer |
+|-----|-------|-----------------|
+<!-- Ex: Temps de saisie d'un devis | < 5 min (vs 20 min aujourd'hui) | Tracking in-app -->
 
 ## Risques connus
-<!-- Risques identifiés avec niveau d'impact (Faible/Moyen/Élevé).
-     Ex: "Adoption lente si onboarding trop complexe — Impact Élevé". -->
-| Risque | Impact | Mitigation |
-|--------|--------|------------|
-| | | |
+
+| Risque | Impact | Probabilité | Mitigation |
+|--------|--------|-------------|------------|
+<!-- Ex: API partenaire instable | Élevé | Moyenne | Prévoir un mode dégradé avec cache -->

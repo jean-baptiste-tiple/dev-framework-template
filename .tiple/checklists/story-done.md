@@ -1,20 +1,21 @@
 # Story Done — Definition of Done
 
-> Vérifier APRÈS l'implémentation pour considérer la story terminée.
+<!-- Vérifier APRÈS l'implémentation d'une story.
+     La story ne passe en ✅ Done que si TOUS les items sont cochés. -->
 
 ## Code
 
-- [ ] Tous les acceptance criteria sont implémentés
-- [ ] Pas de `any` non justifié dans le code TypeScript
-- [ ] Les imports suivent l'ordre défini dans coding-standards.md
-- [ ] Pas de `console.log` oublié (sauf logging intentionnel)
+- [ ] Le code est écrit et commité
+- [ ] Le code respecte les conventions de `.tiple/conventions/coding-standards.md`
+- [ ] Pas de code dupliqué (DRY vérifié via component-registry)
+- [ ] Pas de TODO/FIXME/HACK laissé sans explication
 
 ## Tests
 
 - [ ] Les tests unitaires listés dans la story sont écrits et passent
 - [ ] Les tests d'intégration listés dans la story sont écrits et passent
 - [ ] Les tests E2E listés dans la story sont écrits et passent (si applicable)
-- [ ] Pas de test skip/pending sans justification
+- [ ] TOUS les tests existants passent (non-régression)
 
 ## Vérification triple (OBLIGATOIRE)
 
@@ -25,14 +26,13 @@
 ## Documentation
 
 - [ ] La section "Post-implémentation" de la story est remplie
-- [ ] Les écarts avec le design sont documentés
-- [ ] Les écarts avec l'architecture sont documentés (+ ADR si invariant touché)
-- [ ] Les nouveaux composants/hooks/actions sont ajoutés au component-registry
-- [ ] `.tiple/sprint/status.md` est mis à jour (story → ✅ Done)
+- [ ] Le component-registry est à jour (nouveaux composants/hooks/actions ajoutés)
+- [ ] Le changelog est à jour
+- [ ] Un ADR est créé si un invariant d'architecture a été modifié
 
 ## Code Review (OBLIGATOIRE)
 
-- [ ] La checklist `code-review.md` a été passée point par point (`/tm-review`)
+- [ ] La checklist `code-review.md` a été passée point par point par un **agent reviewer isolé** (`/tm-review`)
 - [ ] DRY & Réutilisation : vérifié
 - [ ] Qualité du code : vérifié
 - [ ] Sécurité : vérifié
@@ -42,3 +42,8 @@
 - [ ] Documentation : vérifié
 - [ ] Les problèmes HAUTE/MOYENNE identifiés sont corrigés
 - [ ] La vérification triple a été relancée après les corrections
+- [ ] Les 3 états UI sont gérés (loading, error, empty) pour les composants data-driven
+- [ ] L'implémentation respecte l'écran JSX référencé
+- [ ] Les conventions tagées dans la story ont été respectées
+- [ ] Pas de secrets, tokens ou PII dans le code ou les logs
+- [ ] Le sprint status est à jour

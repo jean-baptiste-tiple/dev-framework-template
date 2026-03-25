@@ -1,59 +1,82 @@
-# Code Review — Checklist post-implémentation
+# Code Review Checklist
 
-> Passer CHAQUE point après l'implémentation d'une story.
-> Verdict par item : ✅ OK ou ❌ KO (avec explication et fix).
+<!-- Utilisé par /tm-review. Pour chaque item : ✅ OK ou ❌ + explication. -->
 
 ## DRY & Réutilisation
 
-- [ ] Pas de composant/hook/util dupliqué — vérifié dans le component-registry
-- [ ] Les schemas Zod sont dans `lib/schemas/` et partagés entre form et action
-- [ ] Pas de logique copiée-collée entre fichiers (factoriser si ≥ 2 occurrences)
-- [ ] Les types Supabase (`database.ts`) sont utilisés, pas redéfinis manuellement
+- [ ] Pas de composant/hook/util dupliqué (vérifié dans component-registry)
+- [ ] Les schemas Zod sont partagés (pas de double validation manuelle)
+- [ ] Les types sont réutilisés depuis `types/` (pas de types inline redondants)
+- [ ] Factorisation à partir de 2 occurrences (pas d'abstraction prématurée)
 
 ## Qualité du code
 
-- [ ] Nommage cohérent (kebab-case fichiers, PascalCase composants, camelCase fonctions)
-- [ ] Pas de `any` non justifié
-- [ ] Les fonctions font une seule chose
-- [ ] Les composants sont petits et focalisés (< 150 lignes de JSX)
-- [ ] Error handling : pas de `catch` vide, erreurs Supabase vérifiées
-- [ ] Loading, error et empty states gérés dans les composants UI
+- [ ] Naming cohérent (kebab-case fichiers, PascalCase composants, camelCase fonctions)
+- [ ] Pas de `any` TypeScript (sauf cas documenté)
+- [ ] Pas de `console.log` oublié
+- [ ] Pas de TODO/FIXME/HACK sans explication
+- [ ] Imports dans l'ordre : next/react → libs → @/components → @/lib → @/types → relatifs
+- [ ] Pas de magic numbers/strings (constantes nommées)
 
 ## Sécurité
 
-- [ ] Les Server Actions vérifient l'auth en premier (`supabase.auth.getUser()`)
-- [ ] Les inputs sont validés avec Zod côté serveur (pas uniquement côté client)
-- [ ] Pas de mutation Supabase depuis un Client Component (`.insert()/.update()/.delete()`)
-- [ ] Les nouvelles tables ont des RLS policies en place
-- [ ] Pas de `service_role` client utilisé sans ADR documenté
-- [ ] Pas de données sensibles exposées côté client (clés, tokens, secrets)
+- [ ] Pas d'injection SQL (Supabase paramétrise automatiquement, mais vérifier les `.rpc()`)
+- [ ] Pas de XSS (pas de `dangerouslySetInnerHTML` sans sanitization)
+- [ ] Pas de secrets exposés côté client
+- [ ] Les inputs sont validés avec Zod côté serveur
 - [ ] Les messages d'erreur Supabase ne sont pas exposés bruts au client
+
+## Next.js + Supabase (spécifique)
+
+- [ ] **Server Component vs Client Component justifié** — "use client" uniquement si nécessaire
+- [ ] **"use client" poussé le plus bas possible** dans l'arbre de composants
+- [ ] **Pas de mutation Supabase côté client** — .insert()/.update()/.delete() uniquement dans Server Actions
+- [ ] **RLS policies en place** pour chaque nouvelle table
+- [ ] **Schemas Zod partagés** — le même schema valide le form ET l'action
+- [ ] **Auth vérifiée dans chaque Server Action** (pas seulement le middleware)
+- [ ] **revalidatePath/revalidateTag après les mutations**
+- [ ] **Middleware auth pas contourné** (pas de route non protégée par erreur)
 
 ## Tests
 
-- [ ] Tests unitaires couvrent les Server Actions (inputs valides et invalides)
-- [ ] Tests unitaires couvrent les schemas Zod (edge cases)
-- [ ] Tests d'intégration couvrent les composants form (render → fill → submit)
-- [ ] Tous les tests existants passent (non-régression)
+- [ ] Les tests couvrent les cas nominaux ET les cas d'erreur
+- [ ] Les tests vérifient le comportement, pas l'implémentation
+- [ ] Supabase est mocké dans les tests unitaires
+- [ ] Les tests existants passent toujours (non-régression)
+- [ ] Le naming des tests suit la convention (`describe/it` — voir `testing-strategy.md`)
 
 ## Design & UX
 
-- [ ] L'implémentation correspond à la maquette design
-- [ ] Les tokens du design system (`docs/design/system.md`) sont utilisés
-- [ ] L'interface est responsive (si applicable)
-- [ ] Les écarts avec le design sont documentés dans la story
+- [ ] L'implémentation respecte l'écran JSX référencé (si applicable)
+- [ ] Les tokens du design system sont utilisés (pas de couleurs/spacing en dur)
+- [ ] Les 3 états sont gérés : loading, error, empty
+- [ ] L'accessibilité est respectée (labels, keyboard nav, contrast — voir `accessibility-patterns.md`)
+- [ ] Les toasts/feedbacks suivent les patterns (voir `feedback-patterns.md`)
+
+## Performance
+
+- [ ] Pas de N+1 queries (utiliser les jointures Supabase)
+- [ ] Les images utilisent `next/image` avec `width/height` ou `fill+sizes`
+- [ ] Les composants lourds sont lazy-loaded si non-critiques
+- [ ] Les données parallèles sont fetchées avec `Promise.all`
 
 ## Architecture
 
-- [ ] Server Components par défaut — `"use client"` justifié et poussé le plus bas possible
-- [ ] Server Actions pour les mutations (pas d'API routes sauf webhooks)
-- [ ] Le middleware auth n'est pas contourné
-- [ ] `revalidatePath` ou `revalidateTag` après chaque mutation
-- [ ] La structure de fichiers respecte `coding-standards.md` (actions dans `lib/actions/`, etc.)
-- [ ] Pas d'invariant d'architecture violé sans ADR
+- [ ] La structure des fichiers suit les conventions (coding-standards.md)
+- [ ] Pas de violation des invariants d'architecture
+- [ ] Les Server Actions suivent le pattern standard (auth → validate → execute → revalidate → return)
+- [ ] Le state est au bon endroit (server > URL > state > context — voir `state-management.md`)
+- [ ] Les migrations DB ont un rollback documenté (si applicable)
+
+## Sécurité
+
+- [ ] Pas de secrets exposés (API keys, tokens, PII dans les logs)
+- [ ] Les erreurs Supabase ne sont pas exposées brutes au client
+- [ ] Les inputs sont validés côté serveur avec Zod
+- [ ] Rate limiting en place sur les actions sensibles (login, signup, reset)
 
 ## Documentation
 
-- [ ] Le component-registry est à jour avec les nouveaux composants/hooks/actions
-- [ ] La story a sa section post-implémentation remplie
-- [ ] Les ADRs nécessaires sont créés dans `docs/decisions/`
+- [ ] Le changelog est à jour
+- [ ] Le component-registry est à jour
+- [ ] La story post-implémentation est remplie (si mode story)

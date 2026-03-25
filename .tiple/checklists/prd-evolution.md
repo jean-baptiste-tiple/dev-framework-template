@@ -1,47 +1,53 @@
-# PRD Evolution — Checklist quand les specs changent
+# PRD Evolution Checklist
 
-> Passer point par point quand le PRD est modifié.
+<!-- Utilisé par /tm-evolve quand le scope change.
+     Identifier tous les impacts avant de modifier. -->
 
 ## Identification du changement
 
-- [ ] La section modifiée du PRD est identifiée et passée en statut 🔶 Draft
-- [ ] Le type de changement est clair : ajout, modification, suppression
-- [ ] La raison du changement est documentée
+- [ ] Le parcours impacté du PRD est identifié
+- [ ] Le changement est décrit clairement (quoi change, pourquoi)
+- [ ] La priorité MoSCoW est mise à jour
+- [ ] Le statut de la section est passé en 🔶 Draft
 
 ## Impact cascade
 
+### Parcours & Design
+- [ ] Le flow du parcours doit-il être modifié ?
+- [ ] De nouveaux écrans sont-ils nécessaires ? (→ créer JSX dans `docs/design/screens/`)
+- [ ] Des écrans JSX existants doivent-ils être mis à jour ?
+- [ ] `docs/design/screens/_index.md` est-il à jour ?
+- [ ] De nouveaux composants partagés sont-ils nécessaires ? (→ `docs/design/components/`)
+- [ ] Le design system est-il impacté ? (nouveaux tokens, composants)
+
 ### Architecture
-- [ ] Les invariants d'architecture sont-ils impactés ? (si oui → ADR obligatoire)
-- [ ] La structure du projet (`src/`) doit-elle évoluer ?
-- [ ] Le modèle de données (tables, relations) est-il impacté ?
-- [ ] De nouvelles migrations DB sont-elles nécessaires ?
-- [ ] Les RLS policies doivent-elles être mises à jour ?
+- [ ] Le modèle de données est-il impacté ? (nouvelles tables, colonnes, relations)
+- [ ] Les Server Actions sont-elles impactées ? (nouvelles, modifiées, supprimées)
+- [ ] Les RLS policies sont-elles impactées ?
+- [ ] Un invariant d'architecture est-il touché ? → ADR obligatoire
 
-### Epics & Stories
-- [ ] Des epics existantes sont-elles impactées ? (mettre à jour les fichiers)
-- [ ] Des stories existantes sont-elles invalidées ou doivent-elles être modifiées ?
+### Stories
+- [ ] Des stories existantes sont-elles impactées ? (AC modifiés, scope élargi)
 - [ ] De nouvelles stories doivent-elles être créées ?
-- [ ] L'ordre de priorité des epics change-t-il ?
+- [ ] Des stories existantes doivent-elles être annulées ?
+- [ ] L'ordre de priorité des stories change-t-il ?
 
-### Design
-- [ ] Des maquettes existantes doivent-elles être mises à jour ?
-- [ ] De nouvelles maquettes sont-elles nécessaires ?
-- [ ] Le design system est-il impacté ?
-
-### Code existant
-- [ ] Du code déjà implémenté doit-il être modifié ? (créer des stories de refacto)
-- [ ] Des tests existants doivent-ils être mis à jour ?
+### Base de données
+- [ ] Une migration SQL est-elle nécessaire ?
+- [ ] Les données existantes sont-elles compatibles ? (migration de données)
+- [ ] Les seeds de test doivent-elles être mises à jour ?
 
 ## Compatibility check
 
-- [ ] Le changement est-il rétrocompatible avec le code existant ?
-- [ ] Les données existantes en base sont-elles compatibles ? (migration de données ?)
-- [ ] Les utilisateurs existants sont-ils impactés ?
+- [ ] Les changements sont-ils rétro-compatibles avec le code existant ?
+- [ ] Les tests existants doivent-ils être modifiés ?
+- [ ] Le component-registry doit-il être mis à jour ?
 
 ## Traçabilité
 
-- [ ] `docs/architecture.md` est mis à jour (si impacté)
-- [ ] Les epics impactées sont mises à jour
+- [ ] Le PRD est mis à jour (parcours + FR/NFR)
+- [ ] Les écrans JSX sont mis à jour ou créés
+- [ ] L'architecture est mise à jour si impactée
 - [ ] Les stories impactées sont mises à jour ou créées
-- [ ] Une entrée est ajoutée dans `docs/changelog.md`
-- [ ] La section modifiée du PRD est repassée en ✅ Validé après review
+- [ ] Le changelog est mis à jour
+- [ ] Le sprint status reflète les changements

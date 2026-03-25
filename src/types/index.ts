@@ -1,2 +1,2 @@
-// Types métier custom du projet
-// Ajouter ici les types partagés entre composants, actions, et schemas
+// Types métier partagés
+// Ajouter ici les types custom du projet (pas les types Supabase auto-générés)

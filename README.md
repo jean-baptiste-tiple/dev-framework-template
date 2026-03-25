@@ -20,45 +20,27 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-## Commandes principales
+## Commandes
 
-3 commandes composites couvrent 90% des cas d'usage :
+3 slash commands principales + 2 commandes de qualité :
 
-| Commande | Workflow | Description |
-|----------|----------|-------------|
-| `/tm-init` | A — Nouveau projet | Brief → PRD → Architecture → Design → Epics/Stories → Gate → Sprint |
-| `/tm-feature` | B — Nouvelle feature | Evolve PRD si besoin → Stories → Dev/Review loop |
-| `/tm-fix` | C — Bug fix | Story allégée → Dev → Review rapide |
-
-## Commandes atomiques
-
-Les commandes composites orchestrent ces commandes atomiques, qui restent utilisables individuellement :
-
-| Commande | Description |
-|----------|-------------|
-| `/tm-brief` | Génère `docs/brief.md` par discussion interactive |
-| `/tm-prd` | Génère `docs/prd.md` depuis le brief + template |
-| `/tm-architecture` | Génère `docs/architecture.md` depuis le PRD + template |
-| `/tm-design-system` | Initialise `docs/design/system.md` |
-| `/tm-gate` | Passe la readiness-gate checklist avant de coder |
-| `/tm-epic` | Crée une epic dans `docs/epics/` |
-| `/tm-story` | Crée une story dans `docs/stories/` |
-| `/tm-dev` | Implémente une story (lit tout, code, teste, verify, review) |
-| `/tm-verify` | Vérification triple : type-check + lint + test |
-| `/tm-review` | Code review agent : checklist point par point |
-| `/tm-evolve` | Process d'évolution du PRD (impact + cascade) |
-| `/tm-status` | Affiche et met à jour le sprint status |
-| `/tm-sprint` | Démarre un nouveau sprint |
+| Commande | Usage | Description |
+|----------|-------|-------------|
+| `/tm-plan` | Nouveau projet ou feature | Cadrage complet : brief → PRD → architecture → design → epics/stories → gate |
+| `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine 🟢 Ready), ou sans arg (mode libre) |
+| `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions par tags |
+| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (obligatoire avant review) |
+| `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point |
 
 ## Structure
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
-├── .claude/commands/            # 16 slash commands /tm-* (3 composites + 13 atomiques)
+├── .claude/commands/            # 5 slash commands : /tm-plan, /tm-dev, /tm-fix, /tm-verify, /tm-review
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
-│   ├── conventions/             # 5 fichiers conventions (pré-remplis)
+│   ├── conventions/             # Conventions techniques par tags (22 fichiers, voir _index.md)
 │   └── sprint/status.md         # Sprint tracking
 ├── docs/
 │   ├── brief.md                 # Brief produit
@@ -84,7 +66,25 @@ Après le clone, modifier :
 4. **`.tiple/conventions/tech-stack.md`** — Ajouter les libs spécifiques
 5. **`package.json`** — Nom du projet, dépendances spécifiques
 
-Puis lancer `/tm-init` pour démarrer la phase de planification (ou `/tm-brief` pour commencer étape par étape).
+Puis lancer `/tm-plan` pour démarrer la phase de cadrage.
+
+## Conventions par tags
+
+Les conventions techniques sont dans `.tiple/conventions/` et chargées **automatiquement** selon le contexte :
+
+- **Base (toujours chargées)** : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Par tags** : chaque story déclare ses tags (ex: `auth`, `database`, `api`) → les fichiers de conventions correspondants sont chargés automatiquement
+- **Index** : `.tiple/conventions/_index.md` liste tous les tags disponibles et les fichiers associés
+
+**Chargement selon le mode :**
+
+| Mode | Chargement des conventions |
+|------|----------------------------|
+| `/tm-dev E01-S01` | Tags déclarés dans le champ `Conventions` de la story |
+| `/tm-dev` (libre) | Tags déduits des fichiers touchés (ex: `lib/actions/` → `api`) |
+| `/tm-fix` | Même déduction automatique que le mode libre |
+
+Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
 ## CI/CD
 
@@ -99,13 +99,13 @@ Le déploiement Vercel est automatique (connecter le repo). Pour Supabase, utili
 
 ## Workflows détaillés
 
-### Workflow A — Création d'un nouveau projet
+### Workflow A — Nouveau projet (`/tm-plan`)
 
-Ce workflow se fait une seule fois, au démarrage du projet. Il produit toute la documentation nécessaire avant d'écrire la moindre ligne de code métier.
+Ce workflow se fait une seule fois, au démarrage du projet. `/tm-plan` orchestre toutes les phases en une seule conversation continue.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  PHASE 0 — Setup (5 min)                                │
+│  PHASE 0 — Setup                                        │
 ├─────────────────────────────────────────────────────────┤
 │  1. git clone <template> mon-projet && cd mon-projet    │
 │  2. pnpm install                                        │
@@ -115,155 +115,108 @@ Ce workflow se fait une seule fois, au démarrage du projet. Il produit toute la
 └────────────────────┬────────────────────────────────────┘
                      ▼
 ┌─────────────────────────────────────────────────────────┐
-│  PHASE 1 — Brief (/tm-brief)                            │
+│  /tm-plan — Cadrage complet (phases 1 à 6)              │
 ├─────────────────────────────────────────────────────────┤
-│  Discussion interactive avec Claude Code.                │
-│  Décris ton projet : problème, solution, personas,       │
-│  scope MVP, contraintes.                                 │
-│  → Produit : docs/brief.md                              │
+│                                                          │
+│  Phase 1 — Brief                                        │
+│    Discussion interactive : problème, personas, scope    │
+│    → docs/brief.md                                      │
+│                                                          │
+│  Phase 2 — PRD                                          │
+│    FRs par parcours, NFRs, epics identifiées             │
+│    → docs/prd.md                                        │
+│                                                          │
+│  Phase 3 — Architecture                                 │
+│    Modèle de données, RLS, Server Actions                │
+│    → docs/architecture.md                               │
+│                                                          │
+│  Phase 4 — Design                                       │
+│    Valider tokens, JSX, composants partagés              │
+│    → docs/design/                                       │
+│                                                          │
+│  Phase 5 — Epics & Stories                              │
+│    Découper en stories 🟢 Ready avec tags Conventions    │
+│    → docs/epics/ + docs/stories/                        │
+│                                                          │
+│  Phase 6 — Gate                                         │
+│    Passe readiness-gate.md → prêt à coder               │
+│                                                          │
 └────────────────────┬────────────────────────────────────┘
                      ▼
 ┌─────────────────────────────────────────────────────────┐
-│  PHASE 2 — PRD (/tm-prd)                                │
+│  Sprint & Dev (`/tm-dev`)                                │
 ├─────────────────────────────────────────────────────────┤
-│  Claude Code enrichit le brief en PRD complet :          │
-│  - Functional Requirements avec IDs (FR-AUTH-01...)      │
-│  - Non-Functional Requirements (perf, sécu, RGPD)       │
-│  - Epics identifiées avec priorités et dépendances       │
-│  Valider chaque section (⬜ → 🔶 → ✅).                │
-│  → Produit : docs/prd.md                                │
-└────────────────────┬────────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│  PHASE 3 — Architecture (/tm-architecture)              │
-├─────────────────────────────────────────────────────────┤
-│  Claude Code génère l'architecture depuis le PRD :       │
-│  - Diagramme Mermaid, modèle de données (ER)            │
-│  - RLS policies par table                                │
-│  - Server Actions par domaine                            │
-│  - Invariants et choix flexibles                         │
-│  → Produit : docs/architecture.md                       │
-└────────────────────┬────────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│  PHASE 4 — Design System (/tm-design-system)            │
-├─────────────────────────────────────────────────────────┤
-│  Définir les tokens visuels : couleurs, typo, spacing,   │
-│  radius. Met à jour globals.css en conséquence.          │
-│  → Produit : docs/design/system.md + globals.css        │
-└────────────────────┬────────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│  PHASE 5 — Epics & Stories (/tm-epic puis /tm-story)    │
-├─────────────────────────────────────────────────────────┤
-│  Pour chaque epic du PRD :                               │
-│    /tm-epic → crée docs/epics/E0X-titre.md              │
-│    /tm-story (×N) → crée docs/stories/E0X-S0X-titre.md │
-│  Chaque story doit être 🟢 Ready avec AC testables.     │
-└────────────────────┬────────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│  PHASE 6 — Gate (/tm-gate)                              │
-├─────────────────────────────────────────────────────────┤
-│  Vérification finale avant de coder :                    │
-│  - Docs complètes ? Cohérentes ? Conventions OK ?        │
-│  - pnpm dev / type-check / test passent ?                │
-│  Si tout est ✅ → prêt à coder.                         │
-│  Si ❌ → corriger avant de continuer.                    │
-└────────────────────┬────────────────────────────────────┘
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│  PHASE 7 — Sprint & Dev (/tm-sprint puis /tm-dev)       │
-├─────────────────────────────────────────────────────────┤
-│  /tm-sprint → initialise le premier sprint               │
-│  Puis boucler sur chaque story :                         │
+│  Boucler sur chaque story :                              │
 │    /tm-dev E0X-S0X (ou /tm-dev next)                    │
-│      → lit story + archi + conventions + registry        │
+│      → lit story + archi + conventions par tags          │
 │      → implémente : Zod → actions → tests → UI → page   │
 │      → vérification triple :                             │
 │          pnpm type-check + pnpm lint + pnpm test         │
-│      → code review : .tiple/checklists/code-review.md   │
-│          point par point (sécu, qualité, DRY, archi)     │
+│      → code review par agent isolé :                     │
+│          .tiple/checklists/code-review.md point par point│
 │      → si problèmes HAUTE/MOYENNE : fix + re-verify     │
 │      → MAJ story, registry, sprint status, changelog     │
 │                                                          │
 │  Répéter /tm-dev jusqu'à sprint terminé.                │
-│  /tm-status pour suivre l'avancement.                    │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Workflow B — Nouvelle feature
+### Workflow B — Nouvelle feature (`/tm-plan` + `/tm-dev`)
 
 Une feature = un changement fonctionnel significatif qui nécessite une ou plusieurs stories.
 
 ```
-1. Vérifier le contexte
-   └─ /tm-status → où en est le sprint actuel ?
+1. Si la feature modifie le PRD existant :
+   → Mettre à jour docs/prd.md (section concernée → 🔶)
+   → Passer .tiple/checklists/prd-evolution.md
+   → Cascade : MAJ architecture, epics, stories si besoin
+   → Entrée dans docs/changelog.md
 
-2. Documenter la feature
-   ├─ Si la feature est dans le PRD → passer à l'étape 3
-   └─ Si la feature est nouvelle :
-       └─ /tm-evolve → décrire le changement
-           ├─ Met à jour docs/prd.md (section concernée → 🔶)
-           ├─ Cascade : MAJ architecture, epics, stories si besoin
-           └─ Entrée dans docs/changelog.md
+2. Créer les stories
+   → /tm-plan (relancer pour le cadrage de la feature)
+   → Ou créer manuellement dans docs/stories/ depuis le template
 
-3. Créer l'epic (si nécessaire)
-   └─ /tm-epic "Titre de la feature"
-       → docs/epics/E0X-titre.md
+3. Implémenter story par story
+   └─ /tm-dev E0X-S0X
+       → Charge conventions par tags de la story
+       → Zod schemas → Server Actions → tests unit
+       → composants UI → tests unit UI → page → tests integ
+       → vérification triple : type-check + lint + test
+       → code review par agent isolé (regard neuf)
+       → si problèmes HAUTE/MOYENNE : fix + re-verify
+       → MAJ story + registry + sprint status + changelog
 
-4. Découper en stories
-   └─ /tm-story E0X "Titre story 1"
-   └─ /tm-story E0X "Titre story 2"
-       → chaque story en 🟢 Ready avec AC en Given/When/Then
-
-5. Implémenter story par story
-   └─ Pour chaque story, dans l'ordre :
-       ├─ /tm-dev E0X-S0X
-       │   → Zod schemas → Server Actions → tests unit
-       │   → composants UI → tests unit UI → page → tests integ
-       │   → vérification triple :
-       │       pnpm type-check + pnpm lint + pnpm test
-       │   → code review : code-review.md point par point
-       │       (sécu, qualité, DRY, tests, archi, docs)
-       │   → si problèmes HAUTE/MOYENNE : fix + re-verify
-       │   → MAJ story (post-implémentation) + registry + sprint
-
-6. Vérifier
+4. Vérifier
    └─ pnpm type-check && pnpm lint && pnpm test → tout passe
-   └─ /tm-status → stories ✅ Done
 ```
 
-### Workflow C — Bug fix ou petite modification
+### Workflow C — Bug fix (`/tm-fix` ou `/tm-dev`)
 
-Pour les corrections de bugs, ajustements UI, ou modifications mineures d'une feature existante. Pas besoin de créer une epic — une story suffit.
+Pour les corrections de bugs, ajustements UI, ou modifications mineures. Deux modes :
 
+**Bug significatif** (avec story) :
 ```
-1. Créer une story de fix
-   └─ /tm-story E0X "Fix : description du bug"
-       Contenu allégé :
-       - Meta : estimation S, priorité Must
-       - Contexte : décrire le bug / la modification demandée
-       - AC : Given [situation actuelle], When [action], Then [comportement corrigé]
-       - Implémentation : fichiers à modifier (pas à créer en général)
-       - Tests : ajouter le test qui couvre le cas corrigé
+1. Créer une story dans docs/stories/ :
+   - Conventions : tags pertinents (ex: api, database)
+   - AC : Given/When/Then
+   - Tests : le test qui couvre le cas corrigé
 
-2. Implémenter
-   └─ /tm-dev E0X-S0X (ou /tm-fix directement)
-       → Lire la story
-       → Identifier le code concerné
-       → Écrire le test qui reproduit le bug (red)
-       → Corriger le code (green)
-       → Vérification triple :
-           pnpm type-check + pnpm lint + pnpm test
-       → Code review : code-review.md (focus bug fix)
-           → Le fix résout-il vraiment le bug ?
-           → Pas d'effets de bord ? Pas de régression ?
-           → Sécurité : le fix n'introduit pas de faille ?
-       → Si problèmes HAUTE/MOYENNE : fix + re-verify
-       → MAJ story + sprint status
+2. /tm-dev E0X-S0X
+   → Charge conventions par tags de la story
+   → Test red → fix → test green
+   → Vérification triple : type-check + lint + test
+   → Code review par agent isolé (focus bug fix)
+   → Si problèmes HAUTE/MOYENNE : fix + re-verify
+   → MAJ story + sprint status + changelog
+```
 
-Variante — modification très mineure (typo, padding, couleur) :
-   Pas besoin de story. Modifier directement, vérifier
-   que pnpm type-check && pnpm lint && pnpm test passent, commit.
+**Modification mineure** (sans story) :
+```
+/tm-fix → décris le problème
+   → Déduit les tags depuis les fichiers touchés
+   → Charge les conventions pertinentes automatiquement
+   → Corrige + tests
+   → Vérification triple : type-check + lint + test
+   → Code review par agent isolé
+   → Changelog
 ```
