@@ -43,8 +43,9 @@ Les commandes composites orchestrent ces commandes atomiques, qui restent utilis
 | `/tm-gate` | Passe la readiness-gate checklist avant de coder |
 | `/tm-epic` | Crée une epic dans `docs/epics/` |
 | `/tm-story` | Crée une story dans `docs/stories/` |
-| `/tm-dev` | Implémente une story (lit tout, code, teste) |
-| `/tm-review` | Code review checklist sur la dernière story |
+| `/tm-dev` | Implémente une story (lit tout, code, teste, verify, review) |
+| `/tm-verify` | Vérification triple : type-check + lint + test |
+| `/tm-review` | Code review agent : checklist point par point |
 | `/tm-evolve` | Process d'évolution du PRD (impact + cascade) |
 | `/tm-status` | Affiche et met à jour le sprint status |
 | `/tm-sprint` | Démarre un nouveau sprint |
@@ -53,7 +54,7 @@ Les commandes composites orchestrent ces commandes atomiques, qui restent utilis
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
-├── .claude/commands/            # 15 slash commands /tm-* (3 composites + 12 atomiques)
+├── .claude/commands/            # 16 slash commands /tm-* (3 composites + 13 atomiques)
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
@@ -179,13 +180,14 @@ Ce workflow se fait une seule fois, au démarrage du projet. Il produit toute la
 │    /tm-dev E0X-S0X (ou /tm-dev next)                    │
 │      → lit story + archi + conventions + registry        │
 │      → implémente : Zod → actions → tests → UI → page   │
-│      → vérifie non-régression (pnpm test)                │
-│      → MAJ story, registry, sprint status                │
-│    /tm-review E0X-S0X                                   │
-│      → code-review checklist + review adversariale       │
-│      → corrige les problèmes trouvés                     │
+│      → vérification triple :                             │
+│          pnpm type-check + pnpm lint + pnpm test         │
+│      → code review : .tiple/checklists/code-review.md   │
+│          point par point (sécu, qualité, DRY, archi)     │
+│      → si problèmes HAUTE/MOYENNE : fix + re-verify     │
+│      → MAJ story, registry, sprint status, changelog     │
 │                                                          │
-│  Répéter /tm-dev + /tm-review jusqu'à sprint terminé.   │
+│  Répéter /tm-dev jusqu'à sprint terminé.                │
 │  /tm-status pour suivre l'avancement.                    │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -220,15 +222,15 @@ Une feature = un changement fonctionnel significatif qui nécessite une ou plusi
        ├─ /tm-dev E0X-S0X
        │   → Zod schemas → Server Actions → tests unit
        │   → composants UI → tests unit UI → page → tests integ
-       │   → vérif non-régression
+       │   → vérification triple :
+       │       pnpm type-check + pnpm lint + pnpm test
+       │   → code review : code-review.md point par point
+       │       (sécu, qualité, DRY, tests, archi, docs)
+       │   → si problèmes HAUTE/MOYENNE : fix + re-verify
        │   → MAJ story (post-implémentation) + registry + sprint
-       └─ /tm-review E0X-S0X
-           → checklist code-review.md
-           → review adversariale (edge cases, sécu, DRY)
-           → fix des problèmes
 
 6. Vérifier
-   └─ pnpm type-check && pnpm test → tout passe
+   └─ pnpm type-check && pnpm lint && pnpm test → tout passe
    └─ /tm-status → stories ✅ Done
 ```
 
@@ -247,21 +249,21 @@ Pour les corrections de bugs, ajustements UI, ou modifications mineures d'une fe
        - Tests : ajouter le test qui couvre le cas corrigé
 
 2. Implémenter
-   └─ /tm-dev E0X-S0X
+   └─ /tm-dev E0X-S0X (ou /tm-fix directement)
        → Lire la story
        → Identifier le code concerné
        → Écrire le test qui reproduit le bug (red)
        → Corriger le code (green)
-       → Vérifier la non-régression (pnpm test)
+       → Vérification triple :
+           pnpm type-check + pnpm lint + pnpm test
+       → Code review : code-review.md (focus bug fix)
+           → Le fix résout-il vraiment le bug ?
+           → Pas d'effets de bord ? Pas de régression ?
+           → Sécurité : le fix n'introduit pas de faille ?
+       → Si problèmes HAUTE/MOYENNE : fix + re-verify
        → MAJ story + sprint status
-
-3. Review rapide
-   └─ /tm-review E0X-S0X
-       → Focus sur : le fix résout-il vraiment le bug ?
-       → Pas d'effets de bord ? Pas de régression ?
-       → Registry à jour si composant modifié ?
 
 Variante — modification très mineure (typo, padding, couleur) :
    Pas besoin de story. Modifier directement, vérifier
-   que pnpm type-check && pnpm test passent, commit.
+   que pnpm type-check && pnpm lint && pnpm test passent, commit.
 ```

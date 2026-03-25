@@ -43,4 +43,5 @@ pnpm-debug.log*
 tsconfig.tsbuildinfo
 
 # Claude Code
-.claude/
+.claude/*
+!.claude/commands/
