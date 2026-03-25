@@ -31,10 +31,16 @@
 6. Implémenter dans cet ordre :
    a. Migration DB si nécessaire (`supabase/migrations/`)
    b. Schemas Zod (`lib/schemas/`)
-   c. Server Actions (`lib/actions/`) + tests unitaires
-   d. Composants UI (`components/`) + tests unitaires
-   e. Page/route (`app/`) + tests d'intégration
-   f. Tests E2E si listés dans la story
+   c. Server Actions (`lib/actions/`) + tests unitaires dans `tests/unit/`
+   d. Composants UI (`components/`) + tests unitaires dans `tests/unit/`
+   e. Page/route (`app/`) + tests d'intégration dans `tests/integration/`
+   f. Tests E2E si listés dans la story (dans `tests/e2e/`)
+
+> **Placement des tests :** Respecter strictement l'arborescence définie dans `testing-strategy.md` :
+> - Tests unitaires → `tests/unit/` (actions, schemas, hooks, utils, composants isolés)
+> - Tests d'intégration → `tests/integration/` (composants form complets, pages avec interactions, flows multi-composants)
+> - Tests E2E → `tests/e2e/`
+> Ne JAMAIS mettre un test d'intégration dans `tests/unit/` ou inversement.
 
 ### Phase 3 — Vérification triple (OBLIGATOIRE)
 

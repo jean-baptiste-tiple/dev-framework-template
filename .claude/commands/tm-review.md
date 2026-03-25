@@ -73,7 +73,13 @@ Passer CHAQUE section de `code-review.md` dans l'ordre :
 ### 4. Tests
 - Tests unitaires couvrent les Server Actions (valides et invalides)
 - Tests unitaires couvrent les schemas Zod (edge cases)
-- Tests d'intégration couvrent les composants form
+- Tests d'intégration couvrent les composants form, pages complètes et flows multi-composants
+- **Placement correct des fichiers de test :**
+  - Tests unitaires (actions, schemas, hooks, utils, composants isolés) → `tests/unit/`
+  - Tests d'intégration (form complets, pages, flows) → `tests/integration/`
+  - Tests E2E → `tests/e2e/`
+  - Si un test d'intégration est dans `tests/unit/` (ou inversement) → **[MOYENNE] mauvais placement** → proposer le déplacement
+- Tous les tests listés dans la section "Tests attendus" de la story sont implémentés
 - Tous les tests existants passent
 
 ### 5. Design & UX
