@@ -2,6 +2,29 @@
 
 Template Git réutilisable pour bootstrapper un projet avec la Tiple Method. Contient toute la structure, les templates de documents, les checklists, les conventions, et les slash commands Claude Code. Pré-configuré pour la stack Next.js 15 + Supabase + TypeScript + Tailwind CSS + Shadcn/ui.
 
+## Design System
+
+Un design system **violet corporate** complet est inclus, prêt à l'emploi :
+
+- **Thème :** Violet profond corporate avec dark mode (class-based, next-themes)
+- **34 composants Shadcn/ui** installés (style new-york) dans `src/components/ui/`
+- **6 composants métier** : PageContainer, EmptyState, StatCard, DataTable, ThemeToggle, ThemeProvider
+- **Preview interactive** : route `/design-system` pour voir tous les composants
+- **Tokens complets** : couleurs (oklch), typographie (Inter), spacing, radius, shadows
+- **Documentation** : `docs/design/system.md`
+
+### Pages Auth incluses
+
+| Route | Description |
+|-------|-------------|
+| `/login` | Connexion email/password |
+| `/signup` | Inscription avec confirmation |
+| `/forgot-password` | Demande de réinitialisation |
+| `/reset-password` | Nouveau mot de passe |
+| `/auth/callback` | Callback Supabase (email confirm, password reset) |
+
+Server actions dans `src/lib/actions/auth.ts` : `login`, `signup`, `forgotPassword`, `resetPassword`, `logout`.
+
 ## Quick Start
 
 ```bash
@@ -51,7 +74,25 @@ pnpm dev
 │   ├── epics/                   # Epics détaillées
 │   ├── stories/                 # Stories implémentables
 │   └── decisions/               # ADRs (Architecture Decision Records)
-├── src/                         # Code Next.js (App Router)
+├── src/
+│   ├── app/
+│   │   ├── (auth)/              # Pages auth (login, signup, forgot/reset password)
+│   │   ├── (dashboard)/         # Layout dashboard protégé
+│   │   ├── auth/callback/       # Callback Supabase
+│   │   └── design-system/       # Preview du design system
+│   ├── components/
+│   │   ├── ui/                  # 34 composants Shadcn/ui
+│   │   ├── theme-provider.tsx   # Provider next-themes
+│   │   ├── theme-toggle.tsx     # Toggle light/dark
+│   │   ├── page-container.tsx   # Wrapper page
+│   │   ├── empty-state.tsx      # État vide
+│   │   ├── stat-card.tsx        # Card KPI
+│   │   └── data-table.tsx       # Table générique
+│   ├── lib/
+│   │   ├── actions/auth.ts      # Server actions auth
+│   │   ├── supabase/            # Clients Supabase (browser + server)
+│   │   └── utils/cn.ts          # Tailwind class merge
+│   └── middleware.ts            # Auth middleware
 ├── supabase/                    # Config + migrations Supabase
 └── tests/                       # Unit, integration, e2e
 ```
@@ -61,8 +102,8 @@ pnpm dev
 Après le clone, modifier :
 
 1. **`CLAUDE.md`** — Section "Projet" : nom et description
-2. **`.env.local`** — Variables Supabase (URL, clés)
-3. **`docs/design/system.md`** — Tokens visuels du projet
+2. **`.env.local`** — Variables Supabase (URL, clés) + `NEXT_PUBLIC_SITE_URL`
+3. **`docs/design/system.md`** — Ajuster les tokens si besoin (couleurs, radius)
 4. **`.tiple/conventions/tech-stack.md`** — Ajouter les libs spécifiques
 5. **`package.json`** — Nom du projet, dépendances spécifiques
 

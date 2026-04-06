@@ -93,6 +93,25 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 | `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine), ou sans arg (mode libre) |
 | `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions |
 
+## Design System
+
+Le projet inclut un design system violet corporate complet. Toujours s'y référer avant de créer un composant UI.
+
+- **Tokens & documentation :** `docs/design/system.md` — couleurs, typographie, spacing, radius, shadows
+- **Preview interactive :** route `/design-system` — tous les composants rendus
+- **Composants Shadcn/ui :** `src/components/ui/` — 34 composants installés (style new-york)
+- **Composants métier :** `src/components/` — PageContainer, EmptyState, StatCard, DataTable, ThemeToggle, ThemeProvider
+- **Registry complet :** `.tiple/conventions/component-registry.md` — TOUJOURS vérifier avant de créer un composant
+- **Thème :** Violet profond corporate, dark mode class-based (next-themes), Inter font
+- **CSS Variables :** `src/app/globals.css` — tous les tokens (light + dark)
+- **Tailwind config :** `tailwind.config.ts` — couleurs, radius, animations
+
+### Règles UI
+1. **Réutiliser les composants existants** — vérifier le registry et `src/components/ui/` avant de créer
+2. **Respecter les tokens** — utiliser les classes Tailwind sémantiques (`bg-primary`, `text-muted-foreground`, `border-border`)
+3. **Pas de couleurs en dur** — toujours passer par les CSS variables/tokens
+4. **Dark mode compatible** — tester les deux thèmes
+
 ## Conventions
 - Index des tags : `.tiple/conventions/_index.md`
 - Coding standards : `.tiple/conventions/coding-standards.md`
