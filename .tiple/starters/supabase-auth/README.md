@@ -13,8 +13,8 @@ pnpm add @supabase/supabase-js @supabase/ssr
 ### Fichiers copiés
 
 | Source (starter) | Destination | Description |
-| `supabase-migrations.yml` | `.github/workflows/supabase-migrations.yml` | CI auto-deploy des migrations sur push |
 |-----------------|-------------|-------------|
+| `supabase-migrations.yml` | `.github/workflows/supabase-migrations.yml` | CI auto-deploy des migrations sur push |
 | `supabase-server.ts` | `src/lib/supabase/server.ts` | Client Supabase côté serveur |
 | `supabase-client.ts` | `src/lib/supabase/client.ts` | Client Supabase côté navigateur |
 | `middleware.ts` | `src/middleware.ts` | Middleware auth (session refresh + protection routes) |

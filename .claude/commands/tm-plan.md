@@ -37,12 +37,15 @@ Lire `.tiple/starters/supabase-auth/README.md` puis exécuter :
    - `auth-actions.ts` → `src/lib/actions/auth.ts`
    - `auth-callback-route.ts` → `src/app/auth/callback/route.ts`
    - `supabase-migrations.yml` → `.github/workflows/supabase-migrations.yml`
+   - `supabase-config.toml` → `supabase/config.toml`
+   - `seed.sql` → `supabase/seed.sql`
    - `auth-layout.tsx` → `src/app/(auth)/layout.tsx`
    - `login-page.tsx` → `src/app/(auth)/login/page.tsx`
    - `signup-page.tsx` → `src/app/(auth)/signup/page.tsx`
    - `forgot-password-page.tsx` → `src/app/(auth)/forgot-password/page.tsx`
    - `reset-password-page.tsx` → `src/app/(auth)/reset-password/page.tsx`
-4. Mettre à jour les scripts `db:*` dans `package.json` (voir README du starter)
+4. Créer `supabase/migrations/` : `mkdir -p supabase/migrations`
+5. Mettre à jour les scripts `db:*` dans `package.json` (voir README du starter)
 5. Mettre à jour le dashboard layout pour ajouter la vérification auth
 6. Mettre à jour `src/app/page.tsx` pour rediriger vers `/login` au lieu de `/dashboard`
 7. Demander à l'utilisateur de configurer `.env.local` avec les clés Supabase

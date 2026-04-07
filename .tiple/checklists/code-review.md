@@ -26,22 +26,25 @@
 - [ ] Les inputs sont validés avec Zod côté serveur
 - [ ] Les messages d'erreur Supabase ne sont pas exposés bruts au client
 
-## Next.js + Supabase (spécifique)
+## Next.js
 
 - [ ] **Server Component vs Client Component justifié** — "use client" uniquement si nécessaire
 - [ ] **"use client" poussé le plus bas possible** dans l'arbre de composants
+- [ ] **Schemas Zod partagés** — le même schema valide le form ET l'action
+- [ ] **revalidatePath/revalidateTag après les mutations**
+
+## Supabase (si activé)
+
 - [ ] **Pas de mutation Supabase côté client** — .insert()/.update()/.delete() uniquement dans Server Actions
 - [ ] **RLS policies en place** pour chaque nouvelle table
-- [ ] **Schemas Zod partagés** — le même schema valide le form ET l'action
 - [ ] **Auth vérifiée dans chaque Server Action** (pas seulement le middleware)
-- [ ] **revalidatePath/revalidateTag après les mutations**
 - [ ] **Middleware auth pas contourné** (pas de route non protégée par erreur)
 
 ## Tests
 
 - [ ] Les tests couvrent les cas nominaux ET les cas d'erreur
 - [ ] Les tests vérifient le comportement, pas l'implémentation
-- [ ] Supabase est mocké dans les tests unitaires
+- [ ] (si Supabase) Supabase est mocké dans les tests unitaires
 - [ ] Les tests existants passent toujours (non-régression)
 - [ ] Le naming des tests suit la convention (`describe/it` — voir `testing-strategy.md`)
 
@@ -55,7 +58,7 @@
 
 ## Performance
 
-- [ ] Pas de N+1 queries (utiliser les jointures Supabase)
+- [ ] Pas de N+1 queries (si Supabase : utiliser les jointures)
 - [ ] Les images utilisent `next/image` avec `width/height` ou `fill+sizes`
 - [ ] Les composants lourds sont lazy-loaded si non-critiques
 - [ ] Les données parallèles sont fetchées avec `Promise.all`
@@ -71,9 +74,9 @@
 ## Sécurité
 
 - [ ] Pas de secrets exposés (API keys, tokens, PII dans les logs)
-- [ ] Les erreurs Supabase ne sont pas exposées brutes au client
+- [ ] (si Supabase) Les erreurs Supabase ne sont pas exposées brutes au client
 - [ ] Les inputs sont validés côté serveur avec Zod
-- [ ] Rate limiting en place sur les actions sensibles (login, signup, reset)
+- [ ] (si auth) Rate limiting en place sur les actions sensibles (login, signup, reset)
 
 ## Documentation
 

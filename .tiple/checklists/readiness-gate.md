@@ -45,5 +45,6 @@
 - [ ] `pnpm dev` démarre le serveur Next.js
 - [ ] `pnpm type-check` passe
 - [ ] `pnpm test` fonctionne (même si 0 tests)
-- [ ] `.env.local` est configuré avec les clés Supabase
-- [ ] Le middleware auth redirige correctement vers /login
+- [ ] `.env.local` est configuré (variables requises par le projet)
+- [ ] (si Supabase) Les clés Supabase sont dans `.env.local`
+- [ ] (si auth) Le middleware auth redirige correctement vers /login

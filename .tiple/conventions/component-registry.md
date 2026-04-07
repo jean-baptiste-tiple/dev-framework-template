@@ -81,4 +81,4 @@
 
 | Type | Path | Usage |
 |------|------|-------|
-| Database | src/types/database.ts | Types auto-generes Supabase (npx supabase gen types) |
+| <!-- Ajouter ici les types métier du projet --> | | |
