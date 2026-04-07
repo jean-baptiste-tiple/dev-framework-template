@@ -36,6 +36,7 @@ Lire `.tiple/starters/supabase-auth/README.md` puis exécuter :
    - `middleware.ts` → `src/middleware.ts`
    - `auth-actions.ts` → `src/lib/actions/auth.ts`
    - `auth-callback-route.ts` → `src/app/auth/callback/route.ts`
+   - `supabase-migrations.yml` → `.github/workflows/supabase-migrations.yml`
    - `auth-layout.tsx` → `src/app/(auth)/layout.tsx`
    - `login-page.tsx` → `src/app/(auth)/login/page.tsx`
    - `signup-page.tsx` → `src/app/(auth)/signup/page.tsx`
