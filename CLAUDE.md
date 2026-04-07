@@ -43,7 +43,7 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 3. **Supabase côté serveur uniquement pour les mutations.** Le browser client est réservé au realtime et à l'auth listener. Jamais de `.insert()/.update()/.delete()` depuis un Client Component.
 4. **RLS activé sur toute table.** Pas d'exception sans ADR documenté. Le `service_role` client est interdit sauf cas explicitement documenté.
 5. **Schemas Zod partagés.** Un schema dans `lib/schemas/` = validé côté form + côté action. Pas de double validation manuelle.
-6. **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct. Les migrations sont auto-déployées sur push vers `main` via `.github/workflows/supabase-migrations.yml` (nécessite les secrets `SUPABASE_PROJECT_ID` et `SUPABASE_ACCESS_TOKEN` dans GitHub).
+6. **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct. Les migrations sont auto-déployées sur push vers `main` via `.github/workflows/supabase-migrations.yml` (nécessite les secrets `SUPABASE_PROJECT_ID`, `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD` dans GitHub).
 7. **Route groups : toujours un `page.tsx`.**  Un route group (ex: `(dashboard)`) avec un `layout.tsx` DOIT avoir au moins un `page.tsx`, sinon le build Next.js échoue (`ENOENT: client-reference-manifest.js`). Si le route group n'est pas utilisé, supprimer le dossier entier.
 
 ## Workflow quotidien
