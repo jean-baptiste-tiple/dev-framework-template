@@ -6,7 +6,7 @@ export default function DashboardPage() {
   return (
     <PageContainer heading="Dashboard" description="Bienvenue sur votre espace.">
       <EmptyState
-        icon={LayoutDashboard}
+        icon={<LayoutDashboard className="h-6 w-6" />}
         heading="Prêt à démarrer"
         description="Ce dashboard sera personnalisé selon votre projet."
       />
