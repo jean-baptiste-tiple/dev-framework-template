@@ -43,7 +43,7 @@
 - [ ] Les problèmes HAUTE/MOYENNE identifiés sont corrigés
 - [ ] La vérification triple a été relancée après les corrections
 - [ ] Les 3 états UI sont gérés (loading, error, empty) pour les composants data-driven
-- [ ] L'implémentation respecte l'écran JSX référencé
+- [ ] (si maquette) L'implémentation respecte la référence UI
 - [ ] Les conventions tagées dans la story ont été respectées
 - [ ] Pas de secrets, tokens ou PII dans le code ou les logs
 - [ ] Le sprint status est à jour

@@ -21,8 +21,8 @@
    - Lire le champ **Conventions** de la story → charger les fichiers correspondants aux tags
    - Exemple : tags `auth, database, forms` → lire `auth-patterns.md`, `database-patterns.md`, `api-patterns.md`
 5. Lire le contexte projet :
-   - Le(s) écran(s) JSX référencés dans la story (`docs/design/screens/*.jsx`)
-   - Le guide de lecture JSX (`docs/design/guide.md`)
+   - (si référence UI ≠ N/A) La maquette ou description référencée dans la story
+   - (si maquettes JSX) Le guide de lecture JSX (`docs/design/guide.md`)
    - `docs/architecture.md` (sections pertinentes)
    - `docs/design/system.md` (tokens, composants)
 

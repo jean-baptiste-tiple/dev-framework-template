@@ -47,7 +47,7 @@
 
 ## Design & UX
 
-- [ ] L'implémentation respecte l'écran JSX référencé (si applicable)
+- [ ] L'implémentation respecte la référence UI (si maquette fournie)
 - [ ] Les tokens du design system sont utilisés (pas de couleurs/spacing en dur)
 - [ ] Les 3 états sont gérés : loading, error, empty
 - [ ] L'accessibilité est respectée (labels, keyboard nav, contrast — voir `accessibility-patterns.md`)

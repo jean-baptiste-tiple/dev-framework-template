@@ -13,7 +13,7 @@
 | **Parcours** | [Nom du parcours PRD — section 4.X] |
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Priorité** | Must / Should / Could |
-| **Écran(s)** | docs/design/screens/[fichier].jsx |
+| **Référence UI** | _Fichier JSX, lien Figma, wireframe, description texte, ou N/A_ |
 | **Conventions** | auth, database, forms, security (tags depuis `.tiple/conventions/_index.md`) |
 | **Estimation** | S / M / L |
 
@@ -24,7 +24,7 @@
 **Refs :**
 - PRD : FR-XXX-01, FR-XXX-02 (parcours [X])
 - Architecture : section [X]
-- Écran(s) JSX : docs/design/screens/[fichier].jsx
+- Référence UI : _(voir champ Meta — si applicable)_
 
 ## Critères d'acceptation
 
@@ -61,8 +61,9 @@
 
 <!-- Rempli APRÈS le dev par /tm-dev -->
 
-### Écarts avec l'écran JSX
-<!-- Lister les écarts entre l'implémentation et l'écran JSX, et pourquoi -->
+### Écarts avec la référence UI
+<!-- Lister les écarts entre l'implémentation et la référence UI, et pourquoi -->
+<!-- Si Référence UI = N/A, supprimer cette section -->
 
 ### Écarts avec l'architecture
 <!-- Si un invariant a été modifié → ADR créé ? -->

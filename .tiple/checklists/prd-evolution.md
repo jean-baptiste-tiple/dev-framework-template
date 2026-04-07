@@ -14,10 +14,10 @@
 
 ### Parcours & Design
 - [ ] Le flow du parcours doit-il être modifié ?
-- [ ] De nouveaux écrans sont-ils nécessaires ? (→ créer JSX dans `docs/design/screens/`)
-- [ ] Des écrans JSX existants doivent-ils être mis à jour ?
-- [ ] `docs/design/screens/_index.md` est-il à jour ?
-- [ ] De nouveaux composants partagés sont-ils nécessaires ? (→ `docs/design/components/`)
+- [ ] (si maquettes) De nouveaux écrans sont-ils nécessaires ? (→ créer dans `docs/design/screens/`)
+- [ ] (si maquettes) Des maquettes existantes doivent-elles être mises à jour ?
+- [ ] (si maquettes) `docs/design/screens/_index.md` est-il à jour ?
+- [ ] (si maquettes) De nouveaux composants partagés sont-ils nécessaires ? (→ `docs/design/components/`)
 - [ ] Le design system est-il impacté ? (nouveaux tokens, composants)
 
 ### Architecture
@@ -46,7 +46,7 @@
 ## Traçabilité
 
 - [ ] Le PRD est mis à jour (parcours + FR/NFR)
-- [ ] Les écrans JSX sont mis à jour ou créés
+- [ ] (si maquettes) Les maquettes sont mises à jour ou créées
 - [ ] L'architecture est mise à jour si impactée
 - [ ] Les stories impactées sont mises à jour ou créées
 - [ ] Le changelog est mis à jour

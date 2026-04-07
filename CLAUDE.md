@@ -12,7 +12,7 @@ Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de v
 
 ## Règles absolues
 1. Ne JAMAIS coder sans story en statut 🟢 Ready dans `docs/stories/`
-2. TOUJOURS lire avant de coder : la story, le(s) écran(s) JSX référencés (`docs/design/screens/`), `docs/architecture.md`, et les **conventions par tags** (voir ci-dessous)
+2. TOUJOURS lire avant de coder : la story, la référence UI de la story (maquette, Figma, description — si applicable), `docs/architecture.md`, et les **conventions par tags** (voir ci-dessous)
 3. Ne JAMAIS créer un composant/hook/util sans vérifier le component-registry d'abord — s'il existe, réutiliser
 4. Ne JAMAIS modifier un invariant d'architecture sans créer un ADR dans `docs/decisions/`
 5. Les tests sont écrits AVEC le code, pas après — unit tests d'abord, puis intégration, puis e2e si applicable
@@ -47,7 +47,7 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 
 ## Workflow quotidien
 1. Lire `.tiple/sprint/status.md` → identifier la prochaine story 🟢 Ready
-2. Lire la story complète + ses refs (parcours PRD, écrans JSX, archi, conventions)
+2. Lire la story complète + ses refs (parcours PRD, référence UI, archi, conventions)
 3. Vérifier `.tiple/checklists/story-ready.md`
 4. Implémenter : schemas Zod → backend → tests unit → UI → tests unit UI → page → tests integ
 5. Écrire les tests (unit + integ) au fur et à mesure
@@ -70,9 +70,9 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 ## Quand le PRD évolue
 1. Modifier `docs/prd.md` — parcours concerné, statut 🔶 Draft
 2. Passer `.tiple/checklists/prd-evolution.md` point par point
-3. Identifier les impacts : parcours, écrans JSX, architecture, epics, stories, DB
+3. Identifier les impacts : parcours, maquettes/références UI (si applicable), architecture, epics, stories, DB
 4. Mettre à jour `docs/architecture.md` (+ ADR si invariant touché)
-5. Mettre à jour les écrans JSX si nécessaire (`docs/design/screens/`)
+5. (si maquettes) Mettre à jour les maquettes si nécessaire (`docs/design/screens/`)
 6. Mettre à jour les epics et stories impactées
 7. Ajouter une entrée dans `docs/changelog.md`
 8. Lister les nouvelles stories à créer

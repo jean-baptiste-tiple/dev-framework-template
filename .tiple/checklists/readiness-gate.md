@@ -15,18 +15,18 @@
 ## Parcours & Design
 
 - [ ] Chaque parcours du PRD a un flow Mermaid
-- [ ] Chaque parcours a ses écrans listés avec fichier JSX
-- [ ] Les écrans JSX existent dans `docs/design/screens/`
-- [ ] `docs/design/screens/_index.md` est à jour (inventaire)
-- [ ] Les composants partagés sont dans `docs/design/components/`
-- [ ] `docs/design/guide.md` est présent
+- [ ] Chaque parcours a une référence UI (maquettes, description, ou N/A)
+- [ ] (si maquettes) Les écrans JSX existent dans `docs/design/screens/`
+- [ ] (si maquettes) `docs/design/screens/_index.md` est à jour (inventaire)
+- [ ] (si maquettes) Les composants partagés sont dans `docs/design/components/`
+- [ ] (si maquettes) `docs/design/guide.md` est présent
 
 ## Cohérence
 
-- [ ] Chaque FR du PRD est dans un parcours et rattachée à un écran
+- [ ] Chaque FR du PRD est dans un parcours et a une référence UI
 - [ ] Chaque FR du PRD est couverte par au moins une story
 - [ ] Chaque story référence les FRs et le parcours qu'elle implémente
-- [ ] Chaque story référence le(s) écran(s) JSX correspondant(s)
+- [ ] Chaque story a une référence UI renseignée (maquette, description, ou N/A)
 - [ ] Le modèle de données couvre les entités nécessaires aux stories Ready
 - [ ] Les RLS policies sont définies pour chaque table du modèle
 - [ ] Les stories ont des AC en format Given/When/Then

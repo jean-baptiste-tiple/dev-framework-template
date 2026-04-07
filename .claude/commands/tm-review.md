@@ -83,10 +83,10 @@ Passer CHAQUE section de `code-review.md` dans l'ordre :
 - Tous les tests existants passent
 
 ### 5. Design & UX
-- Implémentation correspond à la maquette
+- (si maquette) Implémentation correspond à la référence UI
 - Tokens du design system utilisés
 - Interface responsive (si applicable)
-- Écarts documentés
+- Écarts documentés (si référence UI fournie)
 
 ### 6. Architecture
 - Server Components par défaut — `"use client"` justifié

@@ -9,7 +9,7 @@
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Parcours** | [Nom du parcours PRD — section 4.X] |
 | **PRD Refs** | FR-XXX-01, FR-XXX-02 |
-| **Écrans** | docs/design/screens/[fichier].jsx |
+| **Référence UI** | _JSX / Figma / description / N/A_ |
 | **Dépendances** | E[XX] (si applicable) |
 
 ## Objectif
@@ -30,7 +30,8 @@
 |----|-------|-----------|--------|-------------|
 | E[XX]-S01 | | S/M/L | ⬜ | — |
 
-## Design requis
+## Maquettes (si applicable)
 
-- [ ] <!-- Écran JSX créé dans docs/design/screens/ -->
+<!-- Supprimer cette section si Référence UI = N/A -->
+- [ ] <!-- Maquette créée (JSX dans docs/design/screens/, Figma, wireframe...) -->
 - [ ] <!-- Composants partagés identifiés dans docs/design/components/ -->

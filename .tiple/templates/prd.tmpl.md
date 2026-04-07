@@ -33,7 +33,7 @@
 | --font-sans | | Corps de texte |
 | --space-4 | 16px | Espacement standard |
 
-**Composants partagés :** voir `docs/design/components/_index.md`
+**Composants partagés :** voir `docs/design/components/_index.md` _(si applicable)_
 **Design system complet :** voir `docs/design/system.md`
 
 ## 4. Parcours utilisateur
@@ -63,15 +63,15 @@ graph LR
 
 #### Écrans
 
-| Écran | Fichier JSX | Description |
+| Écran | Référence UI | Description |
 |-------|-------------|-------------|
-| | docs/design/screens/[fichier].jsx | |
+| | _JSX / Figma / description / N/A_ | |
 
 #### Exigences fonctionnelles
 
-| ID | Description | Priorité | Écran(s) | Statut |
+| ID | Description | Priorité | Référence UI | Statut |
 |----|------------|----------|----------|--------|
-| FR-[PARCOURS]-01 | | Must | [fichier].jsx | 🔶 |
+| FR-[PARCOURS]-01 | | Must | _JSX / Figma / N/A_ | 🔶 |
 
 **Critères d'acceptation FR-[PARCOURS]-01 :**
 - [ ] Given ... When ... Then ...
@@ -79,9 +79,9 @@ graph LR
 
 #### Exigences non-fonctionnelles
 
-| ID | Catégorie | Description | Cible | Écran(s) | Statut |
+| ID | Catégorie | Description | Cible | Référence UI | Statut |
 |----|-----------|------------|-------|----------|--------|
-| NFR-[PARCOURS]-01 | Performance | | | [fichier].jsx | 🔶 |
+| NFR-[PARCOURS]-01 | Performance | | | _JSX / Figma / N/A_ | 🔶 |
 
 ---
 
