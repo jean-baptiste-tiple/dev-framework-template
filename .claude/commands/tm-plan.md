@@ -18,6 +18,41 @@ Vérifier la présence de ces fichiers avant de démarrer. Si aucune maquette n'
 
 ## Process
 
+### Phase 0 — Starters (avant le cadrage)
+
+Identifier les besoins techniques du projet et activer les starters correspondants.
+
+**Question à poser :** Le projet a-t-il besoin d'une base de données et/ou d'authentification ?
+
+#### Si oui → Activer le starter Supabase + Auth
+
+Lire `.tiple/starters/supabase-auth/README.md` puis exécuter :
+
+1. Installer les dépendances : `pnpm add @supabase/supabase-js @supabase/ssr`
+2. Initialiser Supabase : `npx supabase init`
+3. Copier les fichiers du starter vers leur destination :
+   - `supabase-server.ts` → `src/lib/supabase/server.ts`
+   - `supabase-client.ts` → `src/lib/supabase/client.ts`
+   - `middleware.ts` → `src/middleware.ts`
+   - `auth-actions.ts` → `src/lib/actions/auth.ts`
+   - `auth-callback-route.ts` → `src/app/auth/callback/route.ts`
+   - `auth-layout.tsx` → `src/app/(auth)/layout.tsx`
+   - `login-page.tsx` → `src/app/(auth)/login/page.tsx`
+   - `signup-page.tsx` → `src/app/(auth)/signup/page.tsx`
+   - `forgot-password-page.tsx` → `src/app/(auth)/forgot-password/page.tsx`
+   - `reset-password-page.tsx` → `src/app/(auth)/reset-password/page.tsx`
+4. Mettre à jour les scripts `db:*` dans `package.json` (voir README du starter)
+5. Mettre à jour le dashboard layout pour ajouter la vérification auth
+6. Mettre à jour `src/app/page.tsx` pour rediriger vers `/login` au lieu de `/dashboard`
+7. Demander à l'utilisateur de configurer `.env.local` avec les clés Supabase
+8. Vérifier que `pnpm type-check` passe
+
+#### Si non → Continuer sans Supabase
+
+Le template fonctionne tel quel sans base de données. Passer directement à la Phase 1.
+
+---
+
 ### Phase 1 — Comprendre le problème (→ docs/brief.md)
 
 Lire l'app spec fournie par le framework Design, puis compléter par des questions :

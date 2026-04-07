@@ -4,7 +4,8 @@
 <!-- À REMPLIR : Nom du projet, description en 1 ligne -->
 
 ## Stack
-Next.js 15 (App Router) + Supabase + TypeScript strict + Tailwind CSS + Shadcn/ui
+Next.js 15 (App Router) + TypeScript strict + Tailwind CSS + Shadcn/ui
+Backend/DB optionnel : Supabase (à ajouter selon le projet — voir section "Supabase" ci-dessous).
 Voir `.tiple/conventions/tech-stack.md` pour les versions exactes.
 
 ## Méthode
@@ -37,14 +38,26 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 4. Ne JAMAIS push du code qui casse le build ou les tests
 5. La CI (`.github/workflows/ci.yml`) vérifie automatiquement type-check + lint + tests sur chaque push
 
-## Règles Next.js + Supabase
+## Règles Next.js
 1. **Server Components par défaut.** Pas de `"use client"` sauf si nécessaire (state, effects, event handlers). Pousser le `"use client"` le plus bas possible dans l'arbre.
 2. **Server Actions pour les mutations.** Pas d'API routes sauf webhooks/cron. Chaque action : vérifier auth → valider Zod → exécuter → `revalidatePath` → retourner `{data}` ou `{error}`.
-3. **Supabase côté serveur uniquement pour les mutations.** Le browser client est réservé au realtime et à l'auth listener. Jamais de `.insert()/.update()/.delete()` depuis un Client Component.
-4. **RLS activé sur toute table.** Pas d'exception sans ADR documenté. Le `service_role` client est interdit sauf cas explicitement documenté.
-5. **Schemas Zod partagés.** Un schema dans `lib/schemas/` = validé côté form + côté action. Pas de double validation manuelle.
-6. **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct. Les migrations sont auto-déployées sur push vers `main` via `.github/workflows/supabase-migrations.yml` (nécessite les secrets `SUPABASE_PROJECT_ID`, `SUPABASE_ACCESS_TOKEN` et `SUPABASE_DB_PASSWORD` dans GitHub).
-7. **Route groups : toujours un `page.tsx`.**  Un route group (ex: `(dashboard)`) avec un `layout.tsx` DOIT avoir au moins un `page.tsx`, sinon le build Next.js échoue (`ENOENT: client-reference-manifest.js`). Si le route group n'est pas utilisé, supprimer le dossier entier.
+3. **Schemas Zod partagés.** Un schema dans `lib/schemas/` = validé côté form + côté action. Pas de double validation manuelle.
+4. **Route groups : toujours un `page.tsx`.**  Un route group (ex: `(dashboard)`) avec un `layout.tsx` DOIT avoir au moins un `page.tsx`, sinon le build Next.js échoue (`ENOENT: client-reference-manifest.js`). Si le route group n'est pas utilisé, supprimer le dossier entier.
+
+## Starters
+
+Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont activés automatiquement par `/tm-plan` (Phase 0) selon les besoins du projet.
+
+### Supabase + Auth (`.tiple/starters/supabase-auth/`)
+Ajoute : base de données, auth (login/signup/reset), middleware, Server Actions, pages auth, CI migrations.
+Activé quand le projet a besoin d'une base de données et/ou d'authentification.
+Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
+
+### Règles Supabase (quand activé)
+- **Supabase côté serveur uniquement pour les mutations.** Le browser client est réservé au realtime et à l'auth listener. Jamais de `.insert()/.update()/.delete()` depuis un Client Component.
+- **RLS activé sur toute table.** Pas d'exception sans ADR documenté. Le `service_role` client est interdit sauf cas explicitement documenté.
+- **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct. CI auto-deploy via `.github/workflows/supabase-migrations.yml`.
+- **Auth vérifiée dans chaque Server Action** (pas seulement le middleware).
 
 ## Workflow quotidien
 1. Lire `.tiple/sprint/status.md` → identifier la prochaine story 🟢 Ready
