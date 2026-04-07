@@ -44,6 +44,7 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 4. **RLS activé sur toute table.** Pas d'exception sans ADR documenté. Le `service_role` client est interdit sauf cas explicitement documenté.
 5. **Schemas Zod partagés.** Un schema dans `lib/schemas/` = validé côté form + côté action. Pas de double validation manuelle.
 6. **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct.
+7. **Route groups : toujours un `page.tsx`.**  Un route group (ex: `(dashboard)`) avec un `layout.tsx` DOIT avoir au moins un `page.tsx`, sinon le build Next.js échoue (`ENOENT: client-reference-manifest.js`). Si le route group n'est pas utilisé, supprimer le dossier entier.
 
 ## Workflow quotidien
 1. Lire `.tiple/sprint/status.md` → identifier la prochaine story 🟢 Ready

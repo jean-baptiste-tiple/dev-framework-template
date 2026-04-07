@@ -1,3 +1,6 @@
+// Route group protégé par auth — renommer ou supprimer selon le projet.
+// IMPORTANT : un route group avec layout DOIT avoir au moins un page.tsx,
+// sinon le build Next.js échoue (missing client-reference-manifest).
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 
