@@ -31,7 +31,19 @@
    ❌ tests : X failed
    ```
 
-## Règles
+## Règles d'exécution (CRITIQUE — lire avant de lancer)
+
+> **⚠️ Ces commandes DOIVENT être exécutées en foreground, sans pipe, sans redirection.**
+> Claude a tendance à lancer ces commandes en background puis à poll le fichier de sortie — c'est INTERDIT.
+
+- **Foreground uniquement** : `run_in_background: false` (défaut). Timeout : `120000` ms minimum.
+- **Aucun pipe** : pas de `| tail`, `| head`, `| grep`, `2>&1 | ...`
+- **Aucune redirection fichier** : pas de `> output.txt`, `2>&1 > log.txt`, `| tee file.txt`
+- **Aucune boucle d'attente** : pas de `sleep` + `cat`, `while true; do tail ...`, `watch`
+- **Commande brute** : exécuter exactement `pnpm type-check`, `pnpm lint`, `pnpm test` — rien d'autre
+- Si le timeout est dépassé : **ne PAS relancer en boucle**. Informer l'utilisateur et proposer de laisser la CI vérifier.
+
+## Règles métier
 - Les 3 checks DOIVENT passer avant de continuer
 - Si un check échoue, corriger AVANT de passer au suivant
 - Maximum 3 cycles de correction par check — au-delà, signaler le blocage à l'utilisateur

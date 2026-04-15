@@ -44,6 +44,9 @@
 
 ### Phase 3 — Vérification triple (OBLIGATOIRE)
 
+> **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
+> Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
+
 7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer.
 8. **`pnpm lint`** — Doit passer sans erreur. Si erreurs → corriger et relancer.
 9. **`pnpm test`** — Tous les tests doivent passer (non-régression). Si échecs → corriger et relancer.
@@ -109,6 +112,9 @@
 6. Écrire les tests nécessaires
 
 ### Phase 3 — Vérification triple (OBLIGATOIRE)
+
+> **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
+> Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
 
 7. **`pnpm type-check`** — Doit passer sans erreur.
 8. **`pnpm lint`** — Doit passer sans erreur.

@@ -3,6 +3,18 @@
 Une seule conversation continue qui produit tous les documents de cadrage.
 Pas un formulaire — un dialogue naturel.
 
+> **🚫 RÈGLE CRITIQUE — `/tm-plan` = ZÉRO code, ZÉRO commande système**
+>
+> Cette commande produit UNIQUEMENT des fichiers Markdown dans `docs/` et `.tiple/sprint/`.
+> Pendant toute la durée du `/tm-plan`, il est INTERDIT de :
+> - Exécuter `pnpm add`, `pnpm install`, `npm install`, `npx`, ou toute installation de dépendances
+> - Créer ou modifier des fichiers `.ts`, `.tsx`, `.js`, `.css`, `.json` (sauf les Markdown de docs)
+> - Exécuter `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build` ou tout build/check
+> - Copier des fichiers de code depuis les starters
+> - Créer des dossiers dans `src/`, `supabase/`, `.github/`
+>
+> L'installation technique sera faite par `/tm-dev` lors de la première story (E01-S01 Setup).
+
 ## Pré-requis : livrables d'entrée
 
 ### Requis
@@ -18,38 +30,31 @@ Vérifier la présence de ces fichiers avant de démarrer. Si aucune maquette n'
 
 ## Process
 
-### Phase 0 — Starters (avant le cadrage)
+### Phase 0 — Starters (identification uniquement — PAS d'installation)
 
-Identifier les besoins techniques du projet et activer les starters correspondants.
+Identifier les besoins techniques du projet et **documenter** les starters à activer.
+
+> ⚠️ **IMPORTANT : `/tm-plan` est un cadrage documentaire.**
+> - Ne JAMAIS installer de dépendances (`pnpm add`, `npm install`)
+> - Ne JAMAIS créer ou modifier de fichiers de code (`.ts`, `.tsx`, `.js`, `.css`)
+> - Ne JAMAIS exécuter de commandes de build, lint ou test
+> - Ne JAMAIS copier les fichiers du starter
+> - Seuls les fichiers dans `docs/` et `.tiple/sprint/` sont modifiés par `/tm-plan`
+>
+> L'installation des starters est faite par `/tm-dev` lors de la première story (typiquement E01-S01 "Setup technique").
 
 **Question à poser :** Le projet a-t-il besoin d'une base de données et/ou d'authentification ?
 
-#### Si oui → Activer le starter Supabase + Auth
+#### Si oui → Documenter l'activation du starter Supabase + Auth
 
-Lire `.tiple/starters/supabase-auth/README.md` puis exécuter :
-
-1. Installer les dépendances : `pnpm add @supabase/supabase-js @supabase/ssr`
-2. Initialiser Supabase : `npx supabase init`
-3. Copier les fichiers du starter vers leur destination :
-   - `supabase-server.ts` → `src/lib/supabase/server.ts`
-   - `supabase-client.ts` → `src/lib/supabase/client.ts`
-   - `middleware.ts` → `src/middleware.ts`
-   - `auth-actions.ts` → `src/lib/actions/auth.ts`
-   - `auth-callback-route.ts` → `src/app/auth/callback/route.ts`
-   - `supabase-migrations.yml` → `.github/workflows/supabase-migrations.yml`
-   - `supabase-config.toml` → `supabase/config.toml`
-   - `seed.sql` → `supabase/seed.sql`
-   - `auth-layout.tsx` → `src/app/(auth)/layout.tsx`
-   - `login-page.tsx` → `src/app/(auth)/login/page.tsx`
-   - `signup-page.tsx` → `src/app/(auth)/signup/page.tsx`
-   - `forgot-password-page.tsx` → `src/app/(auth)/forgot-password/page.tsx`
-   - `reset-password-page.tsx` → `src/app/(auth)/reset-password/page.tsx`
-4. Créer `supabase/migrations/` : `mkdir -p supabase/migrations`
-5. Mettre à jour les scripts `db:*` dans `package.json` (voir README du starter)
-5. Mettre à jour le dashboard layout pour ajouter la vérification auth
-6. Mettre à jour `src/app/page.tsx` pour rediriger vers `/login` au lieu de `/dashboard`
-7. Demander à l'utilisateur de configurer `.env.local` avec les clés Supabase
-8. Vérifier que `pnpm type-check` passe
+1. Lire `.tiple/starters/supabase-auth/README.md` pour comprendre ce qui sera installé
+2. **Créer une story E01-S01 "Setup technique"** dans la Phase 5 qui inclura :
+   - Installation des dépendances Supabase
+   - Copie des fichiers du starter vers leur destination
+   - Configuration `.env.local`
+   - Vérification `pnpm type-check`
+3. Noter dans `docs/architecture.md` que le starter Supabase + Auth sera activé
+4. Adapter les starters si le projet a des besoins auth spécifiques (ex: auth par code chantier au lieu de login classique → ne pas copier les pages auth du starter)
 
 #### Si non → Continuer sans Supabase
 
@@ -152,7 +157,7 @@ Le template inclut un design system par défaut (Violet Corporate SaaS). Demande
   - Couleur secondaire (défaut : dérivée de la primaire)
   - Font principale (défaut : Inter)
   - Style général (corporate, playful, minimal, autre)
-- → Mettre à jour `docs/design/system.md`, `src/app/globals.css`, `tailwind.config.ts`
+- → Mettre à jour `docs/design/system.md` avec les tokens choisis (les fichiers de code `globals.css` et `tailwind.config.ts` seront mis à jour par `/tm-dev` lors de la story de setup)
 - Si non → garder le design system par défaut tel quel
 
 **4b. Vérifier** que `docs/design/system.md` reflète les tokens choisis
