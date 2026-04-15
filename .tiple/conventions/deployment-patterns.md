@@ -56,14 +56,16 @@ NEXT_PUBLIC_SITE_URL=
 -- DROP TYPE IF EXISTS discount_type;
 ```
 
-## CI/CD
+## Qualité avant push
 
-### GitHub Actions (déjà configuré)
-```yaml
-# .github/workflows/ci.yml vérifie :
+### Vérification locale via `/commit-push`
+```
+# La commande /commit-push exécute automatiquement :
 # 1. pnpm type-check
 # 2. pnpm lint
 # 3. pnpm test
+# Puis commit + push si tout passe.
+# Pas de CI GitHub pour les checks — tout se fait en local.
 ```
 
 ### Pre-deploy checklist

@@ -30,7 +30,7 @@ Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de v
 3. **AUCUNE redirection fichier.** Ne JAMAIS rediriger la sortie vers un fichier (`> output.txt`, `2>&1 > log.txt`, `| tee file.txt`). La sortie doit aller directement dans le terminal.
 4. **AUCUNE boucle d'attente.** Ne JAMAIS utiliser `sleep` + `cat`/`tail` pour poll un fichier de sortie. Ne JAMAIS utiliser `while true; do ... done`, `watch`, ou toute boucle pour surveiller une commande.
 5. **Si une commande en background a été lancée par erreur**, attendre la notification de fin. Ne JAMAIS poll manuellement.
-6. **Si une commande dépasse le timeout**, ne PAS relancer en boucle — informer l'utilisateur et proposer de laisser la CI vérifier.
+6. **Si une commande dépasse le timeout**, ne PAS relancer en boucle — informer l'utilisateur et proposer d'augmenter le timeout ou de lancer manuellement.
 7. **Commande brute = la commande et rien d'autre.** Exemples corrects : `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm add @supabase/supabase-js`. Exemples INTERDITS : `pnpm type-check 2>&1 | tail -20`, `pnpm install > log.txt`, `pnpm test &`.
 
 ## Conventions par tags (chargement intelligent)
@@ -45,12 +45,10 @@ Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées
 Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
 ## Règles avant push
-1. **`pnpm type-check`** doit passer sans erreur
-2. **`pnpm lint`** doit passer sans erreur
-3. **`pnpm test`** doit passer sans erreur (non-régression)
-4. Ne JAMAIS push du code qui casse le build ou les tests
-5. La CI (`.github/workflows/ci.yml`) vérifie automatiquement type-check + lint + tests sur chaque push
-6. Voir "Règles d'exécution Bash" ci-dessus pour les contraintes d'exécution de ces commandes.
+1. **TOUJOURS utiliser `/commit-push`** pour commit et push. Cette commande exécute la vérification triple (type-check + lint + tests) avant le commit, met à jour le changelog, et push.
+2. Ne JAMAIS push du code qui casse le build ou les tests
+3. Ne JAMAIS commit/push en dehors de `/commit-push` sauf demande explicite de l'utilisateur
+4. Voir "Règles d'exécution Bash" ci-dessus pour les contraintes d'exécution des commandes.
 
 ## Règles Next.js
 1. **Server Components par défaut.** Pas de `"use client"` sauf si nécessaire (state, effects, event handlers). Pousser le `"use client"` le plus bas possible dans l'arbre.
@@ -113,13 +111,14 @@ Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
 
 ## Commandes disponibles
 
-3 slash commands dans `.claude/commands/` :
+Slash commands dans `.claude/commands/` :
 
 | Commande | Usage | Description |
 |----------|-------|-------------|
 | `/tm-plan` | Nouveau projet / nouvelle feature | Cadrage complet : brief → PRD → archi → design → epics/stories → gate |
 | `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine), ou sans arg (mode libre) |
 | `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions |
+| `/commit-push` | Commit & push | Vérification triple + changelog + commit + push (OBLIGATOIRE) |
 
 ## Design System
 

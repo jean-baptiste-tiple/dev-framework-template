@@ -105,11 +105,10 @@ Les conventions techniques sont dans `.tiple/conventions/` et chargées **automa
 | `/tm-dev` (libre) | Tags déduits des fichiers touchés (ex: `lib/actions/` → `api`) |
 | `/tm-fix` | Même déduction automatique que le mode libre |
 
-## CI/CD
+## Qualité & Déploiement
 
-La CI est configurée via `.github/workflows/ci.yml` et s'exécute sur chaque push :
-- **Type check** (`pnpm type-check`)
-- **Lint** (`pnpm lint`)
-- **Tests unitaires & intégration** (`pnpm test`)
+Les vérifications qualité (type-check, lint, tests) sont exécutées **localement** avant chaque push via la commande `/commit-push`. Pas de CI GitHub pour les checks — cela évite les problèmes de compatibilité cross-platform (Windows/macOS) et les timeouts en CI.
+
+Un hook Claude Code (`.claude/hooks/enforce-bash-rules.sh`) garantit que les commandes sont exécutées correctement (foreground, sans pipe, sans redirection).
 
 Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter si activé.

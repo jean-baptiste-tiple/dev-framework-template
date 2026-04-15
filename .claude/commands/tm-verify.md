@@ -41,7 +41,7 @@
 - **Aucune redirection fichier** : pas de `> output.txt`, `2>&1 > log.txt`, `| tee file.txt`
 - **Aucune boucle d'attente** : pas de `sleep` + `cat`, `while true; do tail ...`, `watch`
 - **Commande brute** : exécuter exactement `pnpm type-check`, `pnpm lint`, `pnpm test` — rien d'autre
-- Si le timeout est dépassé : **ne PAS relancer en boucle**. Informer l'utilisateur et proposer de laisser la CI vérifier.
+- Si le timeout est dépassé : **ne PAS relancer en boucle**. Informer l'utilisateur et proposer d'augmenter le timeout ou de lancer manuellement.
 
 ## Règles métier
 - Les 3 checks DOIVENT passer avant de continuer

@@ -54,7 +54,7 @@ vi.mock("@/lib/supabase/server", () => ({
 ## Non-régression
 
 - Avant chaque merge : TOUS les tests existants doivent passer
-- CI minimale : `pnpm test` (unit + integ) sur chaque push
+- `/commit-push` exécute `pnpm test` (unit + integ) avant chaque push
 - E2E : avant chaque mise en prod (pas sur chaque push)
 
 ## Ce qu'on ne teste PAS
