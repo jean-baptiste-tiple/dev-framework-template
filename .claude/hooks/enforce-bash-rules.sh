@@ -8,9 +8,13 @@
 INPUT=$(cat)
 
 # --- Règle 1 : JAMAIS de run_in_background ---
-if echo "$INPUT" | grep -q '"run_in_background"[[:space:]]*:[[:space:]]*true'; then
-  echo "BLOQUÉ: run_in_background=true est INTERDIT. Relance en foreground avec timeout adapté (120000-600000ms). Voir CLAUDE.md 'Règles d exécution Bash' règle 1." >&2
-  exit 2
+# Vérifie plusieurs formats possibles du JSON (avec/sans espaces, minifié ou pretty-printed)
+if echo "$INPUT" | grep -q '"run_in_background"'; then
+  # Le champ existe — vérifier s'il est true
+  if echo "$INPUT" | grep -qE '"run_in_background"\s*:\s*true'; then
+    echo "BLOQUÉ: run_in_background=true est INTERDIT. Relance en foreground avec timeout: 120000 (ou jusqu'à 600000 pour les builds longs). Voir CLAUDE.md règle 1." >&2
+    exit 2
+  fi
 fi
 
 # Extraire la commande (entre les guillemets après "command":)
