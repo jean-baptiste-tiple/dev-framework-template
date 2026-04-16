@@ -45,8 +45,8 @@ Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées
 Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
 ## Règles avant push
-1. **TOUJOURS utiliser `/commit-push`** pour commit et push. Cette commande exécute la vérification triple (type-check + lint + tests) avant le commit, met à jour le changelog, et push.
-2. Ne JAMAIS push du code qui casse le build ou les tests
+1. **TOUJOURS utiliser `/commit-push`** pour commit et push. Cette commande exécute `pnpm type-check` + `pnpm lint` (checks locaux), met à jour le changelog, commit et push.
+2. **Ne JAMAIS lancer `pnpm test` localement** — les tests tournent exclusivement sur la CI GitHub (`.github/workflows/ci.yml`). Vercel ne déploie que si la CI est verte.
 3. Ne JAMAIS commit/push en dehors de `/commit-push` sauf demande explicite de l'utilisateur
 4. Voir "Règles d'exécution Bash" ci-dessus pour les contraintes d'exécution des commandes.
 
