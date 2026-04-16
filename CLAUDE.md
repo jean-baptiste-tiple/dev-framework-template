@@ -78,10 +78,7 @@ Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
 4. Implémenter : schemas Zod → backend → tests unit → UI → tests unit UI → page → tests integ
 5. Écrire les tests (unit + integ) au fur et à mesure
 6. Vérifier que les tests de la story passent
-7. **Vérification triple** (OBLIGATOIRE — `/tm-verify`) :
-   - `pnpm type-check` → doit passer sans erreur
-   - `pnpm lint` → doit passer sans erreur
-   - `pnpm test` → tous les tests doivent passer (non-régression)
+7. **Type-check** (OBLIGATOIRE) : `pnpm type-check` → doit passer sans erreur
 8. **Code Review en agent isolé** (OBLIGATOIRE — `/tm-review`) :
    - Lancer un agent autonome séparé (regard neuf, sans biais d'implémentation)
    - L'agent passe `.tiple/checklists/code-review.md` point par point

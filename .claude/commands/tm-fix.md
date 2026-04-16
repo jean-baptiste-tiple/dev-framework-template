@@ -32,16 +32,11 @@
 4. Corriger le bug / implémenter la modification
 5. Écrire ou mettre à jour les tests
 
-### Phase 3 — Vérification triple (OBLIGATOIRE)
+### Phase 3 — Type-check (OBLIGATOIRE)
 
-> **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
-> Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
+6. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
 
-6. **`pnpm type-check`** — Doit passer sans erreur.
-7. **`pnpm lint`** — Doit passer sans erreur.
-8. **`pnpm test`** — Tous les tests doivent passer (non-régression).
-
-> Maximum 3 cycles de correction. Au-delà, signaler le blocage.
+> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
 
 ### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
 
@@ -50,7 +45,7 @@
    - Pas d'effets de bord ? Pas de régression ?
    - Sécurité : le fix n'introduit pas de faille ?
    - Registry à jour si composant modifié ?
-10. Si ❌ CHANGES REQUESTED → corriger puis relancer phase 3, puis nouveau review agent
+10. Si ❌ CHANGES REQUESTED → corriger puis relancer `pnpm type-check`, puis nouveau review agent
 
 ### Phase 5 — Finalisation
 

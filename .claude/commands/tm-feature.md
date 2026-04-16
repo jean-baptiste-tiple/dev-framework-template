@@ -36,18 +36,15 @@ Pour chaque story, dans l'ordre :
    - Lire contexte (story + archi + conventions + registry)
    - Coder : Zod → actions → tests unit → UI → tests unit UI → page → tests integ
 
-8. **Vérification triple** (OBLIGATOIRE) :
-   > **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
-   > Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
-   - `pnpm type-check` → doit passer
-   - `pnpm lint` → doit passer
-   - `pnpm test` → tous les tests doivent passer (non-régression)
+8. **Type-check** (OBLIGATOIRE) :
+   - `pnpm type-check` → doit passer. Si erreurs → corriger et relancer (max 3 cycles).
+   - Le lint et les tests seront exécutés par `/commit-push` avant le push.
 
 9. **Code Review en agent isolé** (OBLIGATOIRE) :
    - Lancer un agent autonome séparé (voir `.claude/commands/tm-review.md`)
    - L'agent reviewer découvre le code avec un regard neuf, sans biais d'implémentation
    - Il passe `.tiple/checklists/code-review.md` point par point
-   - Si ❌ CHANGES REQUESTED → corriger puis relancer étape 8, puis nouveau review agent
+   - Si ❌ CHANGES REQUESTED → corriger puis relancer `pnpm type-check`, puis nouveau review agent
 
 10. **Finalisation story** :
     - Remplir post-implémentation de la story
@@ -59,6 +56,6 @@ Répéter 7-10 pour chaque story de la feature.
 
 ### Phase 5 — Vérification finale
 
-11. Lancer séparément (en foreground, sans pipe) : `pnpm type-check`, puis `pnpm lint`, puis `pnpm test` → tout passe
+11. `pnpm type-check` → doit passer (le lint et les tests seront vérifiés par `/commit-push`)
 12. `/tm-status` → toutes les stories de la feature sont ✅ Done
 13. Résumé global de la feature implémentée

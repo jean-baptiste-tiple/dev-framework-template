@@ -42,17 +42,11 @@
 > - Tests E2E → `tests/e2e/`
 > Ne JAMAIS mettre un test d'intégration dans `tests/unit/` ou inversement.
 
-### Phase 3 — Vérification triple (OBLIGATOIRE)
+### Phase 3 — Type-check (OBLIGATOIRE)
 
-> **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
-> Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
+7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
 
-7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer.
-8. **`pnpm lint`** — Doit passer sans erreur. Si erreurs → corriger et relancer.
-9. **`pnpm test`** — Tous les tests doivent passer (non-régression). Si échecs → corriger et relancer.
-
-> Les 3 checks doivent être verts avant de passer à la phase suivante.
-> Maximum 3 cycles de correction par check. Au-delà, signaler le blocage.
+> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
 
 ### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
 
@@ -73,7 +67,7 @@
     )
     ```
 12. Analyser le résultat de l'agent :
-    - **Si ❌ CHANGES REQUESTED** → appliquer les fix, relancer phase 3 (verify), puis relancer un nouvel agent review
+    - **Si ❌ CHANGES REQUESTED** → appliquer les fix, relancer `pnpm type-check`, puis relancer un nouvel agent review
     - **Si ✅ APPROVED** → continuer vers la finalisation
 
 ### Phase 5 — Finalisation
@@ -111,20 +105,17 @@
 5. Implémenter en respectant les conventions chargées
 6. Écrire les tests nécessaires
 
-### Phase 3 — Vérification triple (OBLIGATOIRE)
+### Phase 3 — Type-check (OBLIGATOIRE)
 
-> **⚠️ EXÉCUTION : foreground, sans pipe, sans redirection, sans background.**
-> Exécuter chaque commande brute avec `timeout: 120000`. Voir `.claude/commands/tm-verify.md` pour les règles complètes.
+7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
 
-7. **`pnpm type-check`** — Doit passer sans erreur.
-8. **`pnpm lint`** — Doit passer sans erreur.
-9. **`pnpm test`** — Tous les tests doivent passer (non-régression).
+> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
 
 ### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
 
 10. Récupérer la liste des fichiers modifiés
 11. Lancer un agent reviewer autonome (voir `.claude/commands/tm-review.md`)
-12. Si ❌ CHANGES REQUESTED → fix → relancer phase 3 → nouvel agent review
+12. Si ❌ CHANGES REQUESTED → fix → relancer `pnpm type-check` → nouvel agent review
 
 ### Phase 5 — Finalisation
 
@@ -146,8 +137,9 @@
 ## Règles
 
 - Ne JAMAIS skip les phases 3 et 4 — elles sont obligatoires
-- Si la phase 4 (review) trouve des problèmes HAUTE/MOYENNE, il faut corriger ET relancer la phase 3
-- Le cycle est : Implémenter → Tests → Verify → Review → Fix si nécessaire → Verify à nouveau → Docs
+- Si la phase 4 (review) trouve des problèmes HAUTE/MOYENNE, il faut corriger ET relancer `pnpm type-check`
+- Le cycle est : Implémenter → Tests → Type-check → Review → Fix si nécessaire → Type-check à nouveau → Docs
+- Le lint et les tests complets sont exécutés par `/commit-push` avant le push — pas pendant le dev
 - Vérifier le component-registry AVANT de créer (DRY)
 - Server Components par défaut, "use client" le plus bas possible
 - Zod schema partagé = une seule source de vérité
