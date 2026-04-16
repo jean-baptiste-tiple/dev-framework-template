@@ -5,7 +5,7 @@
 | Techno | Version | Rôle | Justification |
 |--------|---------|------|---------------|
 | Next.js | 15 (App Router) | Framework fullstack | SSR/SSG, Server Components, Server Actions, routing fichiers |
-| TypeScript | 5.x (strict mode) | Typage | Sécurité du code, autocomplétion, refactoring |
+| TypeScript | ~5.8.3 (strict mode) | Typage | Sécurité du code, autocomplétion, refactoring. **Épinglé 5.8.x** — les versions 5.9+ causent des hangs de `tsc --noEmit`. |
 | Supabase | Cloud | Backend-as-a-Service | Auth, DB PostgreSQL, RLS, Realtime, Storage |
 | Tailwind CSS | 4.x | Styling | Utility-first, design system via config, purge auto |
 | Shadcn/ui | latest | Composants UI | Copy-paste, personnalisables, accessibles, basés sur Radix |

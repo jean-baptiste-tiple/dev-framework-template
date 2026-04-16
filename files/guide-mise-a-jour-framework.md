@@ -7,12 +7,17 @@
 
 ## Probleme
 
-Claude Code a des comportements toxiques récurrents quand il lance des commandes :
+Deux categories de problemes :
 
-1. **Background + polling** : lance `pnpm test` en background, redirige la sortie dans un fichier, puis poll avec `cat`/`tail` en boucle. L'output est bufferisé, le fichier reste vide, Claude boucle indéfiniment.
-2. **Pipes** : ajoute `| tail -20` ou `2>&1 | head` aux commandes, ce qui tronque la sortie.
-3. **Implémentation pendant `/tm-plan`** : installe des packages et écrit des fichiers `.ts` pendant le cadrage.
-4. **Processus zombie vitest/tsc** sur Mac : des processus qui ne se terminent pas s'accumulent et poussent Claude à backgrounder.
+**Claude Code (comportement du modele) :**
+1. **Background + polling** : lance des commandes en background, redirige la sortie dans un fichier, puis poll avec `cat`/`tail` en boucle.
+2. **Pipes** : ajoute `| tail -20` ou `2>&1 | head` aux commandes.
+3. **Implémentation pendant `/tm-plan`** : installe des packages pendant le cadrage.
+
+**Environnement local (cause racine des hangs) :**
+4. **TypeScript 5.9.x** : `tsc --noEmit` entre dans une boucle infinie de resolution de types. Fix : epingler `~5.8.3`.
+5. **`next-env.d.ts` manquant** : ce fichier est reference dans `tsconfig.json` mais absent du disque. `tsc` hang silencieusement au lieu d'echouer. Fix : inclure le fichier dans le template.
+6. **Processus zombie vitest/tsc** sur Mac : s'accumulent et ralentissent tout.
 
 ## Solution
 
@@ -30,29 +35,62 @@ Claude Code a des comportements toxiques récurrents quand il lance des commande
 
 ## Etape 0 — Nettoyage environnement Mac (FAIRE EN PREMIER)
 
+### Fix 1 — Epingler TypeScript 5.8.x
+
+TypeScript 5.9.x cause des hangs de `tsc --noEmit`. Dans `package.json`, remplacer :
+```
+"typescript": "^5"    (ou toute version >= 5.9)
+```
+par :
+```
+"typescript": "~5.8.3"
+```
+Puis `rm -rf node_modules && pnpm install`.
+
+### Fix 2 — Verifier que `next-env.d.ts` existe
+
+Ce fichier est reference dans `tsconfig.json` mais peut manquer si `next dev` ou `next build` n'a jamais tourne. Son absence fait hang `tsc` silencieusement.
+
 ```bash
-# 1. Tuer les processus zombie vitest/tsc
+# Verifier
+ls next-env.d.ts
+
+# Si absent, le creer :
+cat > next-env.d.ts << 'EOF'
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+EOF
+```
+
+### Fix 3 — Nettoyer les processus et caches
+
+```bash
+# Tuer les zombies
 pkill -f vitest 2>/dev/null
 pkill -f "tsc --noEmit" 2>/dev/null
 
-# 2. Nettoyer
+# Nettoyer et reinstaller
 rm -rf node_modules
 pnpm store prune
 pnpm install
 
-# 3. Redemarrer VSCode completement (fermer + rouvrir)
+# Redemarrer VSCode completement (fermer + rouvrir)
+```
 
-# 4. Verifier que type-check tourne vite
+### Verification
+
+```bash
 time pnpm type-check   # doit finir en < 15s
 ```
 
-Si vitest hang quand tu le lances manuellement, ajouter dans `vitest.config.ts` :
-```ts
-test: {
-  environment: 'node',    // evite le bug jsdom + jose (Uint8Array realm)
-  testTimeout: 10000,
-}
+Si ca hang encore, le test cle pour diagnostiquer :
+```bash
+npx tsc --noEmit src/app/page.tsx
 ```
+Si ca repond → tsc fonctionne, le probleme est dans la config/les fichiers du projet (fichier manquant, tsconfig, etc.).
 
 ---
 
