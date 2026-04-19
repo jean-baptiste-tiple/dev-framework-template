@@ -1,6 +1,6 @@
 ---
 name: uploads
-description: Use when implementing file uploads, Supabase Storage integration, or file validation (size/mime).
+description: "Uploads de fichiers : file upload, Supabase Storage, validation taille/mime, drag and drop. FR : upload, téléversement, fichier, image, pièce jointe, validation fichier."
 ---
 
 Consult [.tiple/conventions/api-patterns.md](.tiple/conventions/api-patterns.md) (section Uploads) for the full patterns. Load it before writing upload code.

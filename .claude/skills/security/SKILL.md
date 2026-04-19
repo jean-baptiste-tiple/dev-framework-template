@@ -1,6 +1,6 @@
 ---
 name: security
-description: Use when handling user inputs, secrets, rate limiting, XSS/CSRF concerns, or any code touching sensitive data.
+description: "Sécurité : inputs users, secrets, rate limiting, XSS, CSRF, validation Zod serveur, données sensibles. FR : sécurité, limite de taux, injection, faille, validation serveur, secret exposé."
 ---
 
 Consult [.tiple/conventions/security-patterns.md](.tiple/conventions/security-patterns.md) for the full patterns. Load it before writing security-sensitive code.

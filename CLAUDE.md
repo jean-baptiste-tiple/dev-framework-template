@@ -115,6 +115,7 @@ Slash commands dans `.claude/commands/` :
 | `/tm-plan` | Nouveau projet / nouvelle feature | Cadrage complet : brief → PRD → archi → design → epics/stories → gate |
 | `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine), ou sans arg (mode libre) |
 | `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions |
+| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Claude peut aussi le proposer automatiquement. |
 | `/commit-push` | Commit & push | Vérification triple + changelog + commit + push (OBLIGATOIRE) |
 
 ## Design System

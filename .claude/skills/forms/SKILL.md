@@ -1,6 +1,6 @@
 ---
 name: forms
-description: Use when building forms with React Hook Form, Zod validation, Server Actions submission, or async validation.
+description: "Formulaires : React Hook Form, Zod validation, Server Action submit, validation async, erreurs inline. FR : formulaire, form, champ, validation, soumission, erreur de saisie."
 ---
 
 Consult [.tiple/conventions/api-patterns.md](.tiple/conventions/api-patterns.md) (section Forms) for the full patterns. Load it before writing form code.

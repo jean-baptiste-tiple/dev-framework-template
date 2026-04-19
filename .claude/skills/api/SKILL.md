@@ -1,6 +1,6 @@
 ---
 name: api
-description: Use when writing Server Actions, data fetching, pagination, caching, or API response handling.
+description: "API : Server Actions, data fetching, pagination, caching, revalidatePath, API response. FR : action serveur, requête API, fetch de données, pagination, cache, revalidation."
 ---
 
 Consult [.tiple/conventions/api-patterns.md](.tiple/conventions/api-patterns.md) for the full patterns. Load it before writing actions or fetch logic.

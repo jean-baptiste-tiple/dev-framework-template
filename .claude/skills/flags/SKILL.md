@@ -1,6 +1,6 @@
 ---
 name: flags
-description: Use when adding feature flags, gating a feature behind a flag, running A/B tests, or staged rollouts.
+description: "Feature flags : flags, A/B testing, rollouts progressifs, gating, toggles. FR : feature flag, drapeau, A/B test, déploiement progressif, toggle, activation."
 ---
 
 Consult [.tiple/conventions/feature-flags-patterns.md](.tiple/conventions/feature-flags-patterns.md) for the full patterns. Load it before adding a flag.

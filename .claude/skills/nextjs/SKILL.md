@@ -1,6 +1,6 @@
 ---
 name: nextjs
-description: Use when creating App Router pages, layouts, loading/error files, route groups, or dynamic routes in Next.js 15.
+description: "Next.js 15 App Router : page.tsx, layout.tsx, loading.tsx, error.tsx, route groups, dynamic routes, metadata. FR : page, layout, groupe de routes, route dynamique, App Router."
 ---
 
 Consult [.tiple/conventions/nextjs-patterns.md](.tiple/conventions/nextjs-patterns.md) for the full patterns. Load it before writing App Router code.

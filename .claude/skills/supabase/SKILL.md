@@ -1,6 +1,6 @@
 ---
 name: supabase
-description: Use when working with Supabase Storage, RLS policies, database triggers, RPC functions, or error codes.
+description: "Supabase : Storage, RLS policies, triggers DB, fonctions RPC, error codes, postgres. FR : policy RLS, bucket Storage, fonction stockée, trigger DB, code erreur Supabase."
 ---
 
 Consult [.tiple/conventions/supabase-patterns.md](.tiple/conventions/supabase-patterns.md) for the full patterns. Load it before writing Supabase code.

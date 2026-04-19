@@ -1,6 +1,6 @@
 ---
 name: database
-description: Use when creating or modifying database migrations, schemas, tables, indexes, transactions, or soft deletes.
+description: "Database : migrations, schemas, tables, indexes, transactions, soft deletes, foreign keys. FR : base de données, migration, table, index, clé étrangère, schéma DB, contrainte."
 ---
 
 Consult [.tiple/conventions/database-patterns.md](.tiple/conventions/database-patterns.md) for the full patterns. Load it before writing migrations.

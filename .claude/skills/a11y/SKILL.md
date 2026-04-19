@@ -1,6 +1,6 @@
 ---
 name: a11y
-description: Use when building interactive UI — forms, buttons, modals, menus — or checking WCAG compliance, ARIA, keyboard nav, or focus management.
+description: "Accessibilité WCAG : ARIA, keyboard nav, focus management, screen readers, contraste, labels. FR : accessibilité, a11y, clavier, lecteur d'écran, contraste, label, navigation clavier."
 ---
 
 Consult [.tiple/conventions/accessibility-patterns.md](.tiple/conventions/accessibility-patterns.md) for the full patterns. Load it before writing interactive components.

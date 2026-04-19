@@ -1,6 +1,6 @@
 ---
 name: feedback
-description: Use when adding toasts, dialogs, confirmations, or any user feedback after a mutation or action.
+description: "Feedback UI : toasts, dialogs, confirmations, notifications, alertes, modales. FR : notification, confirmation, boîte de dialogue, alerte, message utilisateur, modale."
 ---
 
 Consult [.tiple/conventions/feedback-patterns.md](.tiple/conventions/feedback-patterns.md) for the full patterns. Load it before writing feedback UI.

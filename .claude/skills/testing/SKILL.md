@@ -1,6 +1,6 @@
 ---
 name: testing
-description: Use when writing unit/integration/E2E tests, mocking Supabase, creating fixtures, or deciding what to test.
+description: "Tests : unit/integration/E2E, Vitest, Playwright, mocks Supabase, fixtures, coverage. FR : tests, unitaire, intégration, E2E, mock, fixture, couverture de test."
 ---
 
 Consult [.tiple/conventions/testing-strategy.md](.tiple/conventions/testing-strategy.md) for the full patterns. Load it before writing tests.

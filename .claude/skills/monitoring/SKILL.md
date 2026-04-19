@@ -1,6 +1,6 @@
 ---
 name: monitoring
-description: Use when adding error tracking, analytics, health checks, logging, or observability instrumentation.
+description: "Observability : error tracking (Sentry), analytics, health checks, logging, instrumentation. FR : monitoring, erreurs, logs, suivi d'erreurs, analyse, santé, observabilité."
 ---
 
 Consult [.tiple/conventions/monitoring-patterns.md](.tiple/conventions/monitoring-patterns.md) for the full patterns. Load it before writing logging/tracking code.

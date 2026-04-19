@@ -1,6 +1,6 @@
 ---
 name: datetime
-description: Use when handling dates, times, timezones, date formatting, currency formatting, or monetary amounts.
+description: "Dates & argent : dates, heures, timezones, formatage, devises, montants, date-fns, Intl. FR : date, heure, fuseau horaire, UTC, formatage, devise, prix, montant, argent."
 ---
 
 Consult [.tiple/conventions/datetime-patterns.md](.tiple/conventions/datetime-patterns.md) for the full patterns. Load it before writing date/money code.

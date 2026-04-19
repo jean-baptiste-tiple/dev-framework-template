@@ -1,6 +1,6 @@
 ---
 name: seo
-description: Use when adding page metadata, Open Graph tags, sitemap, structured data, or canonical URLs.
+description: "SEO : metadata API, Open Graph, Twitter Cards, sitemap.xml, robots.txt, structured data JSON-LD, canonical URLs. FR : référencement, meta, balise, SEO, indexation, page publique."
 ---
 
 Consult [.tiple/conventions/seo-patterns.md](.tiple/conventions/seo-patterns.md) for the full patterns. Load it before writing SEO metadata.

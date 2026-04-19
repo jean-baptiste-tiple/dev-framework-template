@@ -1,3 +1,8 @@
+---
+description: "Implémenter une story ou du code (mode story / next / mode libre)"
+argument-hint: "[E01-S01 | next | (vide pour mode libre)]"
+---
+
 # Implémenter du code
 
 ## Input

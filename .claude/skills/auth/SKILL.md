@@ -1,6 +1,6 @@
 ---
 name: auth
-description: Use when implementing signup, login, logout, password reset, session management, OAuth, or auth middleware with Supabase Auth.
+description: "Authentification : login, signup, signin, logout, password reset, session, OAuth, middleware auth, callback. FR : connexion, inscription, déconnexion, mot de passe oublié, authentification, session utilisateur."
 ---
 
 Consult [.tiple/conventions/auth-patterns.md](.tiple/conventions/auth-patterns.md) for the full patterns. Load it before writing auth code.

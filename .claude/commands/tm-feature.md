@@ -1,3 +1,8 @@
+---
+description: "Ajouter une feature (evolve PRD → stories → dev/review loop)"
+argument-hint: "[titre ou description de la feature]"
+---
+
 # /tm-feature — Ajouter une feature
 
 > Workflow complet pour ajouter une feature : evolve PRD si besoin → stories → dev/review loop.

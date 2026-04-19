@@ -1,3 +1,8 @@
+---
+description: "Corriger un bug ou appliquer une petite modification"
+argument-hint: "[description du bug / fichier concerné]"
+---
+
 # Corriger un bug / petite modification
 
 ## Input

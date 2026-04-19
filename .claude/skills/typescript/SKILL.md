@@ -1,6 +1,6 @@
 ---
 name: typescript
-description: Use when writing TypeScript types, generics, utility types, unions, branded types, or type guards.
+description: "TypeScript : types, generics, utility types, unions, intersections, branded types, type guards, strict mode. FR : types, génériques, unions, type guard, mode strict, inférence."
 ---
 
 Consult [.tiple/conventions/typescript-patterns.md](.tiple/conventions/typescript-patterns.md) for the full patterns. Load it before writing non-trivial types.

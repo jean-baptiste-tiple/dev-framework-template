@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Use when configuring environments, running migrations to staging/prod, planning rollbacks, or managing deployment secrets.
+description: "Déploiement : environnements, migrations staging/prod, rollback, secrets deploy, Vercel, CI. FR : déploiement, environnement, staging, production, rollback, retour arrière, déployer."
 ---
 
 Consult [.tiple/conventions/deployment-patterns.md](.tiple/conventions/deployment-patterns.md) for the full patterns. Load it before deploying.

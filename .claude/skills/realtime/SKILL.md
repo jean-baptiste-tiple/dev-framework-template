@@ -1,6 +1,6 @@
 ---
 name: realtime
-description: Use when implementing Supabase Realtime subscriptions, presence, or live-updating UIs.
+description: "Realtime : Supabase Realtime subscriptions, presence, channels, live updates, websocket. FR : temps réel, abonnement, souscription, mise à jour live, canal realtime."
 ---
 
 Consult [.tiple/conventions/supabase-patterns.md](.tiple/conventions/supabase-patterns.md) (section Realtime) for the full patterns. Load it before writing realtime code.
