@@ -45,3 +45,4 @@ tsconfig.tsbuildinfo
 !.claude/commands/
 !.claude/settings.json
 !.claude/hooks/
+!.claude/skills/
