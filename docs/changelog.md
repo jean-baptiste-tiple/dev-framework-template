@@ -10,6 +10,21 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-04-19] — Consolidation : /tm-dev absorbe /tm-fix et /tm-feature, ajoute modes refacto et explore
+**Quoi :**
+- `/tm-dev` devient le **point d'entrée unique** pour toute action code avec 5 modes auto-détectés depuis l'argument : **story** (ID/`next`), **fix** (bug/corrige/cassé…), **feature** (ajoute/implémente…), **refacto** (nettoie/factorise, tests identiques avant/après), **explore** (comprends/analyse, **read-only**).
+- `/tm-fix` et `/tm-feature` deviennent des **alias rétro-compatibles dépréciés** qui affichent un warning et exécutent le bon workflow de `/tm-dev`. Seront supprimés dans une prochaine version.
+- CLAUDE.md et README.md mis à jour : nouvelle table commandes (2 points d'entrée principaux + 5 modes), table dépréciation, détail des 5 modes.
+
+**Pourquoi :** retirer les redondances (tm-fix ≡ tm-dev libre, tm-feature ≡ tm-plan évolution) et combler les trous (mode refacto avec garde-fous "tests identiques", mode explore read-only). Une heuristique simple pour l'utilisateur : *docs → `/tm-plan`, code → `/tm-dev`*.
+
+**Fichiers :**
+- `.claude/commands/tm-dev.md` (refonte avec 5 modes + détection auto)
+- `.claude/commands/tm-fix.md` (alias déprécié avec warning)
+- `.claude/commands/tm-feature.md` (alias déprécié avec warning)
+- `CLAUDE.md` (table commandes + ajustement "Mode libre")
+- `README.md` (table commandes, table dépréciation, section "Les 5 modes de /tm-dev")
+
 ## [2026-04-19] — /tm-plan gère le mode évolution (V2) + README synchronisé
 **Quoi :**
 - `/tm-plan` détecte automatiquement si c'est un cadrage initial (pas de `docs/prd.md`) ou une évolution versionnée (V2/V3). En mode évolution : Edit > Write sur les docs existants, ADR obligatoire par invariant touché, création des nouveaux epics/stories uniquement, gate avec `prd-evolution.md` en plus du readiness-gate.

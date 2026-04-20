@@ -1,23 +1,39 @@
 ---
-description: "Implémenter une story ou du code (mode story / next / mode libre)"
-argument-hint: "[E01-S01 | next | (vide pour mode libre)]"
+description: "Implémenter/explorer du code — modes story, fix, feature, refacto, explore (auto-détectés)"
+argument-hint: "[E01-S01 | next | description : bug/feature/refacto/explore]"
 ---
 
 # Implémenter du code
 
-## Input
+Point d'entrée **unique** pour toute action code : implémentation de story, bugfix, nouvelle feature, refacto, ou exploration read-only. Le mode est détecté automatiquement depuis l'argument.
 
-- **Identifiant de story** (ex: E01-S01) → mode story
-- **"next"** → prochaine story 🟢 Ready du sprint
-- **Aucun argument** → mode libre (bugfix, amélioration, refacto)
+## Détection du mode
+
+Ordre de détection :
+
+| Argument / contenu | Mode déclenché |
+|---|---|
+| ID de story (ex: `E01-S01`) | **Story** |
+| `next` | **Story** (prochaine 🟢 Ready du sprint) |
+| Description contient : `comprends`, `explique`, `comment ça marche`, `analyse`, `audit`, `lis`, `parcours`, `explore`, `understand`, `explain` | **Explore** (read-only) |
+| Description contient : `refacto`, `refactor`, `nettoie`, `factorise`, `simplifie`, `réorganise`, `DRY`, `clean up`, `dédoublonne` | **Refacto** |
+| Description contient : `bug`, `corrige`, `cassé`, `erreur`, `crash`, `ne marche pas`, `broken`, `régression`, `fix` | **Fix** |
+| Description contient : `ajoute`, `implémente`, `nouvelle feature`, `nouvelle fonctionnalité`, `add` | **Feature** |
+| Argument vide ou ambigu | **Demander à l'utilisateur** quel mode |
+
+Si plusieurs mots-clés matchent, privilégier dans cet ordre : Explore > Refacto > Fix > Feature.
+
+En cas d'ambiguïté, **demander** : *"Tu veux que je corrige un bug, ajoute une feature, refacto un module, ou explore/comprenne un bout de code ?"*
 
 ---
 
 ## Mode Story
 
+Workflow complet quand une story `docs/stories/` pilote l'implémentation.
+
 ### Phase 1 — Contexte
 
-1. Si "next" : lire `.tiple/sprint/status.md`, trouver la prochaine story 🟢 Ready
+1. Si `next` : lire `.tiple/sprint/status.md`, trouver la prochaine story 🟢 Ready
 2. Lire la story complète dans `docs/stories/`
 3. Vérifier `.tiple/checklists/story-ready.md` — si KO, signaler et s'arrêter
 4. **Charger les conventions pertinentes :**
@@ -41,113 +57,184 @@ argument-hint: "[E01-S01 | next | (vide pour mode libre)]"
    e. Page/route (`app/`) + tests d'intégration dans `tests/integration/`
    f. Tests E2E si listés dans la story (dans `tests/e2e/`)
 
-> **Placement des tests :** Respecter strictement l'arborescence définie dans `testing-strategy.md` :
+> **Placement des tests :** Respecter strictement l'arborescence de `testing-strategy.md` :
 > - Tests unitaires → `tests/unit/` (actions, schemas, hooks, utils, composants isolés)
-> - Tests d'intégration → `tests/integration/` (composants form complets, pages avec interactions, flows multi-composants)
+> - Tests d'intégration → `tests/integration/` (composants form complets, pages, flows multi-composants)
 > - Tests E2E → `tests/e2e/`
-> Ne JAMAIS mettre un test d'intégration dans `tests/unit/` ou inversement.
 
 ### Phase 3 — Type-check (OBLIGATOIRE)
 
-7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
-
-> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
+7. `pnpm type-check` — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
 
 ### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
 
-> La review est lancée dans un **agent autonome séparé** pour garantir un regard neuf.
-> L'agent reviewer ne partage PAS le contexte d'implémentation — il découvre le code.
-
-10. Récupérer la liste des fichiers modifiés : `git diff --name-only HEAD~1`
-11. Lancer un agent autonome pour la review :
-    ```
-    Agent(
-      subagent_type="general-purpose",
-      prompt="Tu es un code reviewer autonome. Review le code modifié en suivant
-      .claude/commands/tm-review.md comme guide.
-      Story: [STORY_ID]
-      Fichiers modifiés: [LISTE_FICHIERS]
-      Lis chaque fichier modifié, lis la checklist .tiple/checklists/code-review.md,
-      et produis une review structurée avec verdict par section."
-    )
-    ```
-12. Analyser le résultat de l'agent :
-    - **Si ❌ CHANGES REQUESTED** → appliquer les fix, relancer `pnpm type-check`, puis relancer un nouvel agent review
-    - **Si ✅ APPROVED** → continuer vers la finalisation
+8. `git diff --name-only HEAD~1` pour récupérer la liste des fichiers modifiés
+9. Lancer un agent autonome :
+   ```
+   Agent(
+     subagent_type="general-purpose",
+     prompt="Tu es un code reviewer autonome. Review le code modifié en suivant
+     .claude/commands/tm-review.md comme guide.
+     Story: [STORY_ID]
+     Fichiers modifiés: [LISTE_FICHIERS]
+     Lis chaque fichier modifié, lis la checklist .tiple/checklists/code-review.md,
+     et produis une review structurée avec verdict par section."
+   )
+   ```
+10. Analyser le résultat :
+    - ❌ CHANGES REQUESTED → appliquer les fix, relancer type-check, puis nouvel agent review
+    - ✅ APPROVED → continuer
 
 ### Phase 5 — Finalisation
 
-13. Ajouter une entrée dans `docs/changelog.md`
-14. Mettre à jour la story : section Post-implémentation
-15. Mettre à jour `.tiple/conventions/component-registry.md`
-16. Mettre à jour `.tiple/sprint/status.md` (story → ✅ Done)
+11. Entrée dans `docs/changelog.md`
+12. Mettre à jour la story : section Post-implémentation
+13. Mettre à jour `.tiple/conventions/component-registry.md` si nouveaux composants
+14. Mettre à jour `.tiple/sprint/status.md` (story → ✅ Done)
 
 ---
 
-## Mode Libre
+## Modes Fix / Feature / Refacto (sans story)
 
-### Phase 1 — Contexte
+Ces trois modes partagent le même squelette (Phases 1-5 ci-dessous) avec des **règles spécifiques** par mode. Aucune story n'est créée — l'implémentation est directe.
 
-1. L'utilisateur décrit le problème ou l'amélioration
+### Phase 1 — Contexte (commun)
+
+1. L'utilisateur décrit le besoin (le mode est détecté depuis sa description)
 2. **Charger les conventions pertinentes :**
-   - Lire `.tiple/conventions/_index.md` (index des conventions)
-   - Lire les **conventions de base** (toujours) : `coding-standards.md`, `component-registry.md`
-   - Analyser les fichiers de code concernés → **déduire les tags** depuis l'index :
-     - Fichiers dans `lib/actions/` ou `lib/schemas/` → tags `api`, `forms`
-     - Fichiers dans `lib/supabase/` ou `supabase/migrations/` → tags `database`, `supabase`
-     - Fichiers dans `app/` (layouts, pages, routes) → tag `nextjs`
-     - Fichiers dans `components/` avec state/effects → tag `state`
-     - Fichiers d'auth (`middleware.ts`, `(auth)/`) → tag `auth`
-     - Fichiers de test → tag `testing`
+   - Lire `.tiple/conventions/_index.md`
+   - Lire les conventions de base (toujours) : `coding-standards.md`, `component-registry.md`
+   - Déduire les tags depuis les fichiers concernés :
+     - `lib/actions/` ou `lib/schemas/` → `api`, `forms`
+     - `lib/supabase/` ou `supabase/migrations/` → `database`, `supabase`
+     - `app/` (layouts, pages) → `nextjs`
+     - `components/` avec state/effects → `state`
+     - `middleware.ts` ou `(auth)/` → `auth`
+     - Fichiers de test → `testing`
    - Charger les conventions correspondantes
-3. Lire le contexte projet :
-   - `docs/architecture.md`
-   - Les fichiers de code concernés
-4. Proposer un plan (fichiers à modifier, approche)
+   - Note : les skills de `.claude/skills/` peuvent aussi se déclencher automatiquement sur les mêmes tags
+3. Lire `docs/architecture.md` (sections pertinentes) et les fichiers concernés
+4. **Proposer un plan** (fichiers à modifier, approche) **avant d'éditer**
 
-### Phase 2 — Implémentation
+### Phase 2 — Implémentation (commun)
 
 5. Implémenter en respectant les conventions chargées
-6. Écrire les tests nécessaires
+6. Écrire/mettre à jour les tests nécessaires
 
-### Phase 3 — Type-check (OBLIGATOIRE)
+### Phase 3 — Type-check (commun, OBLIGATOIRE)
 
-7. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
+7. `pnpm type-check` — doit passer. Si erreurs → corriger (max 3 cycles)
 
-> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
+### Phase 4 — Review agent isolé (commun, OBLIGATOIRE)
 
-### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
+8. Lancer un agent reviewer autonome (voir `.claude/commands/tm-review.md`) — passer en paramètre le mode (fix/feature/refacto) pour orienter le focus
+9. Si ❌ CHANGES REQUESTED → fix → relancer type-check → nouvel agent review
 
-10. Récupérer la liste des fichiers modifiés
-11. Lancer un agent reviewer autonome (voir `.claude/commands/tm-review.md`)
-12. Si ❌ CHANGES REQUESTED → fix → relancer `pnpm type-check` → nouvel agent review
+### Phase 5 — Finalisation (commun)
 
-### Phase 5 — Finalisation
-
-13. Entrée dans `docs/changelog.md`
-14. Si nouveau composant réutilisable → ajouter au registry
+10. Entrée dans `docs/changelog.md`
+11. Si nouveau composant réutilisable → ajouter au `component-registry.md`
 
 ---
 
-## Changelog (les deux modes)
+### Mode Fix — spécificités
+
+**Focus :** corriger le bug, point.
+
+Règles :
+- **Reproduire avant de corriger** si possible (test qui échoue d'abord)
+- **Diff minimal** — ne pas faire de cleanup opportuniste
+- **Test de non-régression obligatoire** pour chaque bug fixé (unit ou integ selon le scope)
+- Review focus : le fix résout-il vraiment le bug ? Pas d'effets de bord ? Pas de régression ? Sécurité préservée ?
+
+### Mode Feature — spécificités
+
+**Focus :** ajouter une capacité, sans casser l'existant.
+
+Règles :
+- **Si la feature est non-triviale** (≥ 2 fichiers impactés, nouveau parcours UI, modification DB), **proposer d'abord** de cadrer via `/tm-plan` en mode évolution pour créer une story propre. L'utilisateur peut refuser → continuer en mode libre.
+- **Respecter le component-registry AVANT de créer** — réutiliser si possible
+- **Loading / error / empty states** sur toute UI nouvelle
+- **Respecter le design system** (tokens, pas de couleurs en dur)
+- Review focus : UX cohérente ? Accessibilité ? Design system respecté ? RLS si nouvelle table ?
+
+### Mode Refacto — spécificités
+
+**Focus :** améliorer le code **sans changer son comportement**.
+
+Règles absolues :
+- **Lire les tests existants AVANT** de toucher au code
+- **Aucun changement de comportement** — les mêmes entrées doivent produire les mêmes sorties
+- **Tests IDENTIQUES avant/après** — mêmes assertions, même couverture. Si tu dois modifier un test, c'est que tu changes un comportement → ce n'est plus du refacto.
+- **Diff minimal** — ne pas embarquer de nouveautés fonctionnelles
+- **Si pas de tests sur la zone refactorée** → en écrire AVANT de refactorer (filet de sécurité)
+- Review focus : comportement préservé ? Tests identiques ? Lisibilité améliorée ? Pas de régression ?
+
+---
+
+## Mode Explore — read-only
+
+**Focus :** comprendre un bout de code sans le toucher.
+
+Ce mode **n'écrit rien**. Pas de type-check, pas de review agent, pas de finalisation, pas de changelog.
+
+### Workflow
+
+1. Identifier le scope (fichier, module, feature, flow)
+2. Lire les fichiers pertinents + `docs/architecture.md` (section correspondante)
+3. Charger les conventions pertinentes en lecture (pour comprendre les patterns attendus)
+4. Produire un **retour structuré** :
+
+```
+## Exploration : [scope]
+
+### Vue d'ensemble
+[1-2 phrases sur le rôle du module]
+
+### Entrées / sorties
+- Inputs : [d'où viennent les données]
+- Outputs : [où vont les données]
+
+### Flow principal
+[étape par étape, avec références fichier:ligne]
+
+### Dépendances clés
+- Internes : [modules du projet]
+- Externes : [packages npm]
+
+### Points d'attention
+- [risques, dettes, complexités cachées]
+- [conventions respectées ou non]
+
+### Fichiers clés
+- [path:line] — [rôle]
+```
+
+### Règle absolue
+
+**NE JAMAIS écrire de code ou modifier un fichier en mode Explore.** Si l'utilisateur veut agir après l'exploration, il relancera `/tm-dev` en mode fix/feature/refacto.
+
+---
+
+## Changelog (tous modes sauf Explore)
 
 ```markdown
-## [YYYY-MM-DD] — [Scope : story ID / bugfix / amélioration / refacto]
+## [YYYY-MM-DD] — [Scope : story ID / fix / feature / refacto]
 **Quoi :** Ce qui a été fait (concis)
 **Pourquoi :** La raison
 **Problèmes :** Ce qui a bloqué (si applicable)
 **Fichiers :** Liste des fichiers créés/modifiés
 ```
 
-## Règles
+## Règles transverses
 
-- Ne JAMAIS skip les phases 3 et 4 — elles sont obligatoires
-- Si la phase 4 (review) trouve des problèmes HAUTE/MOYENNE, il faut corriger ET relancer `pnpm type-check`
-- Le cycle est : Implémenter → Tests → Type-check → Review → Fix si nécessaire → Type-check à nouveau → Docs
-- Le lint et les tests complets sont exécutés par `/commit-push` avant le push — pas pendant le dev
-- Vérifier le component-registry AVANT de créer (DRY)
-- Server Components par défaut, "use client" le plus bas possible
-- Zod schema partagé = une seule source de vérité
+- Ne JAMAIS skip les phases 3 (type-check) et 4 (review) — elles sont obligatoires en modes Story/Fix/Feature/Refacto
+- Si la phase 4 trouve des problèmes HAUTE/MOYENNE → corriger ET relancer type-check avant nouvelle review
+- Cycle : Implémenter → Tests → Type-check → Review → Fix si nécessaire → Type-check → Docs
+- Le lint et les tests complets sont exécutés par `/commit-push` avant le push, pas pendant le dev
+- Vérifier le component-registry AVANT de créer un composant (DRY)
+- Server Components par défaut, `"use client"` le plus bas possible
+- Schema Zod partagé = une seule source de vérité
 - RLS sur toute nouvelle table
 - Gérer les 3 états UI : loading, error, empty
 - Pas d'abstraction prématurée (factoriser à 2+ occurrences)

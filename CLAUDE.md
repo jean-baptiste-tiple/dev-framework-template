@@ -40,7 +40,7 @@ Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées
 - **Index :** `.tiple/conventions/_index.md` liste tous les tags et les fichiers associés
 - **Base (toujours lues) :** `coding-standards.md`, `component-registry.md`, `tech-stack.md`
 - **Mode story (`/tm-dev E01-S01`) :** le champ `Conventions` de la story déclare les tags → les fichiers correspondants sont chargés
-- **Mode libre (`/tm-dev` ou `/tm-fix`) :** les tags sont déduits des fichiers touchés (ex: `lib/actions/` → `api`, `supabase/migrations/` → `database`)
+- **Mode libre (`/tm-dev` sans story) :** les tags sont déduits des fichiers touchés (ex: `lib/actions/` → `api`, `supabase/migrations/` → `database`)
 
 Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
 
@@ -112,11 +112,13 @@ Slash commands dans `.claude/commands/` :
 
 | Commande | Usage | Description |
 |----------|-------|-------------|
-| `/tm-plan` | Nouveau projet / nouvelle feature | Cadrage complet : brief → PRD → archi → design → epics/stories → gate |
-| `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine), ou sans arg (mode libre) |
-| `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions |
-| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Claude peut aussi le proposer automatiquement. |
-| `/commit-push` | Commit & push | Vérification triple + changelog + commit + push (OBLIGATOIRE) |
+| `/tm-plan` | Toute planification (initial ou évolution) | Cadrage complet : brief → PRD → archi → design → epics/stories → gate. Détecte auto le mode initial vs évolution (V2+). |
+| `/tm-dev` | Toute action code | Modes **story** (`E01-S01`/`next`), **fix**, **feature**, **refacto**, **explore** (read-only) — détectés auto depuis l'argument. |
+| `/tm-review` | Code review agent isolé | Review autonome passant `code-review.md` point par point. Appelé automatiquement par `/tm-dev`. |
+| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Peut aussi être proposé auto par Claude. |
+| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push) |
+| ~~`/tm-fix`~~ | Déprécié | Alias rétro-compatible de `/tm-dev` en mode fix. Sera supprimé. |
+| ~~`/tm-feature`~~ | Déprécié | Remplacé par `/tm-plan` (cadrage) + `/tm-dev` mode feature (code). Sera supprimé. |
 
 ## Design System
 

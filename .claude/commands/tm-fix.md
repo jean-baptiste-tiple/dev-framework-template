@@ -1,71 +1,28 @@
 ---
-description: "Corriger un bug ou appliquer une petite modification"
-argument-hint: "[description du bug / fichier concerné]"
+description: "[DÉPRÉCIÉ] Alias de /tm-dev en mode fix — utilise /tm-dev directement"
+argument-hint: "[description du bug — préférer /tm-dev]"
 ---
 
-# Corriger un bug / petite modification
+# /tm-fix — Alias déprécié
 
-## Input
+> ⚠️ **Commande dépréciée.** `/tm-fix` est maintenant un alias de `/tm-dev` en mode fix. Le workflow est identique — seul le nom change.
+>
+> Cette commande sera **supprimée dans une prochaine version**. Migre vers `/tm-dev`.
 
-- **Description du problème** ou de la modification demandée
-- **Fichier(s) concerné(s)** (optionnel — sinon Claude cherche)
+## Comportement
 
----
+1. **Afficher à l'utilisateur** : *"⚠️ `/tm-fix` est déprécié. Utilise `/tm-dev` à l'avenir — Claude détecte automatiquement le mode fix depuis des mots-clés comme 'bug', 'corrige', 'cassé', 'erreur'. Je continue pour cette session en mode fix."*
 
-## Workflow
+2. **Exécuter le workflow** de `.claude/commands/tm-dev.md` en **Mode Fix** (section "Modes Fix / Feature / Refacto (sans story)" + règles spécifiques "Mode Fix — spécificités") :
+   - Phase 1 — Contexte (charger conventions par tags déduits)
+   - Phase 2 — Implémentation (reproduire avant corriger, diff minimal, test de non-régression obligatoire)
+   - Phase 3 — Type-check
+   - Phase 4 — Review agent isolé (focus : le fix résout le bug ? pas de régression ?)
+   - Phase 5 — Finalisation (changelog, registry si applicable)
 
-### Phase 1 — Contexte
+## Migration
 
-1. Comprendre le problème (reproduire si possible)
-2. **Charger les conventions pertinentes :**
-   - Lire `.tiple/conventions/_index.md` (index des conventions)
-   - Lire les **conventions de base** (toujours) : `coding-standards.md`, `component-registry.md`
-   - Analyser les fichiers concernés → **déduire les tags** depuis l'index :
-     - Fichiers dans `lib/actions/` ou `lib/schemas/` → tags `api`, `forms`
-     - Fichiers dans `lib/supabase/` ou `supabase/migrations/` → tags `database`, `supabase`
-     - Fichiers dans `app/` (layouts, pages, routes) → tag `nextjs`
-     - Fichiers dans `components/` avec state/effects → tag `state`
-     - Fichiers d'auth (`middleware.ts`, `(auth)/`) → tag `auth`
-     - Fichiers de test → tag `testing`
-   - Charger les conventions correspondantes
-3. Lire le contexte :
-   - `docs/architecture.md` (sections pertinentes)
-   - Les fichiers de code concernés
-
-### Phase 2 — Implémentation
-
-4. Corriger le bug / implémenter la modification
-5. Écrire ou mettre à jour les tests
-
-### Phase 3 — Type-check (OBLIGATOIRE)
-
-6. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
-
-> Le lint et les tests ne sont PAS lancés ici. Ils seront exécutés par `/commit-push` avant le push.
-
-### Phase 4 — Code Review en agent isolé (OBLIGATOIRE)
-
-9. Lancer un **agent reviewer autonome** (voir `.claude/commands/tm-review.md`) — focus sur :
-   - Le fix résout-il vraiment le bug ?
-   - Pas d'effets de bord ? Pas de régression ?
-   - Sécurité : le fix n'introduit pas de faille ?
-   - Registry à jour si composant modifié ?
-10. Si ❌ CHANGES REQUESTED → corriger puis relancer `pnpm type-check`, puis nouveau review agent
-
-### Phase 5 — Finalisation
-
-11. Entrée dans `docs/changelog.md`
-12. Si nouveau composant réutilisable → ajouter au component-registry
-
-## Ce n'est PAS un /tm-fix si…
-
-- La modification touche plusieurs fichiers et nécessite une story → utiliser `/tm-dev`
-- La modification change l'architecture → créer un ADR + story
-- C'est une nouvelle feature → utiliser `/tm-dev` avec story
-
-## Rappels
-
-- Vérifier le component-registry AVANT de créer un composant
-- Server Components par défaut
-- Zod schema partagé = une seule source de vérité
-- Ne pas casser les tests existants
+| Avant | Après |
+|---|---|
+| `/tm-fix "le bouton login crash"` | `/tm-dev "corrige : le bouton login crash"` |
+| `/tm-fix` (sans arg, puis description au prompt) | `/tm-dev` (sans arg, puis description — mode détecté auto) |

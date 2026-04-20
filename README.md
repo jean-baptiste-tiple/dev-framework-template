@@ -40,16 +40,35 @@ pnpm dev
 
 ## Commandes
 
+**Deux points d'entrée principaux, 5 modes auto-détectés** :
+
 | Commande | Usage | Description |
 |----------|-------|-------------|
-| `/tm-plan` | Cadrage initial **OU** évolution (V2, V3...) | Cadrage complet : starters → brief → PRD → architecture → design → epics/stories → gate. Détecte auto le mode initial vs évolution. |
-| `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine 🟢 Ready), ou sans arg (mode libre) |
-| `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions par tags |
-| `/tm-feature` | Ajouter une feature | Évolution du PRD (si besoin) → stories → dev/review loop |
-| `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point |
-| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (pour debug local) |
+| `/tm-plan` | **Toute planification** | Cadrage complet (brief → PRD → archi → design → epics/stories → gate). Détecte auto le mode **initial** (nouveau projet) vs **évolution** (V2, V3, grosse feature). |
+| `/tm-dev` | **Toute action code** | 5 modes auto-détectés depuis l'argument : **story** (`E01-S01`/`next`), **fix** (bug/corrige/cassé), **feature** (ajoute/implémente), **refacto** (nettoie/factorise), **explore** (comprends/analyse, read-only). |
+| `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point. Appelé auto par `/tm-dev`. |
+| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (debug local). |
 | `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Peut aussi être proposé auto par Claude. |
-| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push) |
+| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push). |
+
+**Commandes dépréciées** (alias rétro-compatibles, seront supprimés) :
+
+| Commande | Remplacé par |
+|---|---|
+| ~~`/tm-fix`~~ | `/tm-dev` (mode fix auto-détecté sur "bug", "corrige", "cassé"...) |
+| ~~`/tm-feature`~~ | `/tm-plan` (pour le cadrage) + `/tm-dev` (pour le code) |
+
+### Les 5 modes de `/tm-dev`
+
+| Mode | Déclencheur | Ce que ça fait |
+|---|---|---|
+| **Story** | ID (`E01-S01`) ou `next` | Flow complet piloté par la story : conventions auto-chargées, impl, type-check, review agent, finalisation (changelog, post-impl, registry, sprint status) |
+| **Fix** | mots-clés : `bug`, `corrige`, `cassé`, `erreur`, `crash`, `ne marche pas`, `broken`, `régression` | Reproduire avant corriger, diff minimal, test de non-régression obligatoire |
+| **Feature** | mots-clés : `ajoute`, `implémente`, `nouvelle feature`, `nouvelle fonctionnalité`, `add` | Si non-trivial → propose `/tm-plan` pour cadrer d'abord. Sinon : respect registry/design system/a11y |
+| **Refacto** | mots-clés : `refacto`, `refactor`, `nettoie`, `factorise`, `simplifie`, `DRY`, `clean up` | Pas de changement de comportement, tests identiques avant/après, diff minimal |
+| **Explore** | mots-clés : `comprends`, `explique`, `analyse`, `audit`, `lis`, `parcours` | **Read-only** : aucune écriture. Retour structuré (vue d'ensemble, I/O, flow, dépendances, points d'attention) |
+
+Priorité en cas d'ambiguïté : Explore > Refacto > Fix > Feature. Sinon Claude demande.
 
 ### Planifier une V2 (ou une grosse évolution versionnée)
 
@@ -58,7 +77,7 @@ pnpm dev
 - **Mode initial** (auto) : `docs/prd.md` n'existe pas → création from scratch de tous les documents
 - **Mode évolution** (auto) : `docs/prd.md` existe déjà ET tu mentionnes "V2", "V3", "évolution", "nouvelle version" → Claude **édite** les docs existants au lieu de les recréer, crée uniquement les nouveaux epics/stories, ajoute un ADR par invariant d'archi touché, et applique `.tiple/checklists/prd-evolution.md` en plus du readiness-gate.
 
-Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/commands/tm-plan.md](.claude/commands/tm-plan.md) pour le détail des différences.
+Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/commands/tm-plan.md](.claude/commands/tm-plan.md) pour le détail.
 
 ### Skills auto-déclenchés
 

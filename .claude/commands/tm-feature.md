@@ -1,66 +1,34 @@
 ---
-description: "Ajouter une feature (evolve PRD → stories → dev/review loop)"
-argument-hint: "[titre ou description de la feature]"
+description: "[DÉPRÉCIÉ] Remplacé par /tm-plan (cadrage) + /tm-dev (code)"
+argument-hint: "[description de la feature — préférer /tm-plan ou /tm-dev]"
 ---
 
-# /tm-feature — Ajouter une feature
+# /tm-feature — Alias déprécié
 
-> Workflow complet pour ajouter une feature : evolve PRD si besoin → stories → dev/review loop.
-> Usage : `/tm-feature "Titre ou description de la feature"`
+> ⚠️ **Commande dépréciée.** `/tm-feature` est remplacé par la combinaison :
+> - **`/tm-plan`** en mode évolution → pour le cadrage (PRD, architecture, stories)
+> - **`/tm-dev`** en mode feature → pour l'implémentation directe (sans cadrage)
+>
+> Cette commande sera **supprimée dans une prochaine version**.
 
-## Étapes
+## Comportement
 
-### Phase 1 — Contexte
+1. **Afficher à l'utilisateur** : *"⚠️ `/tm-feature` est déprécié. Deux options :*
+   - *Si la feature nécessite un cadrage (PRD/archi/stories) → `/tm-plan` détecte auto le mode évolution, puis `/tm-dev E0x-S0y` par story créée.*
+   - *Si la feature est petite et tient en un dev direct → `/tm-dev` avec une description (le mode feature est détecté auto).*
+   *Je t'aide à choisir selon la taille :"*
 
-1. Lire `.tiple/sprint/status.md` → état actuel du sprint
-2. Lire `docs/prd.md` → la feature est-elle déjà dans le PRD ?
+2. **Évaluer la taille de la feature** :
+   - Plusieurs parcours / écrans / modifs DB → recommander `/tm-plan` mode évolution
+   - Une modification ciblée, pas de story nécessaire → recommander `/tm-dev` mode feature
 
-### Phase 2 — Documentation (si feature nouvelle)
+3. **Exécuter le bon workflow** selon la décision de l'utilisateur :
+   - Si `/tm-plan` → suivre `.claude/commands/tm-plan.md` en mode évolution
+   - Si `/tm-dev` feature → suivre `.claude/commands/tm-dev.md` en Mode Feature
 
-3. Si la feature n'est PAS dans le PRD :
-   - Mettre à jour `docs/prd.md` — section concernée → statut 🔶 Draft
-   - Passer `.tiple/checklists/prd-evolution.md` point par point
-   - Identifier les impacts : architecture, epics, stories, design, DB
-   - Mettre à jour `docs/architecture.md` (+ ADR si invariant touché)
-   - Ajouter une entrée dans `docs/changelog.md`
+## Migration
 
-4. Si la feature est déjà dans le PRD → passer directement à la phase 3
-
-### Phase 3 — Découpage
-
-5. Créer l'epic dans `docs/epics/` si nécessaire
-6. Découper en stories dans `docs/stories/`
-   - Chaque story doit être 🟢 Ready avec AC en Given/When/Then
-   - Vérifier `.tiple/checklists/story-ready.md` pour chaque story
-
-### Phase 4 — Implémentation (boucle par story)
-
-Pour chaque story, dans l'ordre :
-
-7. **Implémenter** — Suivre le flow `/tm-dev` :
-   - Lire contexte (story + archi + conventions + registry)
-   - Coder : Zod → actions → tests unit → UI → tests unit UI → page → tests integ
-
-8. **Type-check** (OBLIGATOIRE) :
-   - `pnpm type-check` → doit passer. Si erreurs → corriger et relancer (max 3 cycles).
-   - Le lint et les tests seront exécutés par `/commit-push` avant le push.
-
-9. **Code Review en agent isolé** (OBLIGATOIRE) :
-   - Lancer un agent autonome séparé (voir `.claude/commands/tm-review.md`)
-   - L'agent reviewer découvre le code avec un regard neuf, sans biais d'implémentation
-   - Il passe `.tiple/checklists/code-review.md` point par point
-   - Si ❌ CHANGES REQUESTED → corriger puis relancer `pnpm type-check`, puis nouveau review agent
-
-10. **Finalisation story** :
-    - Remplir post-implémentation de la story
-    - Mettre à jour component-registry si nouveaux composants
-    - Mettre à jour sprint status → story ✅ Done
-    - Entrée changelog si changement significatif
-
-Répéter 7-10 pour chaque story de la feature.
-
-### Phase 5 — Vérification finale
-
-11. `pnpm type-check` → doit passer (le lint et les tests seront vérifiés par `/commit-push`)
-12. `/tm-status` → toutes les stories de la feature sont ✅ Done
-13. Résumé global de la feature implémentée
+| Scénario | Avant | Après |
+|---|---|---|
+| Grosse feature (plusieurs stories, PRD à faire évoluer) | `/tm-feature "nom"` | `/tm-plan` (+ mention "nouvelle feature X") → stories créées → `/tm-dev E0x-S0y` |
+| Petite feature (1-2 fichiers, pas de story) | `/tm-feature "nom"` | `/tm-dev "ajoute X qui fait Y"` |
