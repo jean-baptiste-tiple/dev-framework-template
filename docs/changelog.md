@@ -10,6 +10,17 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-04-19] — /tm-plan gère le mode évolution (V2) + README synchronisé
+**Quoi :**
+- `/tm-plan` détecte automatiquement si c'est un cadrage initial (pas de `docs/prd.md`) ou une évolution versionnée (V2/V3). En mode évolution : Edit > Write sur les docs existants, ADR obligatoire par invariant touché, création des nouveaux epics/stories uniquement, gate avec `prd-evolution.md` en plus du readiness-gate.
+- README mis à jour : table des commandes complétée (ajout de `tm-feature`, `tm-wrap-up`, `commit-push` qui manquaient), `/tm-plan` décrit comme couvrant les deux modes, structure `.claude/` détaillée (commands/skills/hooks), section Qualité corrigée (type-check + lint local via `/commit-push`, tests sur CI GitHub).
+
+**Pourquoi :** combler le trou méthodologique pour les grosses évolutions versionnées sans introduire un `/tm-plan-v2` redondant, et aligner le README sur l'état réel du framework (3 commandes + skills auto-déclenchés n'y figuraient pas).
+
+**Fichiers :**
+- `.claude/commands/tm-plan.md` (ajout de la section "Mode : initial ou évolution")
+- `README.md` (table commandes, structure, section qualité, section V2)
+
 ## [2026-04-19] — Template : triggers bilingues, argument-hints, nouveau skill/command tm-wrap-up
 **Quoi :**
 - `argument-hint` ajoutés aux 3 slash commands qui prennent des arguments (tm-dev, tm-fix, tm-feature).

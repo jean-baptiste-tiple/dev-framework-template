@@ -15,6 +15,45 @@ Pas un formulaire — un dialogue naturel.
 >
 > L'installation technique sera faite par `/tm-dev` lors de la première story (E01-S01 Setup).
 
+---
+
+## Mode : initial ou évolution (V2, V3, ...) ?
+
+`/tm-plan` gère **deux modes** qui partagent le même process mais diffèrent sur la création vs l'évolution des documents.
+
+### Détection automatique du mode
+
+Au démarrage, détecter :
+
+- **Mode initial** (défaut) : `docs/prd.md` n'existe pas OU existe mais est vide/placeholder → création from scratch
+- **Mode évolution** : `docs/prd.md` existe avec un contenu réel ET l'utilisateur mentionne "V2", "V3", "nouvelle version", "évolution", "big feature", ou précise un scope de version → évolution des docs existants
+
+**Si mode évolution détecté, confirmer avec l'utilisateur avant de continuer :**
+
+> "Je détecte un `docs/prd.md` déjà rempli. On est sur une évolution versionnée (V2, grosse feature) ? Je vais faire évoluer les docs existants, pas les recréer. OK ?"
+
+### Différences entre les deux modes
+
+| Aspect | Mode initial | Mode évolution |
+|---|---|---|
+| `docs/brief.md` | Créé depuis `.tiple/templates/brief.tmpl.md` | Lu + mis à jour (ajouter section "V2" / nouveaux personas / nouveau scope) |
+| `docs/prd.md` | Créé depuis template | Édité — nouvelles sections marquées 🔶 Draft, parcours existants conservés sauf demande explicite |
+| `docs/architecture.md` | Créé depuis template | Édité + **ADR obligatoire** dans `docs/decisions/` pour chaque invariant touché |
+| `docs/design/` | Design system personnalisé ou par défaut ; toutes les maquettes créées | Ajout des maquettes pour les **nouveaux écrans** uniquement |
+| `docs/epics/` | Tous les epics créés | UNIQUEMENT les nouveaux epics ajoutés (les existants ne sont pas touchés sauf si leur scope change) |
+| `docs/stories/` | Toutes les stories créées | UNIQUEMENT les nouvelles stories de la version |
+| Gate | `.tiple/checklists/readiness-gate.md` | `.tiple/checklists/readiness-gate.md` **+** `.tiple/checklists/prd-evolution.md` |
+
+### Règles absolues en mode évolution
+
+1. **Ne JAMAIS réécrire** un document existant depuis zéro. Toujours utiliser Edit, pas Write.
+2. **Préserver** tout contenu existant sauf demande explicite de l'utilisateur.
+3. **ADR obligatoire** pour tout changement d'invariant d'architecture (structure, sécurité, modèle de données).
+4. **Les stories/epics existants ne sont PAS retouchés**, sauf si la V2 change explicitement leur scope (et alors marquer le changement dans leur section "Historique").
+5. **Passer `.tiple/checklists/prd-evolution.md`** en plus du readiness-gate avant de clore la phase 6.
+
+---
+
 ## Pré-requis : livrables d'entrée
 
 ### Requis

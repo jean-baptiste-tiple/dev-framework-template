@@ -42,21 +42,40 @@ pnpm dev
 
 | Commande | Usage | Description |
 |----------|-------|-------------|
-| `/tm-plan` | Nouveau projet ou feature | Cadrage complet : starters → brief → PRD → architecture → design → epics/stories → gate |
+| `/tm-plan` | Cadrage initial **OU** évolution (V2, V3...) | Cadrage complet : starters → brief → PRD → architecture → design → epics/stories → gate. Détecte auto le mode initial vs évolution. |
 | `/tm-dev` | Implémentation | `E01-S01` (story), `next` (prochaine 🟢 Ready), ou sans arg (mode libre) |
 | `/tm-fix` | Bug fix / petite modif | Correction rapide avec chargement auto des conventions par tags |
-| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (obligatoire avant review) |
+| `/tm-feature` | Ajouter une feature | Évolution du PRD (si besoin) → stories → dev/review loop |
 | `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point |
+| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (pour debug local) |
+| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Peut aussi être proposé auto par Claude. |
+| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push) |
+
+### Planifier une V2 (ou une grosse évolution versionnée)
+
+**`/tm-plan` gère les deux modes** — cadrage initial ET évolution versionnée :
+
+- **Mode initial** (auto) : `docs/prd.md` n'existe pas → création from scratch de tous les documents
+- **Mode évolution** (auto) : `docs/prd.md` existe déjà ET tu mentionnes "V2", "V3", "évolution", "nouvelle version" → Claude **édite** les docs existants au lieu de les recréer, crée uniquement les nouveaux epics/stories, ajoute un ADR par invariant d'archi touché, et applique `.tiple/checklists/prd-evolution.md` en plus du readiness-gate.
+
+Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/commands/tm-plan.md](.claude/commands/tm-plan.md) pour le détail des différences.
+
+### Skills auto-déclenchés
+
+En plus des slash commands, `.claude/skills/` contient 22 skills "shim" (un par tag de `.tiple/conventions/_index.md`) qui s'auto-activent selon le contexte — même **hors** de `/tm-dev`. Exemple : éditer un fichier d'auth en mode libre déclenche le skill `auth` qui charge les patterns de `.tiple/conventions/auth-patterns.md`. Les descriptions sont bilingues FR+EN pour un trigger robuste.
 
 ## Structure
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
-├── .claude/commands/            # 5 slash commands
+├── .claude/
+│   ├── commands/                # 8 slash commands (tm-plan, tm-dev, tm-fix, tm-feature, tm-review, tm-verify, tm-wrap-up, commit-push)
+│   ├── skills/                  # 22 skills shim pour auto-déclenchement des conventions + tm-wrap-up
+│   └── hooks/                   # enforce-bash-rules.sh (foreground, no pipe, no redirect)
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
-│   ├── conventions/             # Conventions techniques par tags (22 fichiers)
+│   ├── conventions/             # Conventions techniques par tags (22 fichiers + _index.md)
 │   ├── starters/                # Starters optionnels (supabase-auth, ...)
 │   └── sprint/status.md         # Sprint tracking
 ├── docs/
@@ -104,11 +123,20 @@ Les conventions techniques sont dans `.tiple/conventions/` et chargées **automa
 | `/tm-dev E01-S01` | Tags déclarés dans le champ `Conventions` de la story |
 | `/tm-dev` (libre) | Tags déduits des fichiers touchés (ex: `lib/actions/` → `api`) |
 | `/tm-fix` | Même déduction automatique que le mode libre |
+| **Hors workflow** (édit libre, Q&A) | Skills de `.claude/skills/` auto-déclenchés par mots-clés FR+EN |
 
 ## Qualité & Déploiement
 
-Les vérifications qualité (type-check, lint, tests) sont exécutées **localement** avant chaque push via la commande `/commit-push`. Pas de CI GitHub pour les checks — cela évite les problèmes de compatibilité cross-platform (Windows/macOS) et les timeouts en CI.
+Répartition claire des checks :
 
-Un hook Claude Code (`.claude/hooks/enforce-bash-rules.sh`) garantit que les commandes sont exécutées correctement (foreground, sans pipe, sans redirection).
+| Check | Où | Quand |
+|---|---|---|
+| `pnpm type-check` | **Local** (via `/commit-push`) | Avant chaque push |
+| `pnpm lint` | **Local** (via `/commit-push`) | Avant chaque push |
+| `pnpm test` | **CI GitHub** (`.github/workflows/ci.yml`) | Après chaque push — Vercel ne déploie que si la CI est verte |
 
-Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter si activé.
+Pourquoi cette séparation : type-check + lint sont rapides et doivent bloquer le push ; les tests tournent sur CI pour profiter d'un environnement Linux propre, éviter les timeouts locaux, et laisser Vercel gater le déploiement sur le résultat.
+
+Un hook Claude Code (`.claude/hooks/enforce-bash-rules.sh`) garantit que les commandes sont exécutées correctement (foreground, sans pipe, sans redirection) — voir la section "Règles d'exécution Bash" de `CLAUDE.md`.
+
+Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter Supabase + Auth si activé.
