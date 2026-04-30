@@ -1,5 +1,10 @@
 # CLAUDE.md — Tiple Method
 
+## Style de réponse (CRITIQUE)
+- **Réponses courtes, droit au but. Le minimum de mots possibles.**
+- Pas de récap qui répète ce que l'user vient de dire. Pas de tableaux décoratifs ni d'emojis sauf si demandé.
+- Pas de "voici ce que j'ai fait", pas de phrases d'intro/transition. État du résultat seulement.
+
 ## Projet
 <!-- À REMPLIR : Nom du projet, description en 1 ligne -->
 
