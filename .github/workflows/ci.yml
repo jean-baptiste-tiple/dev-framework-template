@@ -1,4 +1,8 @@
-name: CI — Lint & Tests
+# CI — Build only
+# Type-check, lint et tests sont exécutés EN LOCAL par /commit-push avant push.
+# La CI ne lance que pnpm build pour valider le déploiement Vercel
+# et catcher les erreurs spécifiques à l'environnement Linux.
+name: CI — Build
 
 on:
   push:
@@ -7,8 +11,8 @@ on:
     branches: [main]
 
 jobs:
-  quality:
-    name: Lint & Tests
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -26,8 +30,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Unit & integration tests
-        run: pnpm test
+      - name: Build
+        run: pnpm build

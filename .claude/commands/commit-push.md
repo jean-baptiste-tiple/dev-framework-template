@@ -1,17 +1,16 @@
 # /commit-push — Commit & Push
 
 > Commande à utiliser pour chaque commit + push.
-> Le lint et les tests sont vérifiés par la CI GitHub après le push — PAS en local.
+> Type-check + lint + tests vérifiés EN LOCAL avant push (PAS de duplication CI).
 > Ne JAMAIS commit/push sans passer par cette commande.
 
 ## Étapes
 
-### 1. Type-check + Lint
+### 1. Type-check + Lint + Tests
 
 1. **`pnpm type-check`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
 2. **`pnpm lint`** — Doit passer sans erreur. Si erreurs → corriger et relancer (max 3 cycles).
-
-> Les tests (`pnpm test`) ne sont PAS lancés localement — ils tournent sur la CI GitHub après le push.
+3. **`pnpm test`** — Tous les tests doivent passer. Si échecs → corriger et relancer (max 3 cycles).
 
 ### 2. Analyser les changements
 
@@ -60,16 +59,16 @@ Afficher :
 ```
 ✅ Type-check : OK
 ✅ Lint : OK
+✅ Tests : OK
 ✅ Changelog : mis à jour
 ✅ Commit : <hash court> <message>
 ✅ Push : main → origin/main
-⏳ CI GitHub : tests en cours (vérifier sur GitHub)
+⏳ CI GitHub : pnpm build en cours (validation Vercel)
 ```
 
 ## Règles
 
-- `pnpm type-check` et `pnpm lint` DOIVENT passer avant de commit
-- Ne JAMAIS lancer `pnpm test` localement — la CI GitHub s'en charge
+- `pnpm type-check`, `pnpm lint` et `pnpm test` DOIVENT passer avant de commit
 - Le changelog DOIT être mis à jour à chaque commit
 - Ne JAMAIS utiliser `--no-verify` ou `--force`
 - Ne JAMAIS amend un commit existant sauf demande explicite de l'utilisateur

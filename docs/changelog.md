@@ -10,6 +10,19 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-05-02] — Tests rapatriés en local : CI = build only
+**Quoi :**
+- `/commit-push` exécute désormais 3 checks locaux : type-check + lint + tests (au lieu de 2).
+- CI GitHub réduite à `pnpm build` uniquement (validation Vercel + erreurs Linux). Plus de duplication local/CI.
+- CLAUDE.md "Règles avant push" mises à jour : suppression de l'interdiction "Ne JAMAIS lancer pnpm test localement".
+
+**Pourquoi :** la séparation "lint/test sur CI uniquement" n'avait plus de sens depuis que l'environnement local est stable (TS 5.8.3 pin + hook PreToolUse). Lancer les tests en local accélère le feedback (plus besoin d'attendre la CI pour voir un test cassé), simplifie le mental model, et la CI reste un filet de sécurité Linux/build via `pnpm build`.
+
+**Fichiers :**
+- `.claude/commands/commit-push.md`
+- `.github/workflows/ci.yml` (renommé "CI — Build", suppression des steps lint/tests)
+- `CLAUDE.md` (section "Règles avant push")
+
 ## [2026-04-30] — CLAUDE.md : retrait de la section "Règles d'exécution Bash"
 **Quoi :** Suppression de la section "Règles d'exécution Bash (TOUTES les commandes)" du CLAUDE.md (7 règles : pas de background, pas de pipe, pas de redirection, pas de boucle d'attente…).
 **Pourquoi :** ces règles sont désormais appliquées par le hook `PreToolUse` (`.claude/hooks/enforce-bash-rules.sh`) au niveau système, plus besoin de les répéter dans le prompt. Réduit le bruit au chargement de chaque conversation et évite la duplication source de divergence.
