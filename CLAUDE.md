@@ -26,18 +26,6 @@ Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de v
 7. Après implémentation : passer `.tiple/checklists/code-review.md` point par point
 8. **`/tm-plan` = documentation uniquement.** Ne JAMAIS installer de dépendances, créer de fichiers de code ou exécuter de builds pendant un cadrage. Seuls les fichiers dans `docs/` et `.tiple/sprint/` sont modifiés.
 
-## Règles d'exécution Bash (TOUTES les commandes)
-
-> **⚠️ Ces règles s'appliquent à TOUTES les commandes : `pnpm add`, `pnpm install`, `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm build`, `npx`, et toute autre commande shell.**
-
-1. **TOUJOURS en foreground.** Ne JAMAIS utiliser `run_in_background: true` sauf si l'utilisateur le demande explicitement. Toujours exécuter avec un timeout adapté (défaut: 120000ms, max: 600000ms pour les builds longs).
-2. **AUCUN pipe.** Ne JAMAIS ajouter `| tail`, `| head`, `| grep`, `| wc`, `2>&1 | ...` ou tout autre pipe. Exécuter la commande brute.
-3. **AUCUNE redirection fichier.** Ne JAMAIS rediriger la sortie vers un fichier (`> output.txt`, `2>&1 > log.txt`, `| tee file.txt`). La sortie doit aller directement dans le terminal.
-4. **AUCUNE boucle d'attente.** Ne JAMAIS utiliser `sleep` + `cat`/`tail` pour poll un fichier de sortie. Ne JAMAIS utiliser `while true; do ... done`, `watch`, ou toute boucle pour surveiller une commande.
-5. **Si une commande en background a été lancée par erreur**, attendre la notification de fin. Ne JAMAIS poll manuellement.
-6. **Si une commande dépasse le timeout**, ne PAS relancer en boucle — informer l'utilisateur et proposer d'augmenter le timeout ou de lancer manuellement.
-7. **Commande brute = la commande et rien d'autre.** Exemples corrects : `pnpm type-check`, `pnpm lint`, `pnpm test`, `pnpm add @supabase/supabase-js`. Exemples INTERDITS : `pnpm type-check 2>&1 | tail -20`, `pnpm install > log.txt`, `pnpm test &`.
-
 ## Conventions par tags (chargement intelligent)
 
 Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées **automatiquement** selon le contexte :
