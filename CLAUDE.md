@@ -5,6 +5,12 @@
 - Pas de récap qui répète ce que l'user vient de dire. Pas de tableaux décoratifs ni d'emojis sauf si demandé.
 - Pas de "voici ce que j'ai fait", pas de phrases d'intro/transition. État du résultat seulement.
 
+## Avant de coder (CRITIQUE)
+- **Surfacer les hypothèses, pas les masquer.** Si la story/fix est ambigu ou admet plusieurs interprétations : nommer le doute, proposer les options, demander — ne pas trancher en silence.
+- **Edits chirurgicaux.** Chaque ligne changée doit tracer à la demande. Pas de cleanup adjacent, pas de reformatage opportuniste, pas de refacto non demandé. Dead code repéré : le mentionner, pas le supprimer.
+- **Critères de succès vérifiables avant d'implémenter.** Reformuler la tâche en checks concrets (test qui reproduit le bug, assertion qui valide la feature, type-check qui passe). Pas de "make it work" flou.
+- **Push back quand justifié.** Si une approche plus simple existe ou si la demande crée une dette évidente, le dire avant d'exécuter.
+
 ## Projet
 <!-- À REMPLIR : Nom du projet, description en 1 ligne -->
 
@@ -41,7 +47,6 @@ Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `
 1. **TOUJOURS utiliser `/commit-push`** pour commit et push. Cette commande exécute `pnpm type-check` + `pnpm lint` + `pnpm test` (3 checks locaux), met à jour le changelog, commit et push.
 2. **Type-check + lint + tests = vérifiés EN LOCAL** par `/commit-push` avant push. La CI ne lance plus que `pnpm build` (validation Vercel + catch des erreurs Linux). Pas de duplication.
 3. Ne JAMAIS commit/push en dehors de `/commit-push` sauf demande explicite de l'utilisateur
-4. Voir "Règles d'exécution Bash" ci-dessus pour les contraintes d'exécution des commandes.
 
 ## Règles Next.js
 1. **Server Components par défaut.** Pas de `"use client"` sauf si nécessaire (state, effects, event handlers). Pousser le `"use client"` le plus bas possible dans l'arbre.

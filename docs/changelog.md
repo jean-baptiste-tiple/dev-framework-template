@@ -10,6 +10,12 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-05-02] — CLAUDE.md : ajout section "Avant de coder (CRITIQUE)"
+**Quoi :** Ajout d'une section "Avant de coder" en tête du CLAUDE.md avec 4 règles : surfacer les hypothèses (pas trancher en silence), edits chirurgicaux (chaque ligne trace à la demande), critères de succès vérifiables, push back quand justifié. Suppression de la référence orpheline à "Règles d'exécution Bash" dans "Règles avant push" (section déjà retirée).
+**Pourquoi :** cadrer le comportement de Claude en amont du code : éviter les implémentations trop larges, les refactos non demandés, et le "make it work" flou. Pousse l'agent à clarifier au lieu d'inventer.
+**Fichiers :**
+- `CLAUDE.md`
+
 ## [2026-05-02] — Tests rapatriés en local : CI = build only
 **Quoi :**
 - `/commit-push` exécute désormais 3 checks locaux : type-check + lint + tests (au lieu de 2).
