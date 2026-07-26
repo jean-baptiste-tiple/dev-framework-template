@@ -1,6 +1,6 @@
 ---
 name: tm-review
-description: "Code review conventions-driven : confronte les fichiers modifiés aux règles de .tiple/conventions/ routées par globs. Déclenche-toi automatiquement après toute implémentation de code (story, fix, feature, refacto) avant la finalisation, et quand l'utilisateur demande une relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?', 'code review'. NE PAS déclencher en mode explore/lecture seule ni sur des modifications purement documentaires."
+description: "Code review conventions-driven : confronte les fichiers modifiés aux règles de .tiple/conventions/ routées par globs. Déclenche-toi après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation — et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?', 'code review'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface (une relecture inline du diff suffit)."
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
@@ -14,6 +14,11 @@ un défaut — c'est une suggestion, et elle ne bloque pas.
 Cette review tourne dans le contexte courant (pas d'agent isolé). La contrepartie de cette
 perte de recul est **la mécanique** : on ne demande pas au reviewer d'avoir des idées, on lui
 demande de dérouler des règles lues juste avant. Ne jamais reviewer de mémoire.
+
+**Échelle.** Ce protocole complet s'applique à partir de l'échelle Standard (≥ 3 fichiers, ou
+création d'une surface : route, table, action, composant). Sur un changement micro, `tm-dev`
+fait une relecture inline du diff contre les conventions chargées — mêmes règles, sans rapport
+formaté. La vérification ne disparaît jamais ; seul le cérémonial s'adapte.
 
 ## Étape 1 — Périmètre
 

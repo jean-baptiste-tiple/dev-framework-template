@@ -10,6 +10,21 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Simplification tm-dev / tm-plan : échelles au lieu de modes, cadrage à la carte
+**Quoi :**
+- **`tm-dev` : 5 modes → 2 modes × 3 échelles.** La détection par verbes français (`corrige`, `ajoute`, `nettoie`…) est supprimée : elle était fragile et ne changeait quasiment rien (fix et feature ne différaient que par une phrase de « review focus »). Restent 2 modes réels — lecture (read-only) et écriture — et 3 **échelles** déterminées par ce que le changement touche : **Micro** (1-2 fichiers, aucune nouvelle surface) · **Standard** (3-5 fichiers, ou création d'une fonction/composant/action) · **Module** (nouvelle surface, changement DB, ou ≥ 6 fichiers).
+- **Les garanties ne dépendent plus du chemin choisi.** Conventions chargées + type-check s'appliquent à toute échelle, y compris sur un changement d'une ligne. Ce qui s'échelonne est le cérémonial : rapport de review, changelog, registry, story. Avant, le workflow en 5 phases était contourné sur les petits changements — et en le contournant on perdait aussi le chargement des conventions et la review.
+- **Story proposée, pas imposée** — uniquement à l'échelle Module, avec sa justification : c'est le seul endroit où les AC sont écrits avant le code, donc le seul moyen pour la review de statuer « AC non livré » au lieu de donner un avis.
+- **2 garde-fous conditionnels** remplacent les modes fix/refacto : correction d'un comportement cassé → test qui reproduit d'abord ; changement sans effet sur le comportement observable → tests identiques avant/après. Ils se déclenchent sur la nature réelle du travail, pas sur le vocabulaire.
+- **`tm-plan` : pipeline → artefacts à la carte.** Les 6 phases séquentielles deviennent une liste d'artefacts dont seuls les manquants ou les impactés sont produits. Trois niveaux : **initial**, **évolution ciblée**, et **refus** — le cadrage peut désormais se déclarer inutile et basculer en implémentation, ce que rien ne l'autorisait à faire.
+- **Principe des artefacts optionnels écrit noir sur blanc** : aucun artefact n'est obligatoire, son absence est déclarée et non subie. Une référence UI à `N/A` n'est jamais un défaut et la review ne la pénalise pas.
+
+**Pourquoi :** en rythme de croisière, le workflow lourd n'était pas utilisé — donc les garanties de qualité ne s'appliquaient presque jamais. En attachant les garanties au changement plutôt qu'au workflow, et en faisant varier le seul cérémonial, il n'y a plus de chemin à contourner.
+
+**Fichiers :**
+- `.claude/skills/tm-dev/SKILL.md`, `.claude/skills/tm-plan/SKILL.md`, `.claude/skills/tm-review/SKILL.md`
+- `CLAUDE.md`, `README.md`
+
 ## [2026-07-26] — Refonte du système d'agent : skills auto-déclenchés, review conventions-driven, gate git par hook
 **Quoi :**
 - **Routing unique par globs.** `.tiple/conventions/_index.md` gagne une colonne **Globs** — seule source de vérité `fichier → tag → convention`, consommée par `tm-dev` et `tm-review`. Le mapping en prose (7 tags sur 22) qui vivait dans `tm-dev.md` est supprimé.

@@ -45,12 +45,12 @@ reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 
 | Skill | Déclenchement | Description |
 |-------|---------------|-------------|
-| `tm-dev` | auto — avant toute modif de `src/`, `tests/`, `supabase/` | 5 modes : story (`E01-S01`/`next`), fix, feature, refacto, explore (read-only). |
-| `tm-review` | auto — fin d'implémentation, « review », « relis » | Route les conventions par globs sur le diff et confronte le code aux règles lues. |
+| `tm-dev` | auto — avant toute modif de `src/`, `tests/`, `supabase/` | 2 modes (lecture / écriture), 3 échelles (Micro / Standard / Module). |
+| `tm-review` | auto — dès l'échelle Standard, « review », « relis » | Route les conventions par globs sur le diff et confronte le code aux règles lues. |
 | `tm-verify` | auto — « vérifie », « ça compile ? », après un fix | `check:framework` + `type-check` + `lint` + `test`. |
 | `commit-push` | auto — « commit », « push », « envoie » | Les 4 checks + changelog + commit + push. **Seul chemin autorisé** (gate par hook). |
 | `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
-| `tm-plan` | **explicite uniquement** (`/tm-plan`) | Cadrage : brief → PRD par parcours → archi → design → epics/stories → gate. Mode initial vs évolution détecté auto. |
+| `tm-plan` | **explicite uniquement** (`/tm-plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 3 niveaux — initial, évolution ciblée, ou **refus** quand ça n'en vaut pas la peine. |
 | 22 skills de tag | auto — via les globs de `_index.md` | Pointeurs vers `.tiple/conventions/`, sans aucune règle recopiée. |
 
 `tm-plan` est le seul à ne jamais s'auto-déclencher : un cadrage réécrit PRD, architecture et
@@ -65,26 +65,40 @@ Tout passe par le skill `commit-push`, qui exécute d'abord `check:framework`, `
 Le déclenchement d'un skill est un jugement du modèle, donc probabiliste — acceptable pour
 charger des conventions, pas pour un gate de push. D'où le hook, qui lui est déterministe.
 
-### Les 5 modes de `/tm-dev`
+### L'échelle, pas les mots-clés
 
-| Mode | Déclencheur | Ce que ça fait |
+`tm-dev` a **2 modes** — lecture (read-only) ou écriture — et l'ampleur du process est déterminée
+par **ce que le changement touche**, jamais par le vocabulaire de la demande :
+
+| Échelle | Reconnaissance | Process |
 |---|---|---|
-| **Story** | ID (`E01-S01`) ou `next` | Flow complet piloté par la story : conventions auto-chargées, impl, type-check, review, finalisation (changelog, post-impl, registry, sprint status) |
-| **Fix** | mots-clés : `bug`, `corrige`, `cassé`, `erreur`, `crash`, `ne marche pas`, `broken`, `régression` | Reproduire avant corriger, diff minimal, test de non-régression obligatoire |
-| **Feature** | mots-clés : `ajoute`, `implémente`, `nouvelle feature`, `nouvelle fonctionnalité`, `add` | Si non-trivial → propose `/tm-plan` pour cadrer d'abord. Sinon : respect registry/design system/a11y |
-| **Refacto** | mots-clés : `refacto`, `refactor`, `nettoie`, `factorise`, `simplifie`, `DRY`, `clean up` | Pas de changement de comportement, tests identiques avant/après, diff minimal |
-| **Explore** | mots-clés : `comprends`, `explique`, `analyse`, `audit`, `lis`, `parcours` | **Read-only** : aucune écriture. Retour structuré (vue d'ensemble, I/O, flow, dépendances, points d'attention) |
+| **Micro** | 1-2 fichiers, aucune nouvelle surface | conventions → impl → type-check → review inline |
+| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests → `tm-review` → changelog |
+| **Module** | nouvelle surface (route, table, parcours), changement DB, ou ≥ 6 fichiers | **propose une story avant de coder** → tout le Standard → registry → ADR si invariant → sprint status |
 
-Priorité en cas d'ambiguïté : Explore > Refacto > Fix > Feature. Sinon Claude demande.
+Micro ne veut pas dire « sans garantie » : conventions et type-check s'appliquent **à toute
+échelle**. Ce qui s'adapte, c'est le cérémonial — pas la vérification.
 
-### Planifier une V2 (ou une grosse évolution versionnée)
+Deux garde-fous se déclenchent sur la nature réelle du travail, pas sur le verbe employé :
+une **correction de bug** exige d'abord un test qui reproduit ; une **réorganisation sans
+changement de comportement** exige des tests **identiques avant/après** (un test modifié signifie
+un comportement modifié).
 
-**`/tm-plan` gère les deux modes** — cadrage initial ET évolution versionnée :
+### Le cadrage à la carte
 
-- **Mode initial** (auto) : `docs/prd.md` n'existe pas → création from scratch de tous les documents
-- **Mode évolution** (auto) : `docs/prd.md` existe déjà ET tu mentionnes "V2", "V3", "évolution", "nouvelle version" → Claude **édite** les docs existants au lieu de les recréer, crée uniquement les nouveaux epics/stories, ajoute un ADR par invariant d'archi touché, et applique `.tiple/checklists/prd-evolution.md` en plus du readiness-gate.
+`/tm-plan` regarde ce qui existe déjà et choisit son niveau :
 
-Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/skills/tm-plan/SKILL.md](.claude/skills/tm-plan/SKILL.md) pour le détail.
+- **Initial** — `docs/prd.md` absent → chaîne complète
+- **Évolution** — PRD rempli, la demande touche un parcours → ce parcours + la cascade réellement impactée, jamais de réécriture
+- **Refus** — la demande ne touche ni parcours ni modèle de données → **aucun document produit**, bascule directe en implémentation
+
+Le refus est une issue normale : un cadrage ne doit pas se dérouler pour une demande de 20 lignes.
+
+**Rien n'est obligatoire.** Pas de maquette, pas de story, pas de Supabase, pas de design system
+custom : le travail se fait quand même. Une référence UI à `N/A` est une donnée déclarée, jamais
+un défaut — la review ne la pénalise pas, elle retire simplement le critère correspondant.
+
+Détail : [.claude/skills/tm-plan/SKILL.md](.claude/skills/tm-plan/SKILL.md).
 
 ### Routing des conventions
 

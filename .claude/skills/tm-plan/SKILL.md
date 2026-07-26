@@ -1,120 +1,124 @@
 ---
 name: tm-plan
-description: "Cadrage documentaire d'un projet ou d'une évolution : brief, PRD par parcours, architecture, design, epics/stories, gate. À invoquer explicitement (/tm-plan). Si l'utilisateur décrit un besoin produit large sans le demander, PROPOSER un cadrage et attendre son accord — ne jamais lancer un cadrage de sa propre initiative : il réécrit PRD, architecture et stories."
+description: "Cadrage produit : brief, PRD par parcours, architecture, design, epics/stories. À invoquer explicitement (/tm-plan). Si l'utilisateur décrit un besoin produit large sans le demander, PROPOSER un cadrage et attendre son accord — ne jamais en lancer un de sa propre initiative : il réécrit PRD, architecture et stories."
 argument-hint: "[scope / version optionnels]"
 ---
 
 # tm-plan — Cadrage
 
-Une conversation continue qui produit les documents de cadrage. Pas un formulaire — un dialogue.
+Un dialogue qui produit les documents de cadrage. Pas un formulaire, pas un pipeline
+obligatoire : **une liste d'artefacts dont seuls les manquants ou les impactés sont produits.**
 
 > **RÈGLE CRITIQUE — zéro code, zéro commande système.**
-> Ce skill ne modifie que des Markdown dans `docs/` et `.tiple/sprint/`. Interdit pendant un cadrage :
-> installer des dépendances, créer/modifier `.ts` `.tsx` `.js` `.css` `.json`, lancer un build,
-> un lint, un test, copier des fichiers de starter, créer des dossiers dans `src/` `supabase/` `.github/`.
-> L'installation technique est faite par `tm-dev` lors de la story de setup (typiquement E01-S01).
+> Ce skill ne modifie que des Markdown dans `docs/` et `.tiple/sprint/`. Interdit pendant un
+> cadrage : installer des dépendances, créer/modifier `.ts` `.tsx` `.js` `.css` `.json`, lancer
+> un build/lint/test, copier des fichiers de starter, créer des dossiers dans `src/`,
+> `supabase/`, `.github/`. L'installation technique est faite par `tm-dev`, dans la story de setup.
 
-## Mode : initial ou évolution
+## Étape 0 — Choisir le niveau (ou refuser)
 
-Détection au démarrage :
-- **Initial** : `docs/prd.md` absent, vide ou placeholder → création from scratch
-- **Évolution** : `docs/prd.md` rempli **et** l'utilisateur mentionne une version / une grosse feature / un nouveau scope
+Regarder ce qui existe déjà (`docs/prd.md`, `docs/architecture.md`, `docs/stories/`) et ce que
+la demande touche :
 
-En mode évolution, **confirmer avant de continuer** :
-> « `docs/prd.md` est déjà rempli. On est sur une évolution ? Je fais évoluer les docs existants, je ne les recrée pas. OK ? »
+| Niveau | Quand | Ce qui est produit |
+|--------|-------|--------------------|
+| **Refus** | La demande tient en quelques fichiers, sans nouveau parcours ni changement de modèle de données | **Rien.** Le dire et basculer sur `tm-dev`. |
+| **Évolution** | `docs/prd.md` est rempli et la demande touche un parcours (existant ou nouveau) | Le parcours concerné + la cascade réellement impactée |
+| **Initial** | `docs/prd.md` absent, vide ou placeholder | La chaîne complète |
 
-| Aspect | Initial | Évolution |
-|---|---|---|
-| `docs/brief.md` | Créé depuis le template | Édité — section de version ajoutée |
-| `docs/prd.md` | Créé depuis le template | Édité — nouvelles sections 🔶 Draft, parcours existants conservés |
-| `docs/architecture.md` | Créé depuis le template | Édité + **ADR obligatoire** pour chaque invariant touché |
-| `docs/design/` | Design system + toutes les maquettes | Maquettes des **nouveaux écrans** uniquement |
-| `docs/epics/`, `docs/stories/` | Tous créés | **Uniquement les nouveaux** |
-| Gate | `readiness-gate.md` | `readiness-gate.md` **+** `prd-evolution.md` |
+**Le refus est une issue normale, pas un échec.** Formuler :
+> « Ça ne mérite pas un cadrage : pas de nouveau parcours, pas de changement de modèle de
+> données. Je passe directement en implémentation — dis-moi si tu veux une story quand même. »
 
-Règles absolues en mode évolution :
+En **Évolution**, confirmer avant d'écrire :
+> « `docs/prd.md` est déjà rempli. Je fais évoluer le parcours [X] et je cascade sur ce qui est
+> réellement impacté — je ne recrée rien. OK ? »
+
+### Règles absolues en Évolution
+
 1. **Jamais de réécriture** d'un document existant — Edit, pas Write
 2. Préserver le contenu existant sauf demande explicite
-3. ADR obligatoire pour tout changement d'invariant (structure, sécurité, modèle de données)
-4. Stories/epics existants non retouchés, sauf si leur scope change (le noter dans leur historique)
+3. **ADR obligatoire** dans `docs/decisions/` pour tout invariant touché (structure, sécurité, modèle de données)
+4. Stories et epics existants non retouchés, sauf si leur scope change (le noter dans leur historique)
+5. Passer `.tiple/checklists/prd-evolution.md` en plus du readiness-gate
 
-## Livrables d'entrée
+## Les artefacts
 
-**Requis** : design tokens (`docs/design/system.md`, fourni par défaut dans le template), flows
-utilisateur, spec applicative.
+Produire **uniquement** ceux qui manquent ou que la demande impacte. Pour chacun, dire
+explicitement s'il est produit, mis à jour, ou volontairement laissé de côté.
 
-**Optionnels** : maquettes JSX (`docs/design/screens/*.jsx`), composants partagés
-(`docs/design/components/*.jsx`).
+### `docs/brief.md` — comprendre le problème
 
-**Sans maquettes, le cadrage fonctionne normalement** — les stories utilisent une description
-textuelle ou `N/A` comme référence UI. L'absence de maquette est une donnée déclarée, pas un
-manque à combler.
+Quel problème, pour qui, pourquoi maintenant · personas (nom/rôle/besoin/frustration) · scope
+MVP IN/OUT explicites · contraintes (techniques, business, légales, RGPD) · KPIs concrets ·
+risques. Quantifier la douleur : « perd 2h/semaine » > « c'est lent ».
 
-## Phase 0 — Starters (identification, pas installation)
-
-Question : le projet a-t-il besoin d'une base de données et/ou d'authentification ?
-
-**Oui** → lire `.tiple/starters/supabase-auth/README.md`, prévoir une story « Setup technique »
-en phase 5 (dépendances, copie des fichiers du starter, `.env.local`, type-check), noter
-l'activation dans `docs/architecture.md`. Adapter si les besoins auth sont spécifiques
-(ex : auth par code d'accès → ne pas copier les pages auth du starter).
-
-**Non** → le template fonctionne sans base de données. Passer à la phase 1.
-
-## Phase 1 — Comprendre le problème (→ `docs/brief.md`)
-
-Quel problème, pour qui, pourquoi maintenant · personas (nom/rôle/besoin/frustration) ·
-scope MVP IN/OUT explicites · contraintes (techniques, business, légales, RGPD) ·
-KPIs concrets · risques connus.
-
-Quantifier la douleur : « perd 2h/semaine » > « c'est lent ».
-
+En Évolution : ajouter une section de version, ne pas réécrire l'existant.
 → `.tiple/templates/brief.tmpl.md`
 
-## Phase 2 — PRD par parcours (→ `docs/prd.md`)
+### `docs/prd.md` — le PRD par parcours
 
-1. **Identifier les parcours** — un parcours = un objectif utilisateur complet
-2. **Par parcours** : flow Mermaid · écrans · FR `FR-[PARCOURS]-[XX]` avec priorité MoSCoW et
-   AC en Given/When/Then · NFR liés
-3. **Cohérence** : chaque FR a une référence UI (maquette, description ou `N/A`) · chaque écran
-   est dans un flow · max 60 % de Must · chaque FR est testable
-4. **Modèle de données** : entités inférées des parcours
+Un parcours = un objectif utilisateur complet. Pour chacun : flow Mermaid · écrans · FR
+`FR-[PARCOURS]-[XX]` avec priorité MoSCoW et AC en Given/When/Then · NFR liés.
 
+Cohérence à vérifier : chaque FR a une référence UI (maquette, description **ou `N/A`**) ·
+chaque écran est dans un flow · max 60 % de Must · chaque FR est testable.
+
+En Évolution : les nouvelles sections sont marquées 🔶 Draft, les parcours existants intacts.
 → `.tiple/templates/prd.tmpl.md`
 
-## Phase 3 — Architecture (→ `docs/architecture.md`)
+### `docs/architecture.md` — le socle technique
 
 Modèle de données (Mermaid ER) · RLS par table · Server Actions par parcours · points
 performance. Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.
 
 → `.tiple/templates/architecture.tmpl.md` · consulter `.tiple/conventions/_index.md`
 
-## Phase 4 — Design (→ `docs/design/`)
+### `docs/design/` — le design
 
-**Avec maquettes** : vérifier que `docs/design/system.md` est complet (tokens, composants,
-patterns, breakpoints) · vérifier qu'un `.jsx` existe pour chaque écran du PRD et signaler les
-manquants · mettre à jour `docs/design/screens/_index.md` et `docs/design/components/_index.md`.
+Trois situations, toutes valides :
 
-**Sans maquettes** : proposer de personnaliser le design system par défaut (couleur primaire,
-secondaire, font, style général) et mettre à jour `docs/design/system.md`. Les fichiers de code
-(`globals.css`, `tailwind.config.ts`) seront modifiés par `tm-dev` lors de la story de setup.
+- **Maquettes fournies** → vérifier qu'un fichier existe pour chaque écran du PRD, signaler les
+  manquants, mettre à jour `docs/design/screens/_index.md` et `components/_index.md`
+- **Pas de maquettes, design system à personnaliser** → questions ciblées (couleur primaire,
+  secondaire, font, style) → mettre à jour `docs/design/system.md`. Les fichiers de code
+  (`globals.css`, `tailwind.config.ts`) seront modifiés par `tm-dev` à la story de setup
+- **Pas de maquettes, design system par défaut** → ne rien faire, le dire, passer à la suite
 
-## Phase 5 — Epics & stories (→ `docs/epics/`, `docs/stories/`)
+L'absence de maquette n'est jamais un blocage : les stories portent alors une description
+textuelle ou `N/A`.
 
-- Epics depuis `.tiple/templates/epic.tmpl.md` — chaque epic référence son parcours
-- Stories depuis `.tiple/templates/story.tmpl.md` — contexte, AC Given/When/Then, fichiers à
-  créer, tests attendus, référence UI
-- **Chaque story déclare ses tags `Conventions`** (liste dans `.tiple/conventions/_index.md`).
-  Ces tags s'ajoutent à ceux déduits des globs au moment du dev — les déclarer sert à couvrir
-  ce que les chemins de fichiers ne révèlent pas encore.
-- Ordonner par dépendance et priorité. Une story = un déploiement possible. Taille S/M/L, pas XL.
+### `docs/epics/` et `docs/stories/` — le découpage
 
+Epics (`.tiple/templates/epic.tmpl.md`) référençant leur parcours. Stories
+(`.tiple/templates/story.tmpl.md`) avec contexte, AC Given/When/Then, fichiers à créer, tests
+attendus, référence UI.
+
+Chaque story déclare ses tags `Conventions` (liste dans `.tiple/conventions/_index.md`). Ils
+s'ajoutent aux tags déduits des globs au moment du dev — les déclarer sert à couvrir ce que les
+chemins de fichiers ne révèlent pas encore.
+
+Ordonner par dépendance et priorité. Une story = un déploiement possible. Taille S/M/L, pas XL.
+
+En Évolution : **uniquement les nouveaux** epics et stories.
 → Mettre à jour `docs/epics/_index.md`
 
-## Phase 6 — Gate
+### Starters — identification, jamais installation
 
-Passer `.tiple/checklists/readiness-gate.md` point par point. Vérifier la cohérence
-PRD ↔ architecture ↔ design ↔ stories. Si KO, corriger avant de clore.
+Le projet a-t-il besoin d'une base de données et/ou d'authentification ?
 
-→ Initialiser `.tiple/sprint/status.md` : dates, epic focus, tableau des stories sélectionnées.
-→ Résumer : prêt à coder, première story à implémenter.
+**Oui** → lire `.tiple/starters/supabase-auth/README.md`, prévoir une story « Setup technique »
+(dépendances, copie des fichiers du starter, `.env.local`, type-check), noter l'activation dans
+`docs/architecture.md`. Adapter si les besoins auth sont spécifiques (ex : accès par code →
+ne pas copier les pages auth du starter).
+
+**Non** → le template fonctionne sans base de données. Ne rien prévoir.
+
+## Gate de sortie
+
+Passer `.tiple/checklists/readiness-gate.md` (+ `prd-evolution.md` en Évolution). Vérifier la
+cohérence PRD ↔ architecture ↔ design ↔ stories. Si KO, corriger avant de clore.
+
+Initialiser ou mettre à jour `.tiple/sprint/status.md` : dates, epic focus, stories
+sélectionnées. Puis résumer : ce qui a été produit, ce qui a été volontairement laissé de côté,
+et la première story à implémenter.

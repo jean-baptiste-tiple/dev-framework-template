@@ -23,13 +23,39 @@ Voir `.tiple/conventions/tech-stack.md` pour les versions exactes.
 Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de vérité. Lis les fichiers pertinents avant chaque action.
 
 ## Règles absolues
-1. Un travail à l'échelle d'un module (nouveau parcours, changement DB, ≥ 6 fichiers) passe par une story 🟢 Ready dans `docs/stories/`. Un fix ou un petit ajout se fait en mode libre — mais **jamais sans conventions chargées ni review**.
+1. **Conventions chargées + type-check : à toute échelle, sans exception.** C'est le socle non négociable, y compris pour un changement d'une ligne.
 2. TOUJOURS lire avant de coder : la story (si applicable), sa référence UI si elle n'est pas `N/A`, `docs/architecture.md`, et les **conventions routées** (voir ci-dessous)
 3. Ne JAMAIS créer un composant/hook/util sans vérifier le component-registry d'abord — s'il existe, réutiliser
 4. Ne JAMAIS modifier un invariant d'architecture sans créer un ADR dans `docs/decisions/`
 5. Les tests sont écrits AVEC le code, pas après — unit d'abord, puis intégration, puis e2e si applicable
-6. Après implémentation : review (skill `tm-review`) puis, en mode story, section "Post-implémentation" remplie
+6. **Aucun artefact n'est obligatoire ; son absence est déclarée, pas subie.** Pas de maquette, pas de story, pas de Supabase : le travail se fait quand même. Une référence UI à `N/A` n'est jamais un défaut et la review ne la pénalise pas.
 7. **Cadrage = documentation uniquement.** Ne JAMAIS installer de dépendances, créer des fichiers de code ou lancer un build pendant un `/tm-plan`. Seuls `docs/` et `.tiple/sprint/` sont modifiés.
+
+## Échelle du changement
+
+L'ampleur du process est déterminée par **ce que le changement touche**, jamais par les mots
+employés dans la demande. En cas de doute entre deux échelles, prendre la plus haute et le dire.
+
+| Échelle | Reconnaissance | Process |
+|---------|----------------|---------|
+| **Micro** | 1-2 fichiers, aucune nouvelle surface | conventions → impl → type-check → **review inline** |
+| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests → **skill `tm-review`** → changelog |
+| **Module** | nouvelle surface (route, table, parcours), changement DB, ou ≥ 6 fichiers | **proposer une story avant de coder** → tout le Standard → registry → ADR si invariant → sprint status |
+
+Micro ne veut pas dire « sans garantie » : ce qui disparaît est le cérémonial (rapport de review,
+entrée de changelog pour un changement invisible), pas la vérification.
+
+À l'échelle Module, la story se **propose**, ne s'impose pas. Elle a une raison d'être précise :
+c'est le seul endroit où les AC sont écrits avant le code, donc le seul moyen pour la review de
+statuer « AC non livré » au lieu de donner un avis. Si l'utilisateur refuse, continuer en
+Standard et le dire.
+
+### Garde-fous conditionnels
+
+Ils se déclenchent sur la **nature réelle** du travail, quel que soit le vocabulaire employé.
+
+- **Correction d'un comportement cassé** → écrire d'abord un test qui reproduit le bug et échoue
+- **Changement qui ne doit rien modifier au comportement observable** (réorganisation, extraction, renommage) → lire les tests existants avant · **tests identiques avant/après** (un test modifié = un comportement modifié) · si la zone n'est pas testée, écrire les tests avant
 
 ## Conventions routées par globs
 
@@ -54,7 +80,7 @@ Il n'y a rien à taper : les skills se déclenchent sur l'intention. Les slash c
 |---|---|---|
 | Modification de code applicatif (`src/`, `tests/`, `supabase/`) | `tm-dev` | oui |
 | Fichier touché matchant un glob de `_index.md` | skill du tag → convention lue | oui |
-| Fin d'implémentation, avant finalisation | `tm-review` | oui |
+| Fin d'implémentation à l'échelle Standard ou Module | `tm-review` | oui |
 | « vérifie », « ça compile ? », après application de fix | `tm-verify` | oui |
 | « commit », « push », « envoie », chantier terminé et reviewé | `commit-push` | oui |
 | Fin de session / chantier bouclé | `tm-wrap-up` | **propose**, n'exécute pas |
@@ -89,34 +115,31 @@ Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
 - **Migrations versionnées.** Chaque changement DB = `pnpm db:migrate [nom]` → fichier SQL dans `supabase/migrations/`. Jamais de modification en direct. CI auto-deploy via `.github/workflows/supabase-migrations.yml`.
 - **Auth vérifiée dans chaque Server Action** (pas seulement le middleware).
 
-## Workflow quotidien
-1. Lire `.tiple/sprint/status.md` → identifier la prochaine story 🟢 Ready
-2. Lire la story complète + ses refs (parcours PRD, référence UI, archi, conventions)
-3. Vérifier `.tiple/checklists/story-ready.md`
-4. Implémenter : schemas Zod → backend → tests unit → UI → tests unit UI → page → tests integ
-5. Écrire les tests (unit + integ) au fur et à mesure
-6. Vérifier que les tests de la story passent
-7. **Type-check** (OBLIGATOIRE) : `pnpm type-check` → doit passer sans erreur
-8. **Review** (OBLIGATOIRE — skill `tm-review`) :
+## Workflow
+1. **Déterminer l'échelle** (Micro / Standard / Module) — voir ci-dessus
+2. Charger les conventions routées par globs (+ tags de la story si applicable) et **annoncer la liste**
+3. Si une story pilote : la lire entièrement, vérifier `.tiple/checklists/story-ready.md`, lire sa référence UI si ≠ `N/A`. Sinon : reformuler la demande en critères de succès vérifiables et, dès l'échelle Standard, proposer le plan avant d'éditer
+4. Implémenter : migration DB → schemas Zod → Server Actions + tests unit → composants + tests unit → page + tests integ
+5. Appliquer les garde-fous conditionnels (test qui reproduit / tests identiques)
+6. **Type-check** : `pnpm type-check` doit passer (max 3 cycles)
+7. **Review** — inline en Micro, skill `tm-review` dès Standard :
    - Router les conventions par globs sur le diff, les lire, confronter le code aux règles
-   - Puis passer `.tiple/checklists/code-review.md` (transverse uniquement)
+   - Puis `.tiple/checklists/code-review.md` (transverse uniquement)
    - Chaque problème HAUTE/MOYENNE **cite sa source** (`conventions/<fichier>.md § <section>` ou un AC). Sans source → BASSE, non bloquant.
-   - Si HAUTE/MOYENNE → corriger, relancer l'étape 7, puis re-reviewer
-9. Mettre à jour la story (post-implémentation)
-10. Mettre à jour `.tiple/conventions/component-registry.md` si nouveaux composants
-11. Mettre à jour `.tiple/sprint/status.md` → story ✅ Done
-12. Ajouter une entrée dans `docs/changelog.md` si changement significatif
-13. Résumer ce qui a été fait
+   - Si HAUTE/MOYENNE → corriger, relancer l'étape 6, puis re-reviewer
+8. Finaliser selon l'échelle : changelog · registry · post-implémentation · sprint status · ADR
+9. `commit-push` (auto sur « commit », « push », « c'est bon »)
 
 ## Quand le PRD évolue
 1. Modifier `docs/prd.md` — parcours concerné, statut 🔶 Draft
 2. Passer `.tiple/checklists/prd-evolution.md` point par point
-3. Identifier les impacts : parcours, maquettes/références UI (si applicable), architecture, epics, stories, DB
+3. Identifier les impacts **réels** : parcours, référence UI (si applicable), architecture, epics, stories, DB — ne pas cascader par principe
 4. Mettre à jour `docs/architecture.md` (+ ADR si invariant touché)
-5. (si maquettes) Mettre à jour les maquettes si nécessaire (`docs/design/screens/`)
-6. Mettre à jour les epics et stories impactées
-7. Ajouter une entrée dans `docs/changelog.md`
-8. Lister les nouvelles stories à créer
+5. Mettre à jour les epics et stories impactées, créer uniquement les nouvelles
+6. Ajouter une entrée dans `docs/changelog.md`
+
+Si le changement ne touche ni parcours ni modèle de données, il ne relève pas d'une évolution de
+PRD : passer directement en implémentation.
 
 ## Quand on crée un nouveau composant
 1. Vérifier `.tiple/conventions/component-registry.md` — s'il existe déjà, réutiliser
@@ -132,8 +155,8 @@ explicitement en `/<nom>`.
 
 | Skill | Usage | Description |
 |-------|-------|-------------|
-| `tm-plan` | Cadrage (initial ou évolution) | brief → PRD par parcours → archi → design → epics/stories → gate. Mode détecté auto. **Invocation explicite uniquement.** |
-| `tm-dev` | Toute action code | Modes story (`E01-S01`/`next`), fix, feature, refacto, explore (read-only). |
+| `tm-plan` | Cadrage | Artefacts produits à la demande (brief, PRD, archi, design, epics/stories). 3 niveaux : initial, évolution ciblée, **ou refus** si ça ne mérite pas de cadrage. **Invocation explicite uniquement.** |
+| `tm-dev` | Toute action code | 2 modes (lecture / écriture) × 3 échelles (Micro / Standard / Module). |
 | `tm-review` | Review | Conventions routées par globs, confrontées au diff. Gravité indexée sur la source citée. |
 | `tm-verify` | Vérifications | `check:framework` + `type-check` + `lint` + `test`. |
 | `commit-push` | Commit & push | Les 4 checks + changelog + commit + push. Seul chemin autorisé (gate par hook). |
