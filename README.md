@@ -243,7 +243,7 @@ jamais vérifié.
 Ils sont écrits en Node, pas en bash : le payload est du JSON, et toute extraction du champ
 `command` par grep ou sed est fausse dans un sens (troncature au premier guillemet échappé) ou
 dans l'autre (matching du JSON entier). `tests/unit/hooks.test.ts` verrouille leur comportement
-sur 18 cas.
+sur les cas de contournement connus.
 
 Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase arrive avec
 le starter Supabase + Auth.

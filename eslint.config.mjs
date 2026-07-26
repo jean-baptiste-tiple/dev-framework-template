@@ -32,8 +32,8 @@ const eslintConfig = [
     plugins: { import: importPlugin },
     rules: {
       // Complexité — remplace la table « File Size & Complexity » et la section « Early Returns »
-      "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
-      "max-lines-per-function": ["warn", { max: 150, skipBlankLines: true, skipComments: true }],
+      "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
+      "max-lines-per-function": ["error", { max: 150, skipBlankLines: true, skipComments: true }],
       "max-params": ["error", 4],
       "max-depth": ["error", 3],
       "no-empty": ["error", { allowEmptyCatch: false }],

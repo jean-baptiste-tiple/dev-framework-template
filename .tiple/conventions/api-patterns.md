@@ -233,7 +233,7 @@ export const itemsSearchSchema = z.object({
 
 ## Optimistic Updates
 
-Voir `forms-patterns.md` pour le pattern `useOptimistic`. Uploads : `uploads-patterns.md`.
+Voir `forms-patterns.md § Mise à jour optimiste`. Uploads : `uploads-patterns.md`.
 
 ## Caching & Revalidation
 

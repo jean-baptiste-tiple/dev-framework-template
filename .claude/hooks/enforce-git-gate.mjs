@@ -51,6 +51,15 @@ process.stdin.on("end", async () => {
 
   const marked = MARKER.test(command)
 
+  // Un shell imbriqué remet la commande dans une chaîne, que la neutralisation ci-dessous
+  // efface : `bash -c "git commit -m x"` passerait le gate sans être vu. On refuse donc de
+  // raisonner sur une commande qu'on ne peut pas analyser.
+  if (/(?:^|[;&|\s])(?:sh|bash|zsh|env)\s+(?:-\S+\s+)*-c\b|(?:^|[;&|\s])eval\b|\|\s*(?:sh|bash|zsh)\b/.test(command)) {
+    deny(
+      "BLOQUÉ: shell imbriqué (`bash -c`, `eval`, pipe vers un shell). Le contenu d'une commande imbriquée n'est pas analysable : lancer la commande git directement, via le skill commit-push."
+    )
+  }
+
   // Retirer le marqueur puis neutraliser les chaînes entre quotes : sans ça, `-f` ou `--force`
   // écrit dans un message de commit déclencherait l'interdit absolu, et un `grep "git push"`
   // serait bloqué.

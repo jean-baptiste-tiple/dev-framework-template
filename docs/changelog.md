@@ -10,6 +10,24 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Régressions de la refonte, trouvées par contre-audit
+**Quoi :** un audit indépendant a été passé sur le résultat de la refonte précédente, avec pour consigne de chercher ce qu'elle avait cassé. Douze findings, tous vérifiés avant correction.
+
+- **Instructions devenues fausses, qui faisaient échouer le check.** `_index.md` et `tm-wrap-up` disaient encore « ajouter un tag = ligne + convention + `.claude/skills/<tag>/` » alors que `check:framework` **rejette** désormais un skill par tag. Suivre la doc cassait le gate de commit. Reproduit puis corrigé des deux côtés.
+- **Le gate était contournable par shell imbriqué.** `bash -c "git commit -m x"` et `eval "git push"` passaient : la neutralisation des chaînes entre quotes — nécessaire pour ne pas bloquer `grep "git commit"` — effaçait la commande. Le hook refuse maintenant tout shell imbriqué, faute de pouvoir l'analyser.
+- **Le reçu plantait sur un dépôt sans commit.** `git rev-parse HEAD` échouait, donc `pnpm verify` mourait **après** avoir passé les 4 checks, et le hook refusait ensuite le commit en boucle — sans échappement, `--no-verify` étant bloqué. Le premier commit d'un projet issu du template était impossible. Garde ajouté, plus un fallback par fichier pour les chemins que git ne sait pas hacher.
+- **Les tests écrivaient dans le vrai reçu.** Un `pnpm test` interrompu laissait derrière lui un reçu déclarant les 4 checks passés alors que seul vitest avait tourné — le gate autorisait alors un commit sans type-check ni lint. Les tests écrivent désormais dans un reçu isolé (`TIPLE_RECEIPT_PATH`).
+- **Renommage non détecté.** `git diff --name-status` n'émet qu'une ligne `R100 ancien nouveau` ; en ne retenant que la destination, la disparition de l'ancien chemin n'était pas enregistrée. Restaurer l'ancien fichier à côté du nouveau laissait le reçu valide alors que les deux coexistaient. Résolu par `--no-renames`.
+- **Le reçu ne servait qu'en Micro.** Il n'excluait que le changelog, alors que la finalisation écrit ensuite dans le sprint status, les stories et les ADR — tout chantier Standard ou Module invalidait donc le reçu et rejouait les 4 checks, c'est-à-dire exactement ce que le mécanisme prétendait supprimer. Exclusions étendues.
+- **Trous de routing.** Le tag `api` n'était pas routé sur `src/app/**/page.tsx`, alors que trois sections d'`api-patterns.md` sont du code de page — dont la règle sur les `searchParams` validés par Zod, jamais chargée sur le fichier qu'elle vise. Et `supabase-patterns.md` n'était pas chargé sur `src/lib/actions/**` alors qu'`api-patterns.md` y impose `handleSupabaseError`.
+- **`max-lines` et `max-lines-per-function` étaient en `warn`** alors que `coding-standards.md` annonçait « appliquée par ESLint, ne pas revérifier à la main » : la règle avait disparu des deux côtés. Passées en `error`.
+- **Divers** : `readiness-gate.md` exigeait `pnpm check:framework`, que `tm-plan` n'a pas le droit d'exécuter · renvoi vers un pattern `useOptimistic` qui n'existait nulle part (section écrite dans `forms-patterns.md`) · `generateMetadata` dupliqué et déjà divergent entre `nextjs-patterns.md` et `seo-patterns.md` · sortie d'exemple de `tm-review` listant des conventions absentes de ses propres tags actifs · `enforce-bash-rules` prenait `eslint.config.mjs` pour un lancement d'ESLint.
+- **`tm-wrap-up` gagne une phase « ce qui doit disparaître »** : sans mécanisme inverse, les conventions ne faisaient que croître, et le volume redevenait le problème.
+
+**Pourquoi :** une refonte de cette ampleur introduit ses propres régressions, et les plus dangereuses sont celles qui rendent une garantie inopérante sans rien signaler. Trois des quatre HAUTE touchaient le gate de commit ou le reçu — c'est-à-dire précisément ce qui doit être infaillible.
+
+**Fichiers :** `.claude/hooks/enforce-git-gate.mjs`, `enforce-bash-rules.mjs` · `scripts/verify-receipt.mjs` · `tests/unit/hooks.test.ts` (16 cas) · `.tiple/conventions/_index.md`, `api-patterns.md`, `forms-patterns.md`, `nextjs-patterns.md` · `.claude/skills/tm-wrap-up/SKILL.md`, `tm-review/SKILL.md` · `.tiple/checklists/readiness-gate.md` · `eslint.config.mjs`, `README.md`
+
 ## [2026-07-26] — Refonte issue de l'audit : conventions corrigées, volume divisé par 2, reçu de vérification
 **Quoi :**
 

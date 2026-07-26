@@ -46,10 +46,13 @@ Produire la liste des fichiers **créés ou modifiés**. Les fichiers supprimés
 
 ```
 Périmètre      : 6 fichiers
-Tags actifs    : api, security, forms, testing, a11y
-Conventions    : coding-standards, component-registry, tech-stack,
-                 api-patterns, security-patterns, testing-strategy, accessibility-patterns
+Tags actifs    : api, forms, registry, security, testing, a11y
+Conventions    : coding-standards, api-patterns, forms-patterns, component-registry,
+                 security-patterns, testing-strategy, accessibility-patterns
 ```
+
+La liste des conventions doit se **déduire** des tags actifs, sans en ajouter ni en omettre :
+un fichier annoncé sans tag correspondant signale que le routing n'a pas été appliqué.
 
 Si aucun tag n'est actif, le dire explicitement — c'est une information, pas un échec.
 

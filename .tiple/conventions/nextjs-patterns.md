@@ -215,33 +215,10 @@ export async function generateStaticParams() {
 
 ## Metadata
 
-```tsx
-// Metadata statique
-export const metadata = {
-  title: "Projets",
-  description: "Liste de vos projets",
-}
-
-// Metadata dynamique
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: project } = await supabase
-    .from("projects")
-    .select("name, description")
-    .eq("id", id)
-    .single()
-
-  return {
-    title: project?.name ?? "Projet",
-    description: project?.description,
-  }
-}
-```
+`metadata` statique et `generateMetadata` dynamique vivent dans
+`seo-patterns.md § Metadata API`, routé sur les mêmes fichiers (`src/app/**/page.tsx`,
+`src/app/layout.tsx`). Les dupliquer ici ferait lire deux fois les mêmes lignes sur le
+scénario le plus lourd — et les deux versions avaient déjà divergé.
 
 ## Navigation
 

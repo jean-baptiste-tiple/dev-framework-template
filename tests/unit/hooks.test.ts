@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process"
 import { rmSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
@@ -11,13 +12,25 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
  * acceptait le marqueur écrit dans un message de commit.
  */
 
+const RECEIPT_SCRIPT = join(process.cwd(), "scripts/verify-receipt.mjs")
+
+// Les tests écrivent dans un reçu ISOLÉ, jamais dans `.claude/.verify-receipt.json`.
+// Un `pnpm test` interrompu laisserait sinon un reçu déclarant les 4 checks passés alors que
+// seul vitest a tourné — et le gate autoriserait un commit sans type-check ni lint.
+const TEST_RECEIPT = join(tmpdir(), `tiple-receipt-test-${process.pid}.json`)
+const RECEIPT_ENV = { ...process.env, TIPLE_RECEIPT_PATH: TEST_RECEIPT }
+
 const HOOKS = join(process.cwd(), ".claude/hooks")
 const MARKER = "# tiple-gate-ok"
 
 function runHook(hook: string, command: string, extra: Record<string, unknown> = {}): number {
   const payload = JSON.stringify({ tool_name: "Bash", tool_input: { command, ...extra } })
   try {
-    execFileSync("node", [join(HOOKS, hook)], { input: payload, stdio: "pipe" })
+    execFileSync("node", [join(HOOKS, hook)], {
+      input: payload,
+      stdio: "pipe",
+      env: { ...process.env, TIPLE_RECEIPT_PATH: TEST_RECEIPT },
+    })
     return 0
   } catch (error) {
     return (error as { status: number }).status
@@ -32,21 +45,18 @@ const bashRules = (command: string, extra?: Record<string, unknown>) =>
 const BLOCKED = 2
 const ALLOWED = 0
 
-const RECEIPT_SCRIPT = join(process.cwd(), "scripts/verify-receipt.mjs")
+
 function receipt(action: "write" | "check" | "clear"): number {
   try {
-    execFileSync("node", [RECEIPT_SCRIPT, action], { stdio: "pipe" })
+    execFileSync("node", [RECEIPT_SCRIPT, action], { stdio: "pipe", env: RECEIPT_ENV })
     return 0
   } catch (error) {
     return (error as { status: number }).status
   }
 }
 
-// Un `pnpm test` isolé ne doit JAMAIS laisser derrière lui un reçu valide : il autoriserait un
-// commit alors que le lint ou le type-check n'ont pas tourné. Seul `pnpm verify` a le droit
-// d'écrire le reçu définitif, après avoir enchaîné les quatre checks.
 afterAll(() => {
-  receipt("clear")
+  rmSync(TEST_RECEIPT, { force: true })
 })
 
 describe("enforce-git-gate", () => {
@@ -91,6 +101,15 @@ describe("enforce-git-gate", () => {
   it("ne bloque pas un message de commit qui contient le texte d'un flag interdit", () => {
     expect(gate(`git commit -m "fix: gerer --force" ${MARKER}`)).toBe(ALLOWED)
   })
+
+  it("refuse les shells imbriqués, qui rendent la commande inanalysable", () => {
+    // La neutralisation des chaînes entre quotes efface le contenu de `bash -c "..."` :
+    // sans ce refus, la commande git y devient invisible et le gate laisse tout passer.
+    expect(gate('bash -c "git commit -m x"')).toBe(BLOCKED)
+    expect(gate('sh -c "git push"')).toBe(BLOCKED)
+    expect(gate('eval "git push"')).toBe(BLOCKED)
+    expect(gate('echo "git push" | bash')).toBe(BLOCKED)
+  })
 })
 
 describe("verify-receipt", () => {
@@ -128,6 +147,43 @@ describe("verify-receipt", () => {
     }
   })
 
+  it("détecte un renommage dans les deux sens", () => {
+    const from = join(process.cwd(), "src/lib/utils/.receipt-rename-a.ts")
+    const to = join(process.cwd(), "src/lib/utils/.receipt-rename-b.ts")
+    writeFileSync(from, "export const renamed = 1\n")
+    try {
+      execFileSync("git", ["add", from], { stdio: "pipe" })
+      expect(run(["write"])).toBe(0)
+
+      // Renommer puis restaurer l'ancien chemin : les deux fichiers coexistent, donc le code a
+      // changé. Sans `--no-renames`, git n'émettait qu'une ligne R et la disparition de
+      // l'ancien chemin n'était jamais enregistrée — le reçu restait valide à tort.
+      execFileSync("git", ["mv", from, to], { stdio: "pipe" })
+      writeFileSync(from, "export const renamed = 1\n")
+      expect(run(["check"])).toBe(1)
+    } finally {
+      for (const f of [from, to]) {
+        execFileSync("git", ["rm", "-f", "--quiet", "--ignore-unmatch", f], { stdio: "pipe" })
+        rmSync(f, { force: true })
+      }
+    }
+  })
+
+  it("ne casse pas sur un dépôt sans commit", () => {
+    // Premier commit d'un projet issu du template : `git rev-parse HEAD` échoue. Sans garde,
+    // `pnpm verify` mourait APRÈS avoir passé les 4 checks, et le gate refusait le commit en
+    // boucle — sans échappement possible puisque `--no-verify` est bloqué.
+    const repo = join(tmpdir(), `tiple-empty-repo-${process.pid}`)
+    rmSync(repo, { recursive: true, force: true })
+    execFileSync("git", ["init", "--quiet", repo], { stdio: "pipe" })
+    try {
+      const env = { ...process.env, TIPLE_RECEIPT_PATH: join(repo, "receipt.json") }
+      execFileSync("node", [RECEIPT_SCRIPT, "write"], { cwd: repo, stdio: "pipe", env })
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  })
+
   it("le gate refuse un commit marqué si aucun reçu ne couvre le code", () => {
     expect(run(["clear"])).toBe(0)
     expect(gate(`git commit -m "feat: x" ${MARKER}`)).toBe(BLOCKED)
@@ -148,5 +204,13 @@ describe("enforce-bash-rules", () => {
     expect(bashRules("pnpm install --frozen-lockfile")).toBe(ALLOWED)
     expect(bashRules("git log --oneline | head -5")).toBe(ALLOWED)
     expect(bashRules("ls -la | wc -l")).toBe(ALLOWED)
+  })
+
+  it("ne confond pas un nom de fichier ou de paquet avec l'exécution d'un check", () => {
+    // Les règles ne visent QUE l'exécution d'un check. `-` et `.` valident une frontière de
+    // mot : sans lookahead explicite, ces deux commandes légitimes étaient bloquées.
+    expect(bashRules("pnpm add -D eslint-plugin-import")).toBe(ALLOWED)
+    expect(bashRules('sed -i "s/a/b/" eslint.config.mjs > out.txt')).toBe(ALLOWED)
+    expect(bashRules("cat vitest.config.ts | head -5")).toBe(ALLOWED)
   })
 })

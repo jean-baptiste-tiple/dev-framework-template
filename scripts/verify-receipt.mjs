@@ -23,13 +23,21 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const RECEIPT = join(ROOT, '.claude/.verify-receipt.json')
+
+// `TIPLE_RECEIPT_PATH` permet aux tests d'écrire un reçu ISOLÉ. Sans ça, la suite de tests
+// écrivait dans le vrai reçu un document déclarant les 4 checks passés alors que seul vitest
+// avait tourné : un `pnpm test` interrompu laissait derrière lui un reçu valide, et le gate
+// autorisait un commit sans que type-check ni lint n'aient jamais été lancés.
+const RECEIPT = process.env.TIPLE_RECEIPT_PATH ?? join(ROOT, '.claude/.verify-receipt.json')
 const MAX_AGE_MS = 60 * 60 * 1000 // 1 h : au-delà, l'environnement a pu bouger (deps, node)
 
-// Le changelog est exclu de l'empreinte : `commit-push` l'édite APRÈS les checks, et son
-// contenu n'influence ni le type-check, ni le lint, ni les tests. Sans cette exclusion, le reçu
-// serait systématiquement invalidé par l'étape qui le suit.
-const EXCLUS = ['docs/changelog.md']
+// Documents de méthode écrits APRÈS les checks, par la finalisation puis par `commit-push` :
+// changelog, sprint status, stories, ADR. Aucun n'influence le type-check, le lint ni les tests.
+// Sans ces exclusions, le reçu serait systématiquement invalidé par les étapes qui le suivent —
+// et ne servirait donc qu'aux changements Micro, c'est-à-dire là où il ne fait pas gagner grand
+// chose. Le registry n'est PAS exclu : `check:framework` le compare à `src/components/`.
+const EXCLUS = [/^docs\/changelog\.md$/, /^\.tiple\/sprint\//, /^docs\/stories\//, /^docs\/decisions\//]
+const estExclu = (path) => EXCLUS.some((r) => r.test(path))
 
 const git = (args) =>
   execFileSync('git', args, {
@@ -44,7 +52,16 @@ const git = (args) =>
  * le HEAD, le diff complet (indexé et non indexé), et le contenu des fichiers non suivis.
  */
 export function worktreeHash() {
-  const head = git(['rev-parse', 'HEAD']).trim()
+  // Un dépôt fraîchement initialisé n'a pas de HEAD : c'est le cas du premier commit d'un
+  // projet issu du template. Sans ce garde, `pnpm verify` mourait sur une exception APRÈS avoir
+  // passé les 4 checks, et le hook refusait ensuite le commit en boucle — sans échappement,
+  // puisque `--no-verify` est bloqué.
+  let head = 'sans-commit'
+  try {
+    head = git(['rev-parse', 'HEAD']).trim()
+  } catch {
+    /* dépôt sans commit : tout le contenu est « non suivi », ce qui suffit à l'empreinte */
+  }
 
   const lines = (out) => out.split('\n').map((f) => f.trim()).filter(Boolean)
 
@@ -57,11 +74,17 @@ export function worktreeHash() {
   // fichier et ferait dépendre le résultat d'une exception.
   const supprimes = new Set()
   const modifies = []
-  for (const line of lines(git(['diff', 'HEAD', '--name-status']))) {
-    const [status, ...rest] = line.split('\t')
-    const path = rest[rest.length - 1]
-    if (status.startsWith('D')) supprimes.add(path)
-    else modifies.push(path)
+  // `--no-renames` : sur un rename, git n'émet qu'une ligne `R100 ancien nouveau`. En ne
+  // retenant que la destination, la disparition de l'ancien chemin n'était jamais enregistrée —
+  // restaurer l'ancien fichier à côté du nouveau laissait le reçu valide alors que les deux
+  // coexistaient. Sans détection de rename, git émet un D et un A distincts.
+  if (head !== 'sans-commit') {
+    for (const line of lines(git(['diff', 'HEAD', '--name-status', '--no-renames']))) {
+      const [status, path] = line.split('\t')
+      if (!path) continue
+      if (status.startsWith('D')) supprimes.add(path)
+      else modifies.push(path)
+    }
   }
 
   const paths = [
@@ -69,11 +92,18 @@ export function worktreeHash() {
     ...lines(git(['ls-files', '--others', '--exclude-standard'])), // jamais commité
   ]
 
-  const uniques = [...new Set([...paths, ...supprimes])].filter((f) => !EXCLUS.includes(f)).sort()
+  const uniques = [...new Set([...paths, ...supprimes])].filter((f) => !estExclu(f)).sort()
 
-  const entries = uniques.map((path) =>
-    supprimes.has(path) ? `${path}:supprimé` : `${path}:${git(['hash-object', '--', path]).trim()}`
-  )
+  const entries = uniques.map((path) => {
+    if (supprimes.has(path)) return `${path}:supprimé`
+    try {
+      return `${path}:${git(['hash-object', '--', path]).trim()}`
+    } catch {
+      // Chemin que git ne sait pas hacher (symlink cassé, socket, permission). Le signaler
+      // dans l'empreinte plutôt que de faire échouer toute la vérification.
+      return `${path}:illisible`
+    }
+  })
 
   return createHash('sha256').update([head, ...entries].join('\n')).digest('hex')
 }

@@ -98,6 +98,40 @@ const checkSlug = useDebouncedCallback(async (slug: string) => {
 portée par une contrainte `UNIQUE` en base, et l'action traduit l'erreur `23505` en message
 utilisateur. Entre le check et la soumission, un autre utilisateur peut avoir pris la valeur.
 
+## Mise à jour optimiste
+
+```tsx
+"use client"
+import { useOptimistic, useTransition } from "react"
+
+export function TodoList({ items }: { items: Todo[] }) {
+  const [optimisticItems, addOptimistic] = useOptimistic(items, (state, item: Todo) => [
+    ...state,
+    item,
+  ])
+  const [, startTransition] = useTransition()
+
+  function handleAdd(formData: FormData) {
+    const title = String(formData.get("title") ?? "")
+    startTransition(async () => {
+      // L'ajout optimiste DOIT être dans la transition : hors d'elle, React le rejette.
+      addOptimistic({ id: crypto.randomUUID(), title, completed: false })
+      await createTodoAction(formData)
+    })
+  }
+
+  return <form action={handleAdd}>{/* … */}</form>
+}
+```
+
+L'état optimiste est **réconcilié automatiquement** quand la Server Action revalide : ne pas
+essayer de le corriger à la main. En cas d'échec, l'élément disparaît — d'où la nécessité de
+retourner `{ error }` et de l'afficher, sinon l'utilisateur voit sa saisie s'évanouir sans
+explication.
+
+À réserver aux actions rapides et à faible taux d'échec (cocher, réordonner, ajouter une ligne).
+Sur une action qui peut échouer souvent, un état de chargement franc est moins déroutant.
+
 ## Double soumission
 
 `useTransition` et `useFormStatus` désactivent le bouton, mais ne dédupliquent **pas** côté

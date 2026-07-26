@@ -28,16 +28,31 @@ Ignorer ce qui est déjà évident à la lecture du code ou du changelog.
 | Décision d'architecture non-triviale | Nouvel ADR dans `docs/decisions/` (`.tiple/templates/adr.tmpl.md`) |
 | Gotcha / config / commande projet-spécifique | `CLAUDE.md` |
 | Composant / hook / util réutilisable créé | `.tiple/conventions/component-registry.md` |
-| Nouveau domaine technique récurrent | Nouveau tag : ligne dans `_index.md` (avec ses **globs**) + fichier de conventions + `.claude/skills/<tag>/SKILL.md` |
+| Nouveau domaine technique récurrent | Nouveau tag : une ligne dans `_index.md` (avec ses **globs**) + le fichier de conventions. Rien d'autre. |
 | Story / bug découvert en chemin | `docs/stories/` ou `.tiple/sprint/status.md` |
 
 Règles de sélection :
 - **Une seule occurrence = pas un pattern.** Attendre 2+ avant de promouvoir en convention.
-- Les skills `.claude/skills/<tag>/` sont des **pointeurs sans règles** : enrichir le fichier de
-  conventions suffit, il n'y a jamais de duplication à propager.
+- **Ne jamais créer de `.claude/skills/<tag>/`** : le routing passe par les globs, et
+  `pnpm check:framework` rejette un skill inconnu. Enrichir le fichier de conventions suffit.
 - Créer un tag implique de renseigner sa colonne **Globs** dans `_index.md`, sinon aucune
   review ne le chargera jamais. `pnpm check:framework` échoue si c'est oublié.
+- Un fichier de conventions est plafonné à 400 lignes. Si l'ajout le fait déborder, c'est le
+  signal qu'il faut le scinder — ou élaguer une règle devenue fausse plutôt qu'en empiler une.
 - Préférer **mettre à jour** un fichier existant plutôt qu'en créer un.
+
+## Phase 2 bis — Ce qui doit DISPARAÎTRE
+
+Sans mécanisme inverse, les conventions ne font que croître, et le volume à lire devient le
+problème. Chercher systématiquement :
+
+- une règle **contredite par le code livré** — la session vient de prouver qu'elle est fausse
+- une règle désormais **appliquée par ESLint ou TypeScript** — sa version en prose est du poids mort
+- deux fichiers qui portent la **même règle** — en garder un, renvoyer depuis l'autre
+- un exemple de code qui ne compile plus avec la version actuelle du framework
+
+Ces suppressions se proposent au même titre que les ajouts. Une session qui retire 40 lignes
+périmées vaut mieux qu'une session qui en ajoute 10.
 
 ## Phase 3 — Proposer (ne pas écrire)
 

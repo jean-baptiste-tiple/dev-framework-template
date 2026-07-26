@@ -24,13 +24,13 @@ déduits des globs — c'est le seul moyen d'activer les tags marqués **non rou
 
 | Tag | Fichier | Globs | Description |
 |-----|---------|-------|-------------|
-| `api` | `api-patterns.md` | `src/lib/actions/**`, `src/app/api/**` | Server Actions, fetch, pagination, caching, bulk |
+| `api` | `api-patterns.md` | `src/lib/actions/**`, `src/app/api/**`, `src/app/**/page.tsx` | Server Actions, fetch, pagination, caching, bulk |
 | `forms` | `forms-patterns.md` | `src/lib/schemas/**`, `src/components/**/*form*.tsx` | RHF + Zod, formulaires progressifs, validation async |
 | `tables` | `tables-patterns.md` | `src/components/**/*table*.tsx`, `src/components/**/*list*.tsx` | Tri, filtres, sélection, actions groupées |
 | `uploads` | `uploads-patterns.md` | `src/components/**/*upload*.tsx`, `src/components/**/*dropzone*.tsx`, `src/lib/actions/*upload*.ts` | Upload, taille, mime, chemins de storage |
 | `auth` | `auth-patterns.md` | `src/middleware.ts`, `src/app/(auth)/**`, `src/lib/actions/auth*.ts` | Signup, login, reset, session, OAuth |
 | `database` | `database-patterns.md` | `supabase/migrations/**`, `supabase/seed.sql`, `src/types/database.ts` | Migrations, RLS, index, transactions, soft delete |
-| `supabase` | `supabase-patterns.md` | `src/lib/supabase/**`, `supabase/**` | Storage, RLS avancé, realtime, codes d'erreur, RPC |
+| `supabase` | `supabase-patterns.md` | `src/lib/supabase/**`, `supabase/**`, `src/lib/actions/**` | Storage, RLS avancé, realtime, codes d'erreur, RPC |
 | `realtime` | `supabase-patterns.md` | `src/hooks/**realtime**`, `src/hooks/**subscription**`, `src/hooks/**presence**` | Subscriptions, presence, cleanup |
 | `security` | `security-patterns.md` | `src/lib/actions/**`, `src/app/api/**`, `src/middleware.ts`, `.env.example` | XSS, CSRF, rate limiting, secrets, idempotence |
 | `nextjs` | `nextjs-patterns.md` | `src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/**/not-found.tsx`, `src/app/**/template.tsx`, `next.config.ts` | App Router, fichiers spéciaux, frontières d'autorisation |
@@ -79,5 +79,5 @@ vérification des globs, et un chemin devenu faux échouera au lieu de passer in
 1. **Un fichier peut activer plusieurs tags** — charger tous les fichiers correspondants (dédupliqués : `supabase` et `realtime` pointent vers le même).
 2. **Aucun glob ne matche** → seule la convention de base s'applique. Ce n'est pas une erreur.
 3. **Annoncer les conventions chargées** avant d'agir : `Conventions : coding-standards, api-patterns, security-patterns`. Si rien au-delà de la base, le dire.
-4. **Lire le fichier en entier**, pas un résumé. Les skills `.claude/skills/<tag>/` ne contiennent aucune règle — ce sont des pointeurs vers ce tableau.
-5. **Ajouter un tag** = une ligne ici + le fichier de conventions + `.claude/skills/<tag>/SKILL.md`. `pnpm check:framework` échoue si l'un des trois manque, si un glob est vide, ou si le préfixe d'un glob ne correspond à aucun dossier réel.
+4. **Lire le fichier en entier**, pas un résumé. Il n'existe **pas** de skill par tag : `tm-dev` et `tm-review` matchent ces globs eux-mêmes.
+5. **Ajouter un tag** = une ligne ici + le fichier de conventions. Rien d'autre — créer un `.claude/skills/<tag>/` ferait échouer `pnpm check:framework`. Le check échoue aussi si le fichier manque, si les globs sont vides, si aucun glob ne peut matcher un dossier réel, ou si le fichier dépasse 400 lignes.

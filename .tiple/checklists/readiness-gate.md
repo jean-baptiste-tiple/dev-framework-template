@@ -37,7 +37,9 @@
 
 - [ ] `.tiple/conventions/_index.md` est à jour : chaque tag a un fichier **et des globs qui matchent l'arborescence réelle**
 - [ ] Chaque story 🟢 Ready a son champ **Conventions** renseigné
-- [ ] `pnpm check:framework` passe
+
+> `pnpm check:framework` n'est **pas** dans ce gate : `/tm-plan` s'interdit toute commande
+> système. Il est exécuté par `pnpm verify`, donc à chaque commit.
 
 ## Ce qui n'est PAS dans ce gate
 
