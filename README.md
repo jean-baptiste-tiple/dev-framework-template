@@ -39,12 +39,19 @@ cd mon-projet
 # 2. Installer les dépendances
 pnpm install
 
-# 3. Lancer le dev server
-pnpm dev
+# 3. Vérifier que le template est sain (4 checks)
+pnpm verify
 
-# 4. Lancer le cadrage (active les starters si besoin)
-# /tm-plan dans Claude Code
+# 4. Lancer le dev server — `/` sert le dashboard placeholder
+pnpm dev
 ```
+
+Puis, dans Claude Code : **`/tm-plan`** pour cadrer le projet. C'est la seule commande à taper —
+tout le reste se déclenche sur l'intention. Le cadrage identifie les starters nécessaires et
+crée la story de setup ; c'est `tm-dev` qui les installera ensuite.
+
+Rien n'oblige à passer par `/tm-plan` : sur un besoin qui tient en quelques fichiers, décrire ce
+qu'on veut suffit, et le cadrage se refusera lui-même s'il n'apporte rien.
 
 ## Skills
 
