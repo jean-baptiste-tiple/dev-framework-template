@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
+import { createServerClient } from "@supabase/ssr"
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -44,7 +44,13 @@ export async function middleware(request: NextRequest) {
   ) {
     const url = request.nextUrl.clone()
     url.pathname = "/login"
-    return NextResponse.redirect(url)
+    // `getUser()` a pu rafraîchir la session et écrire de nouveaux cookies sur
+    // `supabaseResponse`. Une réponse de redirection neuve ne les porte pas : l'ancien
+    // refresh token est déjà consommé côté Supabase et le nouveau serait jeté, ce qui
+    // produit des déconnexions aléatoires. Recopier les cookies avant de retourner.
+    const redirect = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
   }
 
   return supabaseResponse

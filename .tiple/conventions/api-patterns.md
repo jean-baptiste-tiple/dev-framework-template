@@ -11,8 +11,28 @@ Les Route Handlers (`app/api/`) sont réservés aux : webhooks externes, cron jo
 type ActionResult<T> = { data: T; error?: never } | { data?: never; error: string }
 ```
 
-JAMAIS de throw dans une Server Action appelée par un formulaire.
-Le throw est réservé aux cas critiques (auth manquante = redirect, pas throw).
+JAMAIS de throw métier dans une Server Action appelée par un formulaire : une erreur
+attendue se retourne (`{ error }`), elle ne se lance pas. Auth manquante = `redirect`.
+
+**`redirect()` et `notFound()` SONT des throw** — ils fonctionnent en lançant `NEXT_REDIRECT`
+et `NEXT_NOT_FOUND`. Un `catch` générique les avale et transforme la redirection en
+« Une erreur est survenue » : la session est créée mais l'utilisateur reste sur le formulaire.
+
+```typescript
+import { unstable_rethrow } from "next/navigation"
+
+try {
+  // ...
+  redirect("/dashboard")
+} catch (error) {
+  unstable_rethrow(error)   // relance NEXT_REDIRECT / NEXT_NOT_FOUND, avale le reste
+  return { error: "Une erreur est survenue. Réessayez." }
+}
+```
+
+**Vérifiable :** aucun `redirect()` ou `notFound()` à l'intérieur d'un `try` dont le `catch`
+ne commence pas par `unstable_rethrow(error)`. Le plus simple reste d'appeler `redirect()`
+**après** le bloc `try/catch`.
 
 ## Pattern Server Action standard
 
@@ -63,52 +83,9 @@ export async function createProjectAction(
 }
 ```
 
-## Pattern Form
+## Formulaires
 
-1. Schema Zod dans `lib/schemas/` (1 schema = 1 form = 1 action)
-2. Composant form avec React Hook Form + zodResolver
-3. Server Action qui revalide le même schema côté serveur
-4. Le composant gère : loading (pending), error (affichage inline), success (redirect ou toast)
-
-```tsx
-"use client"
-
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { createProjectSchema, type CreateProjectData } from "@/lib/schemas/project"
-import { createProjectAction } from "@/lib/actions/project"
-import { useTransition } from "react"
-
-export function CreateProjectForm() {
-  const [isPending, startTransition] = useTransition()
-  const form = useForm<CreateProjectData>({
-    resolver: zodResolver(createProjectSchema),
-  })
-
-  function onSubmit(data: CreateProjectData) {
-    startTransition(async () => {
-      const formData = new FormData()
-      Object.entries(data).forEach(([key, value]) => formData.append(key, value))
-      const result = await createProjectAction(formData)
-      if (result.error) {
-        form.setError("root", { message: result.error })
-      }
-    })
-  }
-
-  return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      {/* Champs du formulaire */}
-      {form.formState.errors.root && (
-        <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
-      )}
-      <button type="submit" disabled={isPending}>
-        {isPending ? "Création..." : "Créer"}
-      </button>
-    </form>
-  )
-}
-```
+RHF + Zod, formulaires progressifs, validation asynchrone : voir `forms-patterns.md`.
 
 ## Pattern Fetch (Server Components)
 
@@ -132,41 +109,25 @@ export default async function ProjectsPage() {
 
 Le Client Component reçoit les données en props. Il ne fetch pas.
 
-## Auth Pattern
+## Auth
 
-### Middleware (`src/middleware.ts`)
-
-- Vérifie la session Supabase sur chaque requête
-- Redirige vers `/login` si non authentifié sur les routes protégées
-- Rafraîchit le token si expiré
-
-### Dans les Server Actions
-
-Toujours revérifier l'auth (le middleware ne suffit pas) :
+Le middleware ne suffit pas : **chaque** Server Action revérifie l'auth en première
+instruction. Détail du middleware et des flows : `auth-patterns.md`. RLS et policies :
+`supabase-patterns.md`.
 
 ```typescript
 const { data: { user } } = await supabase.auth.getUser()
 if (!user) redirect("/login")
 ```
 
-### Supabase RLS
-
-Toute table a des RLS policies activées. Le dev ne bypass JAMAIS RLS sauf avec le service_role client dans des cas documentés (ADR).
-
 ## Error Handling
 
-### Codes d'erreur
+Le message retourné au client est **soit une constante littérale du fichier, soit le retour de
+`handleSupabaseError(error)`** (`supabase-patterns.md § Error Handling`). Toute interpolation
+d'un champ de l'objet `error` est un défaut : `message`, `details` et `hint` contiennent des
+noms de tables et de colonnes.
 
-- `AUTH_REQUIRED` : utilisateur non connecté
-- `VALIDATION_ERROR` : input invalide (retourner les détails Zod)
-- `NOT_FOUND` : ressource inexistante
-- `FORBIDDEN` : pas les droits
-- `INTERNAL_ERROR` : erreur inattendue (logger côté serveur, message générique côté client)
-
-### Messages user-friendly
-
-Ne JAMAIS exposer les messages d'erreur Supabase bruts au client.
-Mapper vers des messages en français compréhensibles.
+Journaliser l'erreur technique côté serveur, retourner un message générique côté client.
 
 ## Pagination
 
@@ -208,13 +169,22 @@ type PaginatedResult<T> = {
 
 ### Cursor-based (pour l'infinite scroll)
 ```typescript
+// Le curseur est COMPOSITE. Filtrer sur `created_at` seul saute silencieusement toute ligne
+// partageant le timestamp exact de la dernière ligne de la page — garanti sur les insertions
+// par batch, et invisible en infinite scroll.
 const { data } = await supabase
   .from("items")
   .select("*")
-  .lt("created_at", cursor)
+  .or(`created_at.lt.${cursor.createdAt},and(created_at.eq.${cursor.createdAt},id.lt.${cursor.id})`)
   .order("created_at", { ascending: false })
+  .order("id", { ascending: false })
   .limit(20)
+// Index requis : CREATE INDEX idx_items_cursor ON items (created_at DESC, id DESC);
 ```
+
+**`count: "exact"` est un scan complet à chaque page.** Au-delà de ~50 000 lignes, utiliser
+`count: "estimated"`, ou ne compter que sur la première page. `supabase/config.toml` fixe par
+ailleurs `max_rows` : une page qui demande plus est **tronquée sans erreur**.
 
 ## Search & Filter
 
@@ -225,102 +195,45 @@ export default async function ItemsPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; sort?: string }>
 }) {
-  const params = await searchParams
+  // Les searchParams viennent de l'URL : ce sont des entrées utilisateur. Un `sort` passé
+  // brut à .order() laisse choisir le nom de colonne — énumération du schéma via les messages
+  // d'erreur, et tri sur des colonnes non exposées par le select.
+  const { q, status, sort } = itemsSearchSchema.parse(await searchParams)
   const supabase = await createClient()
 
   let query = supabase.from("items").select("*", { count: "exact" })
 
-  // Recherche texte
-  if (params.q) {
-    query = query.ilike("name", `%${params.q}%`)
-  }
+  // Recherche texte — échapper % et _ , sinon l'utilisateur pilote le motif LIKE
+  if (q) query = query.ilike("name", `%${q.replace(/[%_\\]/g, "\\$&")}%`)
+  if (status) query = query.eq("status", status)
 
-  // Filtre par statut
-  if (params.status) {
-    query = query.eq("status", params.status)
-  }
-
-  // Tri
-  const [column, direction] = (params.sort ?? "created_at:desc").split(":")
+  const [column, direction] = sort.split(":")
   query = query.order(column, { ascending: direction === "asc" })
 
-  const { data, count } = await query
+  const { data, count, error } = await query
+  if (error) return <ItemsError />
   return <ItemList items={data ?? []} total={count ?? 0} />
 }
 ```
 
-**Règle :** Les filtres sont dans l'URL (query params), pas dans un state local. Ça permet le partage de lien et le back/forward du navigateur.
+```typescript
+// lib/schemas/items.ts — whitelist stricte : le tri est une énumération, pas une chaîne
+export const itemsSearchSchema = z.object({
+  q: z.string().trim().max(100).optional(),
+  status: z.enum(["draft", "published", "archived"]).optional(),
+  sort: z
+    .enum(["created_at:desc", "created_at:asc", "name:asc", "name:desc"])
+    .default("created_at:desc"),
+})
+```
+
+**Règles :**
+- Les filtres sont dans l'URL (query params), pas dans un state local — lien partageable, back/forward fonctionnels.
+- **Vérifiable :** aucune valeur issue de `searchParams` n'est passée à `.order()`, `.eq()`, `.select()` ou `.ilike()` sans être passée par un schéma Zod. Les colonnes de tri sont un `z.enum`, jamais un `z.string()`.
 
 ## Optimistic Updates
 
-```tsx
-"use client"
-import { useOptimistic, useTransition } from "react"
-
-export function TodoList({ items }: { items: Todo[] }) {
-  const [optimisticItems, addOptimistic] = useOptimistic(
-    items,
-    (state, newItem: Todo) => [...state, newItem]
-  )
-  const [, startTransition] = useTransition()
-
-  function handleAdd(formData: FormData) {
-    const title = formData.get("title") as string
-    const tempItem = { id: crypto.randomUUID(), title, completed: false }
-
-    startTransition(async () => {
-      addOptimistic(tempItem)
-      await createTodoAction(formData)
-    })
-  }
-
-  return (
-    <form action={handleAdd}>
-      {/* ... */}
-    </form>
-  )
-}
-```
-
-## File Upload
-
-```typescript
-// Schema de validation fichier
-const fileSchema = z.object({
-  file: z
-    .instanceof(File)
-    .refine((f) => f.size <= 5 * 1024 * 1024, "Max 5MB")
-    .refine(
-      (f) => ["image/jpeg", "image/png", "image/webp", "application/pdf"].includes(f.type),
-      "Format non supporté"
-    ),
-})
-
-// Server Action
-"use server"
-export async function uploadFile(formData: FormData): Promise<ActionResult<{ url: string }>> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
-
-  const file = formData.get("file") as File
-  const parsed = fileSchema.safeParse({ file })
-  if (!parsed.success) return { error: parsed.error.issues[0].message }
-
-  const ext = file.name.split(".").pop()
-  const path = `${user.id}/${crypto.randomUUID()}.${ext}`
-
-  const { error } = await supabase.storage
-    .from("uploads")
-    .upload(path, file)
-
-  if (error) return { error: "Échec de l'upload" }
-
-  const { data } = supabase.storage.from("uploads").getPublicUrl(path)
-  revalidatePath("/files")
-  return { data: { url: data.publicUrl } }
-}
-```
+Voir `forms-patterns.md` pour le pattern `useOptimistic`. Uploads : `uploads-patterns.md`.
 
 ## Caching & Revalidation
 
@@ -333,22 +246,39 @@ export async function uploadFile(formData: FormData): Promise<ActionResult<{ url
 | **No cache** | Données temps réel | `{ cache: "no-store" }` dans fetch |
 
 ### Avec Supabase (Server Components)
-Les requêtes Supabase via le SDK ne passent pas par le cache fetch de Next.js.
-Pour les données qui changent rarement, utiliser `unstable_cache` :
+
+Next.js 15 ne met en cache aucun `fetch` par défaut, et une requête portant un header
+`Authorization` n'est de toute façon jamais mise en cache. Les requêtes Supabase
+authentifiées ne sont donc pas cachées — c'est le comportement voulu.
+
+**Une donnée mise en cache est par définition non authentifiée.** Ne jamais appeler
+`cookies()` / `headers()` — donc jamais `createClient()` de `@/lib/supabase/server` — dans un
+`unstable_cache` : Next lève `Route used "cookies" inside a function cached with
+"unstable_cache(...)"`. Utiliser un client anon sans cookies, et protéger la donnée par une
+policy RLS lisible par `anon`.
 
 ```typescript
 import { unstable_cache } from "next/cache"
+import { createClient as createAnonClient } from "@supabase/supabase-js"
 
 const getCachedSettings = unstable_cache(
   async () => {
-    const supabase = await createClient()
-    const { data } = await supabase.from("settings").select("*").single()
+    const supabase = createAnonClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data, error } = await supabase.from("settings").select("*").single()
+    if (error) return null
     return data
   },
   ["settings"],
   { revalidate: 3600, tags: ["settings"] }
 )
 ```
+
+**`revalidatePath` ne traverse pas les frontières d'utilisateur.** Pour une donnée par
+entité, préférer des tags : `revalidateTag(\`project:${id}\`)` après la mutation, et
+`{ tags: [\`project:${id}\`] }` à la lecture.
 
 ## Bulk Operations
 
@@ -365,17 +295,33 @@ export async function bulkDeleteItems(ids: string[]): Promise<ActionResult<BulkR
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  const { error, count } = await supabase
+  // `.delete()` sans `{ count: "exact" }` renvoie count: null → succeeded valait toujours 0.
+  // Et un DELETE refusé par RLS ne lève PAS d'erreur : il supprime simplement 0 ligne.
+  // Sans comparer le retour à la demande, le résultat est mensonger.
+  const { data: deleted, error } = await supabase
     .from("items")
     .delete()
     .in("id", ids)
+    .select("id")
 
   if (error) return { error: "Échec de la suppression" }
 
+  const deletedIds = new Set((deleted ?? []).map((row) => row.id))
+  const refused = ids.filter((id) => !deletedIds.has(id))
+
   revalidatePath("/items")
-  return { data: { succeeded: count ?? 0, failed: 0, errors: [] } }
+  return {
+    data: {
+      succeeded: deletedIds.size,
+      failed: refused.length,
+      errors: refused.map((id) => ({ id, error: "Non autorisé ou introuvable" })),
+    },
+  }
 }
 ```
+
+**Règle :** une opération bulk compare le nombre de lignes **retournées** au nombre demandé et
+signale l'écart. Un DELETE ou UPDATE refusé par RLS est silencieux.
 
 ## Webhook Pattern
 

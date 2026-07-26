@@ -99,9 +99,11 @@ export async function uploadAvatar(formData: FormData) {
   const file = formData.get("avatar") as File
   if (!file) return { error: "Fichier manquant" }
 
-  // Validation
-  const maxSize = 2 * 1024 * 1024 // 2MB
-  if (file.size > maxSize) return { error: "Fichier trop volumineux (max 2MB)" }
+  // Validation — Next.js 15 limite le corps d'une Server Action à 1 Mo par défaut.
+  // Au-delà, l'appel échoue AVANT d'atteindre ce code ("Body exceeded 1 MB limit").
+  // Pour des fichiers plus gros : URL signée côté client (voir plus bas), pas de Server Action.
+  const maxSize = 1024 * 1024 // 1 Mo — aligné sur serverActions.bodySizeLimit
+  if (file.size > maxSize) return { error: "Fichier trop volumineux (max 1 Mo)" }
 
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"]
   if (!allowedTypes.includes(file.type)) return { error: "Format non supporté" }
@@ -125,15 +127,45 @@ export async function uploadAvatar(formData: FormData) {
 
 ### Policies Storage
 ```sql
--- Bucket avatars : chacun gère ses fichiers
+-- Bucket avatars : chacun gère ses fichiers.
+-- Le préfixe de dossier vaut auth.uid() — c'est lui qui porte l'isolation.
 CREATE POLICY avatars_select ON storage.objects
-  FOR SELECT USING (bucket_id = 'avatars');
+  FOR SELECT USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+  );
 
 CREATE POLICY avatars_insert ON storage.objects
   FOR INSERT WITH CHECK (
     bucket_id = 'avatars'
-    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
   );
+
+-- `upsert: true` fait un UPDATE quand l'objet existe déjà : sans cette policy, le
+-- deuxième changement d'avatar renvoie 403.
+CREATE POLICY avatars_update ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+  ) WITH CHECK (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+  );
+```
+
+Un `USING (bucket_id = 'avatars')` sans contrainte de dossier rend le bucket lisible par
+**tout le monde, `anon` compris**. Si le bucket est réellement public, le déclarer public et
+le documenter ; sinon, toujours filtrer sur le préfixe.
+
+### Fichiers de plus de 1 Mo
+
+```typescript
+// Server Action : ne transporte PAS le fichier, ne délivre qu'une URL signée
+const { data, error } = await supabase.storage
+  .from("documents")
+  .createSignedUploadUrl(`${user.id}/${crypto.randomUUID()}.pdf`)
+// Le client uploade ensuite directement vers data.signedUrl — la limite de 1 Mo des
+// Server Actions ne s'applique pas.
 ```
 
 ### URL publique
@@ -176,42 +208,84 @@ export function OrderUpdates({ orderId }: { orderId: string }) {
 ```
 
 ### Règles Realtime
-- **Toujours cleanup** : `removeChannel` dans le `return` du `useEffect`
-- **Un channel par composant** — pas de channel global sauf cas justifié
-- **Filter les events** — ne pas écouter toute la table
-- **RLS s'applique** au realtime — l'utilisateur ne reçoit que ce qu'il a le droit de voir
+- **Vérifiable :** un `supabase.channel()` est créé dans un `useEffect`, avec un nom incluant l'identifiant de la ressource, et un `removeChannel` dans sa fonction de cleanup. Un `channel()` au niveau module ou hors `useEffect` est un défaut.
+- **Filtrer les events** — un `postgres_changes` sans `filter` écoute toute la table
+- **RLS s'applique** au realtime : l'utilisateur ne reçoit que ce qu'il a le droit de voir
+
+### Presence
+
+```typescript
+// Qui est connecté sur cette ressource — état éphémère, jamais persisté en base
+const channel = supabase.channel(`room:${roomId}`, {
+  config: { presence: { key: user.id } },
+})
+
+channel
+  .on("presence", { event: "sync" }, () => setOnline(Object.keys(channel.presenceState())))
+  .subscribe(async (status) => {
+    if (status === "SUBSCRIBED") await channel.track({ name: user.name })
+  })
+
+return () => { supabase.removeChannel(channel) }  // untrack implicite
+```
+
+La presence n'est pas une source de vérité : elle se perd à la reconnexion. Ne jamais en
+dériver une donnée métier.
 
 ## Error Handling
 
 ```typescript
-// Mapping des erreurs Supabase courantes
-function handleSupabaseError(error: { code: string; message: string }): string {
-  const errorMap: Record<string, string> = {
-    "23505": "Cette entrée existe déjà",
-    "23503": "Référence invalide",
-    "42501": "Accès non autorisé",
-    "PGRST116": "Aucun résultat trouvé",
-    "PGRST301": "Trop de résultats",
-  }
-  return errorMap[error.code] ?? "Une erreur est survenue"
+// Les erreurs Supabase n'ont pas toutes la même forme : PostgrestError expose `code`,
+// StorageError expose `statusCode`, AuthError expose `status` + `name`.
+type SupabaseLikeError = { code?: string; statusCode?: string; status?: number }
+
+const ERROR_MESSAGES: Record<string, string> = {
+  "23505": "Cette entrée existe déjà",
+  "23503": "Référence invalide",
+  "23514": "Valeur non autorisée",          // violation de CHECK
+  "40001": "Conflit temporaire, réessayez", // serialization failure — rejouable
+  "42501": "Accès non autorisé",
+  "57014": "La requête a pris trop de temps", // statement timeout (8 s en lecture chez Supabase)
+  PGRST116: "Aucun résultat trouvé",          // 0 OU plusieurs lignes avec .single()
+  PGRST301: "Session expirée, reconnectez-vous", // JWT expiré / vérification échouée
+  PGRST202: "Opération indisponible",         // fonction RPC introuvable (renommage non déployé)
+  PGRST204: "Schéma désynchronisé",           // colonne absente du cache après migration
+}
+
+function handleSupabaseError(error: SupabaseLikeError): string {
+  const code = error.code ?? error.statusCode ?? String(error.status ?? "")
+  return ERROR_MESSAGES[code] ?? "Une erreur est survenue"
 }
 ```
 
-**Règle :** Ne JAMAIS exposer `error.message` de Supabase au client — il peut contenir des infos techniques (noms de tables, colonnes).
+**Règles :**
+- Ne JAMAIS exposer `error.message` de Supabase au client — il contient des noms de tables et de colonnes. **Vérifiable :** aucune Server Action ne place `error.message`, `error.details` ou `error.hint` dans sa valeur de retour ; le retour est soit une constante littérale, soit `handleSupabaseError(error)`.
+- **Toute réponse Supabase déstructure `error` et le traite.** Un `const { data } = await supabase...` sans `error` est un défaut.
+- `PGRST301` signifie **JWT expiré**, pas « trop de résultats » : le traiter comme une session à rafraîchir, pas comme une erreur de requête.
 
 ## PostgreSQL Functions (RPC)
 
 ```sql
--- Fonction avec logique métier complexe
-CREATE FUNCTION get_dashboard_stats(p_user_id uuid)
-RETURNS json AS $$
+-- Fonction avec logique métier complexe.
+-- Pas de paramètre p_user_id : il serait falsifiable par l'appelant. La fonction lit
+-- l'identité depuis le JWT, ce qui rend l'accès aux données d'un tiers impossible.
+CREATE OR REPLACE FUNCTION public.get_dashboard_stats()
+RETURNS json
+LANGUAGE sql
+SECURITY INVOKER          -- RLS s'applique : rien à valider à la main
+SET search_path = ''
+AS $$
   SELECT json_build_object(
-    'total_orders', (SELECT count(*) FROM orders WHERE user_id = p_user_id),
-    'pending_orders', (SELECT count(*) FROM orders WHERE user_id = p_user_id AND status = 'pending'),
-    'total_revenue', (SELECT coalesce(sum(total_cents), 0) FROM orders WHERE user_id = p_user_id AND status = 'delivered')
+    'total_orders',   (SELECT count(*) FROM public.orders WHERE user_id = (SELECT auth.uid())),
+    'pending_orders', (SELECT count(*) FROM public.orders WHERE user_id = (SELECT auth.uid()) AND status = 'pending'),
+    'total_revenue',  (SELECT coalesce(sum(total_cents), 0) FROM public.orders WHERE user_id = (SELECT auth.uid()) AND status = 'delivered')
   );
-$$ LANGUAGE sql SECURITY DEFINER;
+$$;
 ```
+
+**`SECURITY INVOKER` (le défaut) par principe.** Ne passer en `SECURITY DEFINER` que pour ce
+que RLS ne peut pas exprimer — et alors appliquer les trois règles de
+`database-patterns.md § Règles SECURITY DEFINER`.
 
 ```typescript
 // Appel depuis une Server Action

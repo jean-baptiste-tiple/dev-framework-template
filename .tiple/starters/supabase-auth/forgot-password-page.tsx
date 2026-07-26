@@ -4,7 +4,6 @@ import * as React from "react"
 import Link from "next/link"
 import { ArrowLeft, Loader2 } from "lucide-react"
 
-import { forgotPassword } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { forgotPassword } from "@/lib/actions/auth"
 
 export default function ForgotPasswordPage() {
   const [error, setError] = React.useState<string | null>(null)

@@ -9,8 +9,10 @@
  * par grep/sed est fausse dès que la commande contient un guillemet échappé.
  */
 
+// `(?![\w-])` et pas `\b` : sans ça, `pnpm add -D eslint-plugin-import` est pris pour un
+// lancement d'ESLint (le `-` de `eslint-plugin` valide une frontière de mot).
 const CHECK =
-  /(?:(?:pnpm|npm|yarn)\s+(?:run\s+)?(?:type-check|lint|test|test:e2e|build|check:framework)|(?:^|[;&|\s])tsc\b|(?:^|[;&|\s])vitest\b|playwright\s+test|(?:^|[;&|\s])eslint\b|next\s+build)/
+  /(?:(?:pnpm|npm|yarn)\s+(?:run\s+)?(?:type-check|lint|test|test:e2e|build|check:framework)(?![\w-])|(?:^|[;&|\s])(?:tsc|vitest|eslint)(?![\w-])|playwright\s+test(?![\w-])|next\s+build(?![\w-]))/
 
 const deny = (msg) => {
   process.stderr.write(msg + ' Règle définie dans .claude/hooks/enforce-bash-rules.mjs.\n')

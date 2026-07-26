@@ -45,3 +45,5 @@ tsconfig.tsbuildinfo
 !.claude/settings.json
 !.claude/hooks/
 !.claude/skills/
+# Reçu de vérification : purement local, il atteste que les checks ont tourné sur CE code
+.claude/.verify-receipt.json

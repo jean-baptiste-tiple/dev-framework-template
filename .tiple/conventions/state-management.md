@@ -21,29 +21,40 @@
 ```tsx
 "use client"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { useCallback } from "react"
+import { useCallback, useTransition } from "react"
 
 export function useQueryParams() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
 
   const setParam = useCallback(
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value === null) {
-        params.delete(key)
-      } else {
-        params.set(key, value)
-      }
-      router.push(`${pathname}?${params.toString()}`)
+      if (value === null) params.delete(key)
+      else params.set(key, value)
+
+      // `replace` et non `push` : un `push` par frappe empile une entrée d'historique par
+      // caractère, et le bouton retour devient inutilisable.
+      // `startTransition` garde l'UI réactive pendant l'aller-retour serveur.
+      startTransition(() => {
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+      })
     },
     [router, pathname, searchParams]
   )
 
-  return { searchParams, setParam }
+  return { searchParams, setParam, isPending }
 }
 ```
+
+**`useSearchParams()` force le CSR sur tout ce qui l'englobe.** Le composant qui l'appelle
+doit être rendu sous un `<Suspense>`, sinon le build Next 15 émet
+`missing-suspense-with-csr-bailout` et la page entière bascule côté client.
+
+**Vérifiable :** tout composant appelant `useSearchParams()` est rendu sous un `<Suspense>`.
+Toute écriture d'URL déclenchée par une frappe utilise `replace`, jamais `push`.
 
 **Pourquoi l'URL :**
 - Partage par lien (copier l'URL = partager les filtres)

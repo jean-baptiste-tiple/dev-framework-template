@@ -48,15 +48,15 @@
 - Tous les éléments interactifs sont focusables
 - Le focus est visible (outline, ring)
 
-```css
-/* Ne JAMAIS supprimer le focus visible */
-/* MAUVAIS : *:focus { outline: none; } */
+Le focus visible est déjà fourni par les primitives Shadcn du template
+(`focus-visible:ring-1 focus-visible:ring-ring`). Ne pas redéfinir une règle de focus globale :
+en Tailwind 4, `@apply` hors du fichier qui importe le thème exige `@reference`, et un style
+maison divergera de celui des 34 composants existants.
 
-/* BON : style de focus personnalisé */
-.focus-visible:focus-visible {
-  @apply ring-2 ring-ring ring-offset-2;
-}
-```
+**Vérifiable :**
+- aucun `outline-none` / `focus:outline-none` sans `focus-visible:ring-*` sur le même élément
+- aucune règle globale `*:focus { outline: none }` dans `globals.css`
+- tout élément rendu interactif par un `onClick` sur un `div`/`span` est un défaut : utiliser `<button>`
 
 ### Raccourcis clavier
 | Touche | Action |

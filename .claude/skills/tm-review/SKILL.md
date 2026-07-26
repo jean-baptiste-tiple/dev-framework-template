@@ -1,6 +1,7 @@
 ---
 name: tm-review
-description: "Code review conventions-driven : confronte les fichiers modifiés aux règles de .tiple/conventions/ routées par globs. Déclenche-toi après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation — et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?', 'code review'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface (une relecture inline du diff suffit)."
+description: "Code review adossée aux conventions : route .tiple/conventions/ par globs sur le diff, confronte le code aux règles lues, et indexe la gravité sur la source citée."
+when_to_use: "Après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation. Et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface — une relecture inline du diff suffit."
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
@@ -39,7 +40,7 @@ Produire la liste des fichiers **créés ou modifiés**. Les fichiers supprimés
 2. Pour chaque fichier du périmètre, matcher la colonne **Globs** → liste de tags actifs.
 3. Résoudre les tags en fichiers de conventions, dédupliquer.
 4. Charger **en entier** :
-   - les 3 conventions de base : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+   - la convention de base : `coding-standards.md`
    - chaque fichier de conventions dont un tag est actif
 5. **Annoncer le routing avant de continuer :**
 
@@ -78,15 +79,28 @@ Enfin, vérifier les AC de la story (mode story) ou l'adéquation à la demande 
 
 ## Étape 6 — Gravité (indexée sur la source, pas sur le ressenti)
 
+**Sources citables** — une seule de ces quatre formes fait foi :
+`conventions/<fichier>.md § <section>` · `CLAUDE.md § <section>` ·
+`checklists/code-review.md § <section>` · un AC de la story.
+
 | Gravité | Condition — les deux doivent être vraies |
 |---------|------------------------------------------|
-| 🔴 **HAUTE** | Une règle citée (`conventions/<fichier>.md § <section>`, `CLAUDE.md § <section>`, ou un AC de la story) est violée **ET** l'impact est sécurité, perte de données, build cassé, ou AC non livré |
-| 🟠 **MOYENNE** | Une règle citée est violée, sans impact immédiat (dette, incohérence, test manquant) |
-| 🔵 **BASSE** | Aucune règle citable — c'est un avis. **Non bloquant, jamais corrigé d'office.** |
+| 🔴 **HAUTE** | Une source citable est violée **ET** l'impact est sécurité, perte de données, build cassé, AC non livré, ou livraison qui ne correspond pas à la demande |
+| 🟠 **MOYENNE** | Une source citable est violée, sans impact immédiat (dette, incohérence, test manquant) |
+| 🔵 **BASSE** | Aucune source citable — c'est un avis. **Non bloquant, jamais corrigé d'office.** |
+
+En mode libre (sans story), « ce qui est livré ne correspond pas à ce qui a été demandé »
+(`code-review.md § Conformité à la demande`) est un motif de HAUTE au même titre qu'un AC non
+livré. Sans cette source, la complétude fonctionnelle ne serait jamais bloquante : aucune
+convention ne dit qu'un export CSV doit respecter les filtres actifs.
 
 **Règle absolue : pas de citation → pas de HAUTE ni de MOYENNE.** Si une règle te semble
 manquante dans les conventions, remonte-la en BASSE avec la mention « convention à créer »
 — c'est le rôle de `tm-wrap-up`, pas de la review, de l'ajouter.
+
+**Vérifier que la section citée existe** avant de l'écrire : une citation vers une section
+renommée fait reposer un blocage sur une référence fantôme. `pnpm check:framework` valide les
+citations présentes dans les fichiers versionnés, pas celles produites à la volée.
 
 ## Étape 7 — Sortie
 
@@ -100,7 +114,7 @@ Conventions : <liste>
 
 | # | Gravité | Fichier:ligne | Règle violée | Problème | Fix |
 |---|---------|---------------|--------------|----------|-----|
-| 1 | 🔴 HAUTE | src/lib/actions/x.ts:12 | api-patterns.md § Server Actions | Pas de vérification auth avant la mutation | Ajouter le guard `getUser()` en tête d'action |
+| 1 | 🔴 HAUTE | src/lib/actions/x.ts:12 | api-patterns.md § Pattern Server Action standard | Pas de vérification auth avant la mutation | Ajouter le guard `getUser()` en tête d'action |
 | 2 | 🟠 MOYENNE | src/components/y.tsx:40 | coding-standards.md § Naming | Fichier en camelCase | Renommer en `y-list.tsx` |
 | 3 | 🔵 BASSE | src/lib/utils/z.ts:8 | — | Nom peu explicite | Suggestion : `formatAmount` |
 
@@ -117,9 +131,9 @@ findings pour justifier la review, et ne pas produire de résumé décoratif par
 
 ## Étape 8 — Suite
 
-- **❌ CHANGES REQUESTED** → appliquer les fix HAUTE et MOYENNE, relancer `tm-verify`
-  (type-check + lint + test), puis relancer cette review. Les BASSE sont mentionnées à
-  l'utilisateur, jamais appliquées sans son accord.
+- **❌ CHANGES REQUESTED** → appliquer les fix HAUTE et MOYENNE, relancer `pnpm verify`, puis
+  relancer cette review. Les BASSE sont mentionnées à l'utilisateur, jamais appliquées sans son
+  accord.
 - **✅ APPROVED** → continuer vers la finalisation (changelog, registry, story, sprint status).
 
 Plus de 2 cycles de review sans converger → s'arrêter et remonter le blocage à l'utilisateur.

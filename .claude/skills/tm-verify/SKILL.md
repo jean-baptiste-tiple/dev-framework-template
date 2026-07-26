@@ -1,6 +1,7 @@
 ---
 name: tm-verify
-description: "Lance les vérifications du projet : cohérence framework, type-check, lint, tests. Déclenche-toi quand l'utilisateur demande de vérifier que tout passe : 'vérifie', 'ça compile ?', 'lance les tests', 'type-check', 'tout passe ?', OU après avoir appliqué des corrections issues d'une review. Pour un commit, c'est le skill commit-push qui prend le relais (il inclut ces checks)."
+description: "Lance les 4 vérifications du projet via `pnpm verify` : cohérence framework, type-check, lint, tests — puis écrit le reçu qui évite de les rejouer au commit."
+when_to_use: "Quand l'utilisateur demande de vérifier que tout passe : 'vérifie', 'ça compile ?', 'lance les tests', 'tout passe ?'. Et après avoir appliqué des corrections issues d'une review. NE PAS déclencher pour un commit : commit-push inclut déjà ces checks et réutilise le reçu."
 ---
 
 # tm-verify — Vérifications projet
@@ -8,16 +9,30 @@ description: "Lance les vérifications du projet : cohérence framework, type-ch
 Utilisable seul (debug local) ou appelé par `tm-review` (après application des fix) et par
 `commit-push` (étape 1).
 
-## Séquence
+## Une seule commande
+
+```
+pnpm verify
+```
+
+Elle enchaîne les 4 checks, puis **écrit un reçu** attestant qu'ils sont passés sur l'état exact
+du code :
 
 | # | Commande | Vérifie |
 |---|----------|---------|
-| 1 | `pnpm check:framework` | Cohérence du framework : tags ↔ conventions ↔ skills ↔ références |
+| 1 | `pnpm check:framework` | Cohérence : tags ↔ conventions ↔ skills ↔ globs ↔ références |
 | 2 | `pnpm type-check` | `tsc --noEmit` |
 | 3 | `pnpm lint` | ESLint |
 | 4 | `pnpm test` | Vitest (unit + integration) |
 
 `pnpm test:e2e` n'est pas dans la séquence — le lancer explicitement quand la story le demande.
+
+**Ne jamais lancer les 4 commandes séparément.** `pnpm verify` est le seul chemin qui écrit le
+reçu ; sans lui, `commit-push` rejouera l'intégralité de la suite quelques instants plus tard
+sur du code identique, et le hook refusera le commit.
+
+Pour vérifier sans risquer de rejouer inutilement : `pnpm verify:cached` — il ne relance les
+checks que si le code a bougé depuis le dernier passage.
 
 Chaque check doit passer avant de lancer le suivant. Sur un test cassé, distinguer :
 **cassé par le code livré** (à corriger) vs **flaky préexistant** (à documenter et signaler,

@@ -51,9 +51,15 @@ import DOMPurify from "dompurify"
 
 ## CSRF Protection
 
-Next.js protège automatiquement les Server Actions contre CSRF :
-- Les actions sont des POST avec un token implicite
-- Les API routes nécessitent une vérification manuelle de l'origin
+**Il n'y a pas de token CSRF dans les Server Actions.** Next.js compare l'en-tête `Origin` au
+`Host` et rejette la requête en cas d'écart ; le cookie de session est en `SameSite=Lax`.
+C'est tout. Croire à une protection cryptographique fait manquer les deux vrais risques :
+
+- **Derrière un reverse proxy** qui réécrit `Host`, la comparaison tombe. `serverActions.allowedOrigins` doit alors être déclaré explicitement dans `next.config.ts`, et ne jamais contenir de wildcard.
+- **Rejeu** : l'identifiant d'une Server Action reste invocable tant qu'il est déployé. La protection Origin ne couvre ni le rejeu ni le débit — toute action mutative sensible porte sa propre clé d'idempotence (voir plus bas).
+
+Les Route Handlers ne bénéficient d'aucune de ces protections : vérification manuelle de
+l'origine ou signature obligatoire.
 
 ```typescript
 // API route (webhook) — vérifier l'origin si nécessaire
@@ -68,36 +74,37 @@ export async function POST(request: Request) {
 
 ## Rate Limiting
 
-```typescript
-// Pattern simple avec Map en mémoire (dev/small scale)
-const rateLimits = new Map<string, { count: number; resetAt: number }>()
+**Un compteur en mémoire ne limite rien sur Vercel** : chaque invocation peut être une isolate
+neuve, le compteur repart de zéro. Le rate limiting exige un store partagé.
 
-function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
-  const now = Date.now()
-  const entry = rateLimits.get(key)
-  if (!entry || now > entry.resetAt) {
-    rateLimits.set(key, { count: 1, resetAt: now + windowMs })
-    return true
-  }
-  if (entry.count >= maxRequests) return false
-  entry.count++
-  return true
+```typescript
+import { headers } from "next/headers"
+
+// `x-forwarded-for` est une liste que le client peut préfixer de valeurs bidon.
+// Le proxy ajoute la vraie IP en DERNIER : prendre le dernier segment, jamais le premier.
+async function clientIp(): Promise<string> {
+  const forwarded = (await headers()).get("x-forwarded-for") ?? ""
+  return forwarded.split(",").map((s) => s.trim()).filter(Boolean).at(-1) ?? "unknown"
 }
 
-// Dans une Server Action
 export async function loginAction(formData: FormData) {
-  const ip = headers().get("x-forwarded-for") ?? "unknown"
-  if (!checkRateLimit(`login:${ip}`, 5, 60_000)) {
-    return { error: "Trop de tentatives. Réessayez dans 1 minute." }
-  }
+  const { success } = await ratelimit.limit(`login:${await clientIp()}`) // Upstash / @vercel/kv
+  if (!success) return { error: "Trop de tentatives. Réessayez dans 1 minute." }
   // ...
 }
 ```
 
-**Cibles de rate limiting :**
-- Login : 5 tentatives / minute / IP
-- Signup : 3 / heure / IP
-- Password reset : 3 / heure / email
+**Cibles :** login 5/min/IP · signup 3/h/IP · password reset 3/h/email.
+
+**Vérifiable :** un rate limiter fondé sur une `Map` ou une variable de module est acceptable
+uniquement en dev et porte un commentaire le disant. En production, le store est externe.
+
+## Idempotence et mutations concurrentes
+
+Deux trous que ni Zod ni RLS ne couvrent :
+
+- **Double soumission.** `useTransition` ne déduplique pas : un double-clic exécute l'action deux fois. Toute action qui crée une ressource facturable ou non réversible accepte une `idempotency_key` (uuid généré côté client) portée par une contrainte `UNIQUE` en base.
+- **Lost update.** Un `SELECT` puis `UPDATE` dans une action écrase la modification d'un tiers arrivée entre les deux. Filtrer sur la version lue — `.eq("updated_at", expectedUpdatedAt)` — et traiter « 0 ligne modifiée » comme un conflit à remonter à l'utilisateur, jamais comme un succès.
 - API sensible : 60 / minute / user
 
 ## Environment Variables & Secrets

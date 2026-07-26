@@ -10,6 +10,50 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Refonte issue de l'audit : conventions corrigées, volume divisé par 2, reçu de vérification
+**Quoi :**
+
+**Sécurité — les conventions enseignaient des patterns dangereux.**
+- `database-patterns.md` : le pattern de transaction de référence était une escalade de privilèges (`SECURITY DEFINER` sans `search_path`, sans validation de l'appelant, `EXECUTE` ouvert à `public` par défaut). Réécrit avec garde `auth.uid()`, verrouillage ordonné, `REVOKE`/`GRANT` explicites, et trois règles vérifiables. Ajout du `WITH CHECK` manquant sur la policy `FOR UPDATE` — sans lui, un utilisateur peut réassigner `user_id` et donner sa ligne à un tiers.
+- Starter `auth-actions.ts` : renvoyait `error.message` brut, donc « User already registered » à l'inscription — énumération de comptes en clair. Réécrit avec Zod et messages constants ; `forgotPassword` répond désormais à l'identique que le compte existe ou non.
+- `auth-patterns.md` et starter `middleware.ts` : `NextResponse.redirect` ne recopiait pas les cookies rafraîchis par `getUser()`. Le refresh token était consommé côté Supabase et le nouveau jeté — déconnexions aléatoires et boucles de redirection (footgun n°1 de `@supabase/ssr`).
+- `nextjs-patterns.md` : l'exemple canonique plaçait le contrôle d'autorisation dans un `layout.tsx`, que le même fichier décrit comme non ré-exécuté en navigation client. Remplacé par la règle « un layout n'est jamais une frontière d'autorisation ».
+- `api-patterns.md` : `params.sort` était injecté brut dans `.order()` — énumération du schéma et tri sur colonnes non exposées. L'exemple valide désormais les `searchParams` par un `z.enum`.
+- `security-patterns.md` : « les Server Actions ont un token CSRF » est faux (c'est une comparaison `Origin`/`Host`) ; `headers()` était appelé sans `await`, donc ne compilait pas en Next 15 ; le rate limiter en `Map` mémoire ne limite rien sur Vercel et lisait le mauvais segment de `x-forwarded-for`. Ajout d'une section idempotence / lost update.
+- `supabase-patterns.md` : `PGRST301` était documenté « Trop de résultats » alors qu'il signifie **JWT expiré** — une session expirée s'affichait comme une erreur de requête. Table d'erreurs complétée (`23514`, `40001`, `57014`, `PGRST202`, `PGRST204`) et signature élargie aux erreurs Storage et Auth.
+- Uploads : la limite de 1 Mo des Server Actions rendait les exemples (2 et 5 Mo) inopérants ; `upsert: true` sans policy `FOR UPDATE` renvoyait 403 au deuxième changement d'avatar ; le bucket était lisible par `anon`.
+- `api-patterns.md` : le curseur de pagination filtrait sur `created_at` seul — perte silencieuse de lignes en infinite scroll. `bulkDelete` lisait `count` sans `{ count: "exact" }`, donc `succeeded` valait toujours 0 et un DELETE refusé par RLS était compté comme un succès.
+- `redirect()` et `notFound()` sont des `throw` : le pattern `try/catch` recommandé les avalait. Règle `unstable_rethrow` ajoutée.
+
+**Volume — le corpus n'était pas lisible en une passe.**
+- Mesuré avant : 923 lignes de conventions pour une ligne changée dans une Server Action, 2 640 pour un module — **lues deux fois**, par `tm-dev` puis par `tm-review`.
+- `api-patterns.md` (478 lignes, servant 4 tags) scindé en `api-patterns.md` (352), `forms-patterns.md`, `tables-patterns.md`, `uploads-patterns.md`. Reviewer un composant de tableau ne charge plus 267 lignes de Server Actions.
+- `coding-standards.md` : 240 → 133 lignes. Les sections Server Actions et Supabase, qui **contredisaient** les conventions routées (trois traitements différents de l'auth manquante : `throw`, `return`, `redirect`), sont supprimées au profit de renvois.
+- **Conventions de base : 3 → 1.** `component-registry.md` et `tech-stack.md` deviennent des tags routés — vérifier le registry n'a de sens qu'en créant un composant, la stack qu'en touchant aux dépendances.
+- Ce qu'ESLint peut appliquer sort de la prose : `max-lines`, `max-lines-per-function`, `max-params`, `max-depth`, `no-empty`, interdiction des `enum`, `import/order`. Une règle mécanisée est vérifiée à chaque lint, la recopier n'ajoutait que du volume.
+- Globs resserrés ou élargis selon les mesures : `feedback`, `state` et `performance` ne matchaient quasiment rien (un composant de filtres ne chargeait pas `state-management.md`) ; `seo` payait 147 lignes sur chaque layout imbriqué pour 17 lignes utiles une seule fois.
+
+**Les 22 skills de tag supprimés, remplacés par un seul.**
+Depuis le routing par globs, `tm-dev` et `tm-review` matchent `_index.md` eux-mêmes : les 22 skills n'étaient plus qu'un niveau d'indirection. Il restait un cas — la question posée sans qu'aucun fichier soit touché — désormais couvert par le skill `conventions`.
+
+**Reçu de vérification — plus de suite de tests jouée deux fois.**
+`pnpm verify` enregistre l'empreinte exacte du code (HEAD + diff complet + contenu des fichiers non suivis, hors changelog). `commit-push` lance `pnpm verify:cached` : code identique → aucun check rejoué. Effet de bord voulu : le reçu est une **preuve** que les checks ont tourné sur ce code, et le hook refuse un commit dont le reçu ne couvre pas l'état courant — le marqueur d'échappement ne peut plus être posé par réflexe.
+
+**Trous de process comblés.**
+- `tm-plan` gagne un niveau **« story seule »** : accepter la proposition de story de `tm-dev` déclenchait une évolution de PRD complète, ce qui rendait la proposition dissuasive. Le cadrage rend maintenant la main explicitement à `tm-dev`.
+- Sur refus de la story en Module, `tm-dev` rétrogradait en Standard — registry, ADR et sprint status disparaissaient en silence, en contradiction avec « l'échelle est déterminée par ce que le changement touche ». Il reste en Module ; seules les obligations liées à la story tombent.
+- `checklists/code-review.md` devient une **source citable** par `tm-review`. Sans cela, aucun de ses items ne pouvait dépasser BASSE : « ce qui est livré ne correspond pas à ce qui a été demandé » n'était structurellement jamais bloquant.
+- `readiness-gate.md` exigeait `pnpm install`, `.env.local` et un serveur démarré — impossible, puisque `tm-plan` s'interdit toute commande système. Ces points deviennent les AC de la story de setup. `story-ready.md` marque conditionnels les items qu'une story technique ne peut pas satisfaire.
+
+**`check:framework` durci** — il ne détectait aucun des modes de pourrissement réels.
+Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait le routing en silence), détection des **globs morts** (une réorganisation de `src/` désactivait le routing sans un mot), tags dupliqués, budget de 400 lignes par convention, **sections citées inexistantes** (`fichier.md § Section` — la gravité HAUTE repose sur ces citations), checklists orphelines, et comparaison `component-registry.md` ↔ `src/components/` dans les deux sens.
+
+**Divers.** `<Toaster>` et skip link ajoutés au root layout (tout `toast.success()` était silencieux, et le template violait sa propre convention a11y) · `badge.tsx` passait par `bg-emerald-500` en dur au lieu des tokens · `.env.example` déclarait `NEXT_PUBLIC_APP_URL`, inutilisée, alors que tout le template lit `NEXT_PUBLIC_SITE_URL` · `CLAUDE.md` ramené de 201 à 149 lignes (cible officielle : < 200), sans les sections qui doublonnaient les conventions routées · `tm-plan` porte `disable-model-invocation`, `tm-dev` un filtre `paths`, et les skills un champ `when_to_use` séparé de `description`.
+
+**Pourquoi :** neuf audits indépendants ont convergé sur le même diagnostic — le framework demandait de lire trop pour que la lecture soit réelle, et ce qu'il donnait à lire contenait des règles fausses. Corriger l'un sans l'autre n'aurait servi à rien.
+
+**Fichiers :** 8 conventions réécrites, 3 créées (`forms`, `tables`, `uploads`), 22 skills supprimés, `conventions` créé · `scripts/verify-receipt.mjs` et `scripts/check-framework.mjs` · `eslint.config.mjs`, `package.json`, `.gitignore` · `src/app/layout.tsx`, `src/components/ui/badge.tsx` · `CLAUDE.md`, `README.md` · 3 checklists · starter `auth-actions.ts` et `middleware.ts`
+
 ## [2026-07-26] — Correctifs issus de l'audit multi-agents : gate git réparé et testé, 404 au premier lancement, lint impassable
 **Quoi :** neuf audits indépendants (4 scénarios d'usage, 4 lots de conventions, 1 sur l'architecture des skills) ont été passés sur le framework. Cette entrée ne couvre que les défauts **vérifiés et corrigés** ; le reste est arbitré séparément.
 

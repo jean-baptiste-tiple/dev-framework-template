@@ -40,7 +40,7 @@ const deny = (msg) => {
 let raw = ''
 process.stdin.setEncoding('utf8')
 process.stdin.on('data', (c) => (raw += c))
-process.stdin.on('end', () => {
+process.stdin.on("end", async () => {
   let command = ''
   try {
     command = JSON.parse(raw)?.tool_input?.command ?? ''
@@ -80,6 +80,28 @@ process.stdin.on('end', () => {
     )
   }
 
-  if (marked) process.exit(0)
-  deny(BLOCK_MESSAGE)
+  if (!marked) deny(BLOCK_MESSAGE)
+
+  // Le marqueur est une déclaration ; le reçu est une preuve. Sans cette vérification, il
+  // suffirait d'avoir lu une fois le message de blocage pour poser le marqueur par réflexe sur
+  // un arbre jamais vérifié — et le gate ne serait plus qu'une formalité.
+  // Le push n'est pas concerné : le commit qu'il envoie a déjà passé ce contrôle.
+  if (/\s(commit)\b/.test(bare)) {
+    let receipt
+    try {
+      receipt = await import('../../scripts/verify-receipt.mjs').then((m) => m.checkReceipt())
+    } catch {
+      process.exit(0) // script absent ou illisible : ne pas bloquer sur l'outillage lui-même
+    }
+    if (!receipt.valid) {
+      deny(
+        `BLOQUÉ: marqueur posé mais ${receipt.reason}.\n\n` +
+          `Le marqueur atteste que les 4 checks sont passés sur CE code. Lancer :\n` +
+          `  pnpm verify\n\n` +
+          `puis relancer le commit. Ne pas contourner en supprimant le reçu.`
+      )
+    }
+  }
+
+  process.exit(0)
 })

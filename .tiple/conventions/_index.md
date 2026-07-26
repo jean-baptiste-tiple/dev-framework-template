@@ -2,15 +2,17 @@
 
 > **Source de vérité unique du routing `fichier → tag → convention`.**
 > Lu par le skill `tm-dev` (avant d'écrire) et par le skill `tm-review` (avant de reviewer).
-> Ne PAS dupliquer ce mapping ailleurs — ni dans une commande, ni dans un skill, ni dans `CLAUDE.md`.
+> Ne PAS dupliquer ce mapping ailleurs — ni dans un skill, ni dans `CLAUDE.md`.
 
-## Conventions de base (toujours lues)
+## Convention de base (toujours lue)
 
 | Fichier | Description |
 |---------|-------------|
-| `coding-standards.md` | Naming, structure, imports, error handling, complexité |
-| `component-registry.md` | Registry DRY — vérifier avant de créer |
-| `tech-stack.md` | Versions exactes de la stack |
+| `coding-standards.md` | Naming, structure des fichiers, DRY, error handling, commentaires |
+
+Une seule, et volontairement courte. Tout le reste est **conditionnel** : `component-registry.md`
+ne sert qu'au moment de créer quelque chose, `tech-stack.md` qu'au moment de toucher aux
+dépendances. Les lire à chaque changement d'une ligne était du poids mort.
 
 ## Conventions par tag
 
@@ -18,37 +20,64 @@ La colonne **Globs** est la règle de routing : si un fichier touché (créé ou
 un glob, le tag est actif et son fichier de conventions **doit être lu en entier**.
 
 En mode story, les tags déclarés dans le champ `Conventions` de la story s'ajoutent aux tags
-déduits des globs — l'union des deux est chargée.
+déduits des globs — c'est le seul moyen d'activer les tags marqués **non routables** ci-dessous.
 
 | Tag | Fichier | Globs | Description |
 |-----|---------|-------|-------------|
-| `auth` | `auth-patterns.md` | `src/middleware.ts`, `src/app/(auth)/**`, `src/lib/actions/auth*.ts`, `src/lib/supabase/**` | Signup, login, reset, session, OAuth |
-| `database` | `database-patterns.md` | `supabase/migrations/**`, `supabase/seed.sql`, `src/types/database.ts` | Migrations, transactions, indexes, naming, soft deletes |
-| `supabase` | `supabase-patterns.md` | `src/lib/supabase/**`, `supabase/**` | Storage, RLS avancé, triggers, realtime, error codes |
-| `api` | `api-patterns.md` | `src/lib/actions/**`, `src/lib/schemas/**`, `src/app/api/**` | Server Actions, fetch, pagination, caching |
-| `forms` | `api-patterns.md` | `src/lib/schemas/**`, `src/components/**/*form*.tsx` | Formulaires RHF + Zod + Server Actions, validation async |
-| `realtime` | `supabase-patterns.md` | `src/hooks/**realtime**`, `src/hooks/**subscription**` | Subscriptions, presence, cleanup |
-| `security` | `security-patterns.md` | `src/lib/actions/**`, `src/app/api/**`, `src/middleware.ts`, `.env.example` | XSS, CSRF, rate limiting, secrets, validation serveur |
-| `nextjs` | `nextjs-patterns.md` | `src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/**/not-found.tsx`, `next.config.ts` | App Router, layouts, loading, error, routes dynamiques |
-| `typescript` | `typescript-patterns.md` | `src/types/**`, `tsconfig.json` | Utility types, unions, branded types, generics |
-| `state` | `state-management.md` | `src/hooks/**`, `src/components/**/*provider*.tsx` | URL state, context, composant state, mémo |
-| `feedback` | `feedback-patterns.md` | `src/components/ui/toast*.tsx`, `src/components/ui/sonner.tsx`, `src/components/ui/*dialog*.tsx` | Toasts, dialogs, confirmations, notifications |
-| `performance` | `performance-patterns.md` | `next.config.ts`, `src/app/**/loading.tsx`, `src/components/**/*chart*.tsx` | Code splitting, Web Vitals, bundle, images, fonts |
-| `tables` | `api-patterns.md` | `src/components/**/*table*.tsx` | Tri, filtres, sélection, bulk actions, pagination |
-| `uploads` | `api-patterns.md` | `src/components/**/*upload*.tsx`, `src/lib/actions/*upload*.ts` | File upload, Supabase Storage, validation |
-| `seo` | `seo-patterns.md` | `src/app/**/sitemap.ts`, `src/app/**/robots.ts`, `src/app/**/opengraph-image.*`, `src/app/**/layout.tsx` | Metadata API, Open Graph, sitemap, structured data |
-| `a11y` | `accessibility-patterns.md` | `src/components/**/*.tsx`, `src/app/**/*.tsx` | WCAG, ARIA, keyboard, focus, contrast |
-| `i18n` | `i18n-patterns.md` | `messages/**`, `src/i18n/**`, `src/middleware.ts` | Traductions, pluriel, dates, devises, RTL |
-| `datetime` | `datetime-patterns.md` | `src/lib/utils/*date*.ts`, `src/lib/utils/*format*.ts`, `src/lib/utils/*currency*.ts` | Dates, heures, timezones, formatage, devises |
-| `monitoring` | `monitoring-patterns.md` | `instrumentation.ts`, `sentry.*.config.ts`, `src/app/**/error.tsx`, `src/app/**/global-error.tsx`, `src/app/api/health/**` | Error tracking, analytics, health checks, logs |
-| `flags` | `feature-flags-patterns.md` | `src/lib/flags/**`, `src/lib/*flag*.ts` | Feature flags, A/B testing, rollouts |
+| `api` | `api-patterns.md` | `src/lib/actions/**`, `src/app/api/**` | Server Actions, fetch, pagination, caching, bulk |
+| `forms` | `forms-patterns.md` | `src/lib/schemas/**`, `src/components/**/*form*.tsx` | RHF + Zod, formulaires progressifs, validation async |
+| `tables` | `tables-patterns.md` | `src/components/**/*table*.tsx`, `src/components/**/*list*.tsx` | Tri, filtres, sélection, actions groupées |
+| `uploads` | `uploads-patterns.md` | `src/components/**/*upload*.tsx`, `src/components/**/*dropzone*.tsx`, `src/lib/actions/*upload*.ts` | Upload, taille, mime, chemins de storage |
+| `auth` | `auth-patterns.md` | `src/middleware.ts`, `src/app/(auth)/**`, `src/lib/actions/auth*.ts` | Signup, login, reset, session, OAuth |
+| `database` | `database-patterns.md` | `supabase/migrations/**`, `supabase/seed.sql`, `src/types/database.ts` | Migrations, RLS, index, transactions, soft delete |
+| `supabase` | `supabase-patterns.md` | `src/lib/supabase/**`, `supabase/**` | Storage, RLS avancé, realtime, codes d'erreur, RPC |
+| `realtime` | `supabase-patterns.md` | `src/hooks/**realtime**`, `src/hooks/**subscription**`, `src/hooks/**presence**` | Subscriptions, presence, cleanup |
+| `security` | `security-patterns.md` | `src/lib/actions/**`, `src/app/api/**`, `src/middleware.ts`, `.env.example` | XSS, CSRF, rate limiting, secrets, idempotence |
+| `nextjs` | `nextjs-patterns.md` | `src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/app/**/loading.tsx`, `src/app/**/error.tsx`, `src/app/**/not-found.tsx`, `src/app/**/template.tsx`, `next.config.ts` | App Router, fichiers spéciaux, frontières d'autorisation |
+| `state` | `state-management.md` | `src/hooks/**`, `src/components/**/*provider*.tsx`, `src/components/**/*filter*.tsx`, `src/app/**/page.tsx` | URL state, contexte, hiérarchie de state |
+| `feedback` | `feedback-patterns.md` | `src/components/**/*dialog*.tsx`, `src/components/**/*confirm*.tsx`, `src/components/**/*delete*.tsx`, `src/components/**/*toast*.tsx`, `src/components/ui/sonner.tsx` | Toasts, dialogs, confirmations, empty states |
+| `a11y` | `accessibility-patterns.md` | `src/components/**/*.tsx`, `src/app/**/*.tsx`, `src/app/globals.css` | WCAG, ARIA, clavier, focus, contraste |
+| `performance` | `performance-patterns.md` | `next.config.ts`, `src/app/**/loading.tsx`, `src/components/**/*chart*.tsx`, `src/components/**/*editor*.tsx` | Code splitting, Web Vitals, images, fonts |
+| `typescript` | `typescript-patterns.md` | `src/types/**`, `tsconfig.json` | Utility types, unions, branded types, type guards |
+| `registry` | `component-registry.md` | `src/components/**`, `src/hooks/**`, `src/lib/utils/**`, `src/lib/actions/**`, `src/lib/schemas/**`, `src/types/**` | Registry DRY — vérifier avant de créer |
+| `stack` | `tech-stack.md` | `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `next.config.ts` | Versions exactes, pins et leurs raisons |
+| `seo` | `seo-patterns.md` | `src/app/layout.tsx`, `src/app/**/page.tsx`, `src/app/**/sitemap.ts`, `src/app/**/robots.ts`, `src/app/**/opengraph-image.*` | Metadata API, Open Graph, sitemap, JSON-LD |
+| `monitoring` | `monitoring-patterns.md` | `instrumentation.ts`, `src/instrumentation.ts`, `sentry.*.config.ts`, `src/app/**/error.tsx`, `src/app/**/global-error.tsx`, `src/app/api/health/**` | Error tracking, analytics, health checks, logs |
 | `deploy` | `deployment-patterns.md` | `.github/workflows/**`, `vercel.json`, `.env.example`, `supabase/config.toml` | Environnements, rollback, migrations, secrets |
-| `testing` | `testing-strategy.md` | `tests/**`, `**/*.test.ts`, `**/*.test.tsx`, `vitest.config.ts`, `playwright.config.ts` | Unit, integ, E2E, mocks, fixtures, coverage |
+| `testing` | `testing-strategy.md` | `tests/**`, `**/*.test.ts`, `**/*.test.tsx`, `vitest.config.ts`, `playwright.config.ts` | Unit, integ, E2E, mocks, fixtures |
+| `datetime` | `datetime-patterns.md` | `src/lib/utils/*date*.ts`, `src/lib/utils/*format*.ts`, `src/lib/utils/*currency*.ts` | Dates, timezones, formatage, devises |
+| `i18n` | `i18n-patterns.md` | `messages/**`, `src/i18n/**`, `src/middleware.ts` | Traductions, pluriels, locale, RTL |
+| `flags` | `feature-flags-patterns.md` | `src/lib/flags/**`, `src/lib/*flag*.ts` | Feature flags, A/B testing, rollouts |
+
+### Tags non routables par chemin
+
+`datetime`, `i18n` et `flags` portent sur des **préoccupations transverses** qu'aucun chemin de
+fichier ne révèle : formater un montant, afficher une date ou gater une fonctionnalité se fait
+dans n'importe quel composant. Leurs globs ne couvrent que le cas où un helper dédié existe.
+
+À l'échelle Module, si le travail touche l'une de ces préoccupations, **déclarer le tag
+explicitement** — via le champ `Conventions` de la story, ou en l'annonçant.
+
+### Capacités non installées
+
+Ces tags décrivent des domaines dont **aucune dépendance n'est installée dans le template**.
+Leurs globs ne matchent donc rien tant que la capacité n'est pas ajoutée : c'est déclaré, pas
+une régression, et `check:framework` les exempte de la détection de globs morts.
+
+| Tag | Activé par |
+|-----|------------|
+| `supabase`, `database`, `auth`, `realtime` | starter `.tiple/starters/supabase-auth/` |
+| `i18n` | ajout de `next-intl` (ou équivalent) |
+| `flags` | ajout d'une librairie de feature flags |
+| `monitoring` | ajout de Sentry / d'un provider d'analytics |
+
+**Dès que la capacité est installée, retirer le tag de ce tableau** : il redevient soumis à la
+vérification des globs, et un chemin devenu faux échouera au lieu de passer inaperçu.
 
 ## Règles de routing
 
-1. **Un fichier peut activer plusieurs tags** — charger tous les fichiers de conventions correspondants (dédupliqués : plusieurs tags pointent vers le même fichier).
-2. **Aucun glob ne matche** → seules les conventions de base s'appliquent. Ce n'est pas une erreur.
-3. **Annoncer les conventions chargées** avant d'agir : `Conventions chargées : coding-standards, component-registry, tech-stack, api-patterns, security-patterns`. Si la liste est vide au-delà des bases, le dire aussi.
+1. **Un fichier peut activer plusieurs tags** — charger tous les fichiers correspondants (dédupliqués : `supabase` et `realtime` pointent vers le même).
+2. **Aucun glob ne matche** → seule la convention de base s'applique. Ce n'est pas une erreur.
+3. **Annoncer les conventions chargées** avant d'agir : `Conventions : coding-standards, api-patterns, security-patterns`. Si rien au-delà de la base, le dire.
 4. **Lire le fichier en entier**, pas un résumé. Les skills `.claude/skills/<tag>/` ne contiennent aucune règle — ce sont des pointeurs vers ce tableau.
-5. **Ajouter un tag** = ajouter une ligne ici + créer `.claude/skills/<tag>/SKILL.md` + le fichier de conventions. `pnpm check:framework` vérifie la cohérence des trois.
+5. **Ajouter un tag** = une ligne ici + le fichier de conventions + `.claude/skills/<tag>/SKILL.md`. `pnpm check:framework` échoue si l'un des trois manque, si un glob est vide, ou si le préfixe d'un glob ne correspond à aucun dossier réel.

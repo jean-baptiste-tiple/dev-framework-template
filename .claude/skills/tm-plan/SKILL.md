@@ -1,6 +1,8 @@
 ---
 name: tm-plan
-description: "Cadrage produit : brief, PRD par parcours, architecture, design, epics/stories. À invoquer explicitement (/tm-plan). Si l'utilisateur décrit un besoin produit large sans le demander, PROPOSER un cadrage et attendre son accord — ne jamais en lancer un de sa propre initiative : il réécrit PRD, architecture et stories."
+description: "Cadrage produit : brief, PRD par parcours, architecture, design, epics/stories. Quatre niveaux — refus, story seule, évolution ciblée, initial."
+when_to_use: "Uniquement sur invocation explicite de l'utilisateur (/tm-plan). Face à un besoin produit large exprimé autrement, PROPOSER un cadrage et attendre l'accord — un cadrage réécrit PRD, architecture et stories."
+disable-model-invocation: true
 argument-hint: "[scope / version optionnels]"
 ---
 
@@ -23,8 +25,17 @@ la demande touche :
 | Niveau | Quand | Ce qui est produit |
 |--------|-------|--------------------|
 | **Refus** | La demande tient en quelques fichiers, sans nouveau parcours ni changement de modèle de données | **Rien.** Le dire et basculer sur `tm-dev`. |
-| **Évolution** | `docs/prd.md` est rempli et la demande touche un parcours (existant ou nouveau) | Le parcours concerné + la cascade réellement impactée |
+| **Story seule** | `tm-dev` a détecté l'échelle Module et l'utilisateur a accepté une story — mais le parcours existe déjà au PRD | **Une story**, rien d'autre |
+| **Évolution** | `docs/prd.md` est rempli et la demande ouvre ou modifie un parcours | Le parcours concerné + la cascade réellement impactée |
 | **Initial** | `docs/prd.md` absent, vide ou placeholder | La chaîne complète |
+
+**Story seule** est le niveau attendu quand `tm-dev` propose « je cadre une story d'abord » :
+écrire la story depuis `.tiple/templates/story.tmpl.md` — AC en Given/When/Then, fichiers à
+créer, tests attendus, tags `Conventions` — **sans toucher au PRD ni à l'architecture**. Gate
+réduit à `.tiple/checklists/story-ready.md`. Puis **rendre la main à `tm-dev`** sur cette story.
+
+Ne jamais déclencher une évolution de PRD complète pour une demande qui n'ouvre pas de parcours :
+c'est le piège qui rend la proposition de story dissuasive.
 
 **Le refus est une issue normale, pas un échec.** Formuler :
 > « Ça ne mérite pas un cadrage : pas de nouveau parcours, pas de changement de modèle de
@@ -122,3 +133,10 @@ cohérence PRD ↔ architecture ↔ design ↔ stories. Si KO, corriger avant de
 Initialiser ou mettre à jour `.tiple/sprint/status.md` : dates, epic focus, stories
 sélectionnées. Puis résumer : ce qui a été produit, ce qui a été volontairement laissé de côté,
 et la première story à implémenter.
+
+**Rendre la main explicitement.** Un cadrage ne se termine pas sur un document : il se termine
+sur une phrase qui relance l'implémentation, sinon la session s'arrête là et l'utilisateur doit
+relancer à la main.
+
+> « Cadrage terminé. Je reprends en `tm-dev` sur `E0X-SYY` — conventions rechargées par globs
+> plus les tags déclarés dans la story. »

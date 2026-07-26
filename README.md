@@ -1,6 +1,14 @@
 # Tiple Method Template
 
-Template Git réutilisable pour bootstrapper un projet avec la Tiple Method. Contient toute la structure, les templates de documents, les checklists, les conventions, et les slash commands Claude Code. Stack de base : Next.js 15 + TypeScript + Tailwind CSS + Shadcn/ui. Backend optionnel via starters (Supabase + Auth).
+Template Git réutilisable pour bootstrapper un projet avec la Tiple Method : structure, templates
+de documents, checklists, conventions techniques routées, et skills Claude Code auto-déclenchés.
+Stack de base : Next.js 15 + TypeScript strict + Tailwind + Shadcn/ui. Base de données et auth
+optionnelles via starter (Supabase).
+
+Le principe : **les garanties de qualité s'attachent au changement, pas à un workflow qu'il faut
+penser à lancer.** Les conventions se chargent depuis les fichiers touchés, la review confronte le
+code aux règles écrites plutôt qu'à une opinion, et le gate de commit est appliqué par un hook —
+pas par une consigne qu'on peut oublier.
 
 ## Design System
 
@@ -51,7 +59,7 @@ reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 | `commit-push` | auto — « commit », « push », « envoie » | Les 4 checks + changelog + commit + push. **Seul chemin autorisé** (gate par hook). |
 | `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
 | `tm-plan` | **explicite uniquement** (`/tm-plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 3 niveaux — initial, évolution ciblée, ou **refus** quand ça n'en vaut pas la peine. |
-| 22 skills de tag | auto — via les globs de `_index.md` | Pointeurs vers `.tiple/conventions/`, sans aucune règle recopiée. |
+| `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.tiple/conventions/` en citant la source, jamais de mémoire. |
 
 `tm-plan` est le seul à ne jamais s'auto-déclencher : un cadrage réécrit PRD, architecture et
 stories. Claude le **propose** face à un besoin produit large, il ne le lance pas.
@@ -106,20 +114,27 @@ Le mapping `fichier touché → tag → convention` a **une seule source de vér
 **Globs** de [`.tiple/conventions/_index.md`](.tiple/conventions/_index.md). Elle est consommée
 par `tm-dev` (avant d'écrire) et par `tm-review` (avant de reviewer).
 
-Les 22 skills de tag sont des **pointeurs sans règles** : ils disent quel fichier de conventions
-lire, rien d'autre. Un résumé recopié dans un skill finirait par diverger de la convention tout
-en donnant l'illusion d'être informé — c'est pour ça qu'il n'y en a aucun.
+**Il n'y a pas de skill par tag.** `tm-dev` et `tm-review` lisent `_index.md` et matchent les
+globs eux-mêmes : un skill intermédiaire par domaine n'ajouterait qu'un niveau d'indirection et
+une occasion de diverger. Le skill `conventions` couvre le seul cas que les globs ne peuvent pas
+atteindre — une question posée sans qu'aucun fichier ne soit touché.
 
-`pnpm check:framework` vérifie que tags, conventions, skills, hooks et références croisées
-restent cohérents. Il échoue si un tag n'a pas de globs, si un skill pointe vers un fichier
-disparu, ou si la doc référence un `/skill` inexistant.
+Une seule convention est lue systématiquement (`coding-standards.md`, 133 lignes). Le registry
+et la stack sont routés comme les autres : vérifier le registry n'a de sens qu'en créant un
+composant, la stack qu'en touchant aux dépendances.
+
+`pnpm check:framework` échoue si un tag n'a pas de globs, si **aucun glob d'un tag ne peut
+matcher** (le mode de pourrissement principal : une réorganisation de `src/` désactive le
+routing en silence), si une section citée en review n'existe plus, si un fichier de conventions
+dépasse 400 lignes, si une checklist n'est appelée par rien, si un composant de
+`src/components/` manque au registry, ou si la doc référence un `/skill` inexistant.
 
 ## Structure
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
 ├── .claude/
-│   ├── skills/                  # 6 skills de workflow + 22 skills de tag (pointeurs conventions)
+│   ├── skills/                  # 6 skills de workflow + conventions
 │   ├── hooks/                   # enforce-git-gate.mjs (gate commit/push) + enforce-bash-rules.mjs
 │   └── settings.json            # Déclaration des hooks
 ├── scripts/
@@ -127,7 +142,7 @@ disparu, ou si la doc référence un `/skill` inexistant.
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
-│   ├── conventions/             # Conventions techniques par tags (22 fichiers + _index.md)
+│   ├── conventions/             # Conventions techniques routées par globs (_index.md = routing)
 │   ├── starters/                # Starters optionnels (supabase-auth, ...)
 │   └── sprint/status.md         # Sprint tracking
 ├── docs/
@@ -141,7 +156,7 @@ disparu, ou si la doc référence un `/skill` inexistant.
 │   └── decisions/               # ADRs (Architecture Decision Records)
 ├── src/
 │   ├── app/
-│   │   ├── (dashboard)/         # Layout principal + page placeholder
+│   │   ├── (dashboard)/         # Layout principal + page servant `/`
 │   │   └── design-system/       # Preview du design system
 │   ├── components/
 │   │   ├── ui/                  # 34 composants Shadcn/ui
@@ -166,35 +181,62 @@ Puis lancer `/tm-plan` pour démarrer la phase de cadrage (qui activera les star
 
 Les conventions techniques sont dans `.tiple/conventions/`, chargées automatiquement :
 
-- **Base (toujours)** : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Base (toujours)** : `coding-standards.md` — une seule, volontairement courte
 - **Par globs** : chaque fichier créé ou modifié active des tags → les conventions sont lues **en entier**
 - **Mode story** : les tags du champ `Conventions` de la story s'ajoutent (union avec les globs)
+
+Ce qui est appliqué par ESLint ou TypeScript n'est jamais répété en prose : une règle mécanisée
+est vérifiée à chaque `pnpm lint`, la recopier ne fait qu'alourdir ce qu'il y a à lire.
 
 | Contexte | Chargement |
 |---|---|
 | `/tm-dev E01-S01` | Globs du diff **∪** tags déclarés dans la story |
 | `/tm-dev` (libre) | Globs des fichiers visés |
 | `tm-review` | Globs du diff — mêmes règles, même source |
-| Hors workflow (édit libre, Q&A) | Skills de tag auto-déclenchés par mots-clés FR+EN |
+| Question sans fichier touché | Skill `conventions` : lit `_index.md`, puis les fichiers concernés |
+
+Trois tags — `datetime`, `i18n`, `flags` — portent sur des préoccupations transverses qu'aucun
+chemin ne révèle : formater un montant ou gater une fonctionnalité se fait dans n'importe quel
+composant. Ils se déclarent explicitement, via le champ `Conventions` de la story.
 
 ## Qualité & Déploiement
 
-Répartition claire des checks :
+```bash
+pnpm verify          # les 4 checks + écriture du reçu
+pnpm verify:cached   # ne relance les checks que si le code a bougé
+```
 
 | Check | Où | Quand |
 |---|---|---|
-| `pnpm check:framework` | **Local** (via `commit-push`) | Avant chaque push |
-| `pnpm type-check` | **Local** (via `commit-push`) | Avant chaque push |
-| `pnpm lint` | **Local** (via `commit-push`) | Avant chaque push |
-| `pnpm test` | **Local** (via `commit-push`) | Avant chaque push |
-| `pnpm build` | **CI GitHub** (`.github/workflows/ci.yml`) | Après chaque push — validation Vercel + erreurs spécifiques Linux |
+| `check:framework` · `type-check` · `lint` · `test` | **Local**, via `pnpm verify` | Avant chaque push |
+| `pnpm build` | **CI GitHub** (`.github/workflows/ci.yml`) | Après chaque push — validation Vercel, erreurs spécifiques à Linux |
 
-Pourquoi cette séparation : les 4 checks locaux bloquent le push, donc rien de cassé ne part ; la
-CI ne refait pas ce travail et se concentre sur ce qui ne peut être vérifié qu'en environnement
-Linux propre — le build de production.
+Les 4 checks locaux bloquent le push : rien de cassé ne part. La CI ne les refait pas et se
+concentre sur ce qui ne peut être vérifié qu'en environnement Linux propre.
 
-Deux hooks Claude Code appliquent ces règles sans dépendre du raisonnement du modèle :
-`enforce-git-gate.mjs` (aucun commit/push hors du skill `commit-push`) et `enforce-bash-rules.mjs`
-(sortie des checks jamais tronquée ni redirigée). Chaque hook documente ses propres règles.
+### Le reçu de vérification
 
-Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter Supabase + Auth si activé.
+`pnpm verify` enregistre l'empreinte exacte du code au moment où les checks passent. `commit-push`
+compare : **code identique → il ne rejoue rien**. C'est ce qui supprime le scénario le plus
+coûteux du framework — une implémentation qui se termine par une suite complète, suivie d'un
+commit qui rejoue la même chose trente secondes plus tard.
+
+L'empreinte couvre le HEAD, le diff complet et le contenu des fichiers non suivis. Elle exclut
+`docs/changelog.md`, édité après les checks et sans effet sur eux.
+
+Le reçu sert aussi de **preuve** : le hook refuse un commit dont le reçu ne couvre pas l'état
+exact du code, ce qui empêche le marqueur d'échappement d'être posé par réflexe sur un arbre
+jamais vérifié.
+
+### Les deux hooks
+
+`enforce-git-gate.mjs` — aucun commit ni push hors du skill `commit-push`.
+`enforce-bash-rules.mjs` — sortie des checks jamais tronquée, redirigée ou lancée en arrière-plan.
+
+Ils sont écrits en Node, pas en bash : le payload est du JSON, et toute extraction du champ
+`command` par grep ou sed est fausse dans un sens (troncature au premier guillemet échappé) ou
+dans l'autre (matching du JSON entier). `tests/unit/hooks.test.ts` verrouille leur comportement
+sur 18 cas.
+
+Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase arrive avec
+le starter Supabase + Auth.

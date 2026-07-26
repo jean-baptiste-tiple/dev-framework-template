@@ -157,13 +157,20 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   )
 
-  if (!user && !isPublicRoute) {
-    return NextResponse.redirect(new URL("/login", request.url))
+  // `getUser()` peut rafraîchir la session et écrire de nouveaux cookies sur `response`.
+  // Un `NextResponse.redirect()` neuf ne les porte pas : l'ancien refresh token est déjà
+  // consommé côté Supabase, le nouveau est jeté → déconnexion aléatoire et boucle de
+  // redirection. C'est le footgun n°1 de @supabase/ssr.
+  function redirectTo(pathname: string) {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname
+    const redirect = NextResponse.redirect(url)
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
+    return redirect
   }
 
-  if (user && request.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
-  }
+  if (!user && !isPublicRoute) return redirectTo("/login")
+  if (user && request.nextUrl.pathname === "/login") return redirectTo("/dashboard")
 
   return response
 }

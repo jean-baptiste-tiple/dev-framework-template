@@ -12,15 +12,21 @@
 | `loading.tsx` | UI de chargement (Suspense boundary automatique) | Server |
 | `error.tsx` | Error boundary de la route | **Client** (`"use client"` obligatoire) |
 | `not-found.tsx` | Page 404 | Server |
+| `global-error.tsx` | Error boundary du root layout (remplace `<html>`) | **Client** |
+| `template.tsx` | Comme `layout.tsx` mais **remonté à chaque navigation** | Server |
+| `unauthorized.tsx` | Réponse à `unauthorized()` (Next 15.1+) | Server |
+| `forbidden.tsx` | Réponse à `forbidden()` (Next 15.1+) | Server |
 | `route.ts` | API route handler (webhooks uniquement) | Server |
+
+> PPR et `use cache` ne sont pas activés sur ce template. Les activer est une décision
+> d'architecture → ADR. Ne pas les introduire au fil de l'eau.
 
 ## Layouts
 
 ```tsx
-// app/(dashboard)/layout.tsx — layout authentifié
+// app/(dashboard)/layout.tsx — chrome de l'app, PAS une frontière d'autorisation
 import { createClient } from "@/lib/supabase/server"
-import { redirect } from "next/navigation"
-import { Sidebar } from "@/components/shared/sidebar"
+import { Sidebar } from "@/components/sidebar"
 
 export default async function DashboardLayout({
   children,
@@ -29,21 +35,37 @@ export default async function DashboardLayout({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/login")
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar user={user} />
+      {user ? <Sidebar user={user} /> : null}
       <main className="flex-1 p-6">{children}</main>
     </div>
   )
 }
 ```
 
-**Règles :**
+### Un layout n'est JAMAIS une frontière d'autorisation
+
+Un layout n'est pas ré-exécuté lors d'une navigation client entre ses pages enfant. Un
+`redirect("/login")` placé uniquement dans un `layout.tsx` **n'est donc pas rejoué** : une
+session expirée en cours de navigation n'est jamais détectée, et les pages enfant continuent
+de rendre des données. C'est le vecteur de contournement du middleware corrigé par
+CVE-2025-29927.
+
+Le contrôle d'accès se fait à **trois** endroits, jamais un seul :
+1. le middleware — pour la redirection UX, pas pour la sécurité
+2. **chaque `page.tsx`** ou la couche d'accès aux données
+3. **chaque Server Action** (`api-patterns.md § Pattern Server Action standard`)
+
+**Vérifiable :** un `redirect("/login")` présent dans un `layout.tsx` sans équivalent dans les
+`page.tsx` du même segment est un défaut HAUTE.
+
+**Autres règles :**
 - Les layouts **persistent** entre les navigations — ne pas y mettre de state volatile
 - Les données fetchées dans un layout sont disponibles pour toutes les pages enfant
-- Un layout ne re-render PAS quand on navigue entre ses pages enfant
+- Un route group avec un `layout.tsx` doit avoir au moins un `page.tsx`, sinon le build échoue
+- **Vérifiable :** deux `page.tsx` ne doivent jamais produire le même chemin une fois les segments `(...)` retirés — Next ne le signale pas, il en choisit un en silence. Et aucun `redirect()` ne cible un chemin contenant le nom d'un route group (`(dashboard)` ne crée pas `/dashboard`).
 
 ## Loading States
 

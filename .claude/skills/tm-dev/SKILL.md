@@ -1,7 +1,14 @@
 ---
 name: tm-dev
-description: "Écrire ou explorer du code en respectant les conventions du projet. Déclenche-toi avant toute modification de src/, tests/, supabase/ ou de la config applicative — correction, ajout, refacto, story — et pour toute demande d'exploration read-only du code. NE PAS déclencher pour des modifications purement documentaires (docs/, .tiple/, README) ni pour répondre à une question sans toucher au code."
+description: "Écrire ou explorer du code en respectant les conventions du projet : conventions routées par globs, implémentation, tests, vérification, review, finalisation."
+when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .tiple/, README), ni pour répondre à une question sans toucher au code : c'est le skill conventions."
 argument-hint: "[E01-S01 | next | description de ce qu'il faut faire]"
+paths:
+  - "src/**"
+  - "tests/**"
+  - "supabase/**"
+  - "*.config.{ts,js,mjs}"
+  - "package.json"
 ---
 
 # tm-dev — Écrire du code
@@ -45,17 +52,26 @@ tourne. Ce qui disparaît, c'est le cérémonial (rapport de review, entrée de 
 changement invisible), pas la vérification.
 
 **Module** : proposer une story, ne pas l'imposer. Formuler :
-> « Ça touche [surface] sur [n] fichiers — je propose de cadrer une story d'abord (`/tm-plan`),
-> les AC servent ensuite de critère de review. Sinon je code directement. »
+> « Ça touche [surface] sur [n] fichiers — je propose d'écrire une story d'abord (`tm-plan`,
+> niveau « story seule » : AC et tests attendus, sans toucher au PRD). Les AC servent ensuite
+> de critère de review. Sinon je code directement. »
 
-Si l'utilisateur refuse la story, continuer en Standard et le noter : la review n'aura pas d'AC
-à vérifier, seulement les conventions.
+Si l'utilisateur refuse : **rester en Module sans story**, ne pas rétrograder en Standard.
+L'échelle est déterminée par ce que le changement touche, pas par la réponse à une question.
+Ce qui disparaît avec la story, ce sont les seules obligations qui en dépendent :
+post-implémentation et sprint status. **Registry, ADR et changelog restent dus.**
+
+La review perd alors ses AC : elle ne peut plus statuer « AC non livré ». Le dire à ce
+moment-là, pas après.
 
 ### 2. Charger le contexte
 
-**Toujours** — lire `.tiple/conventions/_index.md`, charger les 3 conventions de base
-(`coding-standards.md`, `component-registry.md`, `tech-stack.md`) puis les conventions dont un
-tag est activé par les **globs** des fichiers visés. **Annoncer la liste chargée.**
+**Toujours** — lire `.tiple/conventions/_index.md`, charger la convention de base
+(`coding-standards.md`) puis les conventions dont un tag est activé par les **globs** des
+fichiers visés. **Annoncer la liste chargée.**
+
+Le registry (`registry`) et la stack (`stack`) sont routés comme les autres : ils se chargent
+quand le diff touche ce qu'ils couvrent, pas à chaque changement d'une ligne.
 
 **Si une story pilote le travail** (`E01-S01` ou `next` → `.tiple/sprint/status.md`) — lire la
 story, vérifier `.tiple/checklists/story-ready.md`, ajouter les tags de son champ `Conventions`
@@ -91,8 +107,12 @@ plus une réorganisation · si la zone n'est pas testée, écrire les tests **av
 
 ### 5. Vérifier
 
-`pnpm type-check` — doit passer. Max 3 cycles, au-delà remonter le blocage. Lint et tests
-complets tournent dans `commit-push`, pas à chaque itération.
+**Pendant l'implémentation :** `pnpm type-check` seul, à chaque itération. Max 3 cycles, au-delà
+remonter le blocage.
+
+**Une fois l'implémentation terminée :** `pnpm verify` (les 4 checks + écriture du reçu). Ne pas
+lancer les commandes séparément — seul `pnpm verify` écrit le reçu qui évitera à `commit-push`
+de tout rejouer sur du code identique.
 
 ### 6. Reviewer
 
@@ -109,8 +129,8 @@ Au-delà de 2 cycles sans converger → s'arrêter et remonter à l'utilisateur.
 |---|---|---|---|
 | `docs/changelog.md` | si comportement visible | oui | oui |
 | `component-registry.md` | — | si composant réutilisable | oui |
-| Story post-implémentation | — | si story | oui |
-| `.tiple/sprint/status.md` | — | si story | oui |
+| Story post-implémentation | — | si story | si story |
+| `.tiple/sprint/status.md` | — | si story | si story |
 | ADR `docs/decisions/` | — | si invariant touché | si invariant touché |
 
 En mode story, passer `.tiple/checklists/story-done.md` avant de basculer la story en ✅ Done.

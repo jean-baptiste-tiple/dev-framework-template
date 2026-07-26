@@ -60,8 +60,10 @@ CREATE POLICY orders_select_own ON orders
 CREATE POLICY orders_insert_own ON orders
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- USING filtre les lignes visibles, WITH CHECK valide la ligne APRÈS écriture.
+-- Sans WITH CHECK, un utilisateur peut réassigner user_id et donner sa ligne à un tiers.
 CREATE POLICY orders_update_own ON orders
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 4. Trigger updated_at
 CREATE TRIGGER set_updated_at
@@ -72,10 +74,12 @@ CREATE TRIGGER set_updated_at
 
 ### Règles
 - **Jamais de modification manuelle** en base — toujours via migration
-- **Jamais de DROP en prod** sans migration de rollback documentée
-- **Toujours idempotent** : `CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`
-- **RLS dans la même migration** que la table
-- **Tester la migration** en local avant push
+- **Une migration n'est jamais rejouée.** La CLI Supabase applique chaque fichier exactement une fois (`supabase_migrations.schema_migrations`) : `IF NOT EXISTS` n'apporte rien et fait passer une migration en silence sur une table préexistante de forme différente, ce qui crée une dérive de schéma invisible entre staging et prod. Une migration qui ne peut pas s'appliquer doit échouer bruyamment.
+- **Objets non idempotents par nature** (`CREATE POLICY`, `CREATE TRIGGER` : il n'existe pas de `IF NOT EXISTS` pour eux) → les précéder d'un `DROP ... IF EXISTS` explicite
+- **RLS activée et policies créées dans la même migration** que la table
+- **Toute policy `FOR UPDATE` déclare `WITH CHECK`** en plus de `USING`
+- **Migration destructive = rollback fourni.** Toute migration contenant `DROP`, `ALTER ... TYPE`, `SET NOT NULL` ou `RENAME` est accompagnée d'un `supabase/migrations/rollback/<timestamp>.sql`, et découpée en expand/contract sur deux déploiements.
+- **Vérifiable :** une migration seule dans un diff est un défaut — elle est accompagnée soit d'une entrée dans `supabase/seed.sql`, soit d'un test qui lit ou écrit la nouvelle table.
 
 ## Types & Enums
 
@@ -108,17 +112,58 @@ const { data, error } = await supabase.rpc("transfer_funds", {
 ```
 
 ```sql
-CREATE FUNCTION transfer_funds(from_account uuid, to_account uuid, amount integer)
-RETURNS void AS $$
+-- SECURITY DEFINER s'exécute avec les droits du propriétaire : RLS est contournée par
+-- construction. Une fonction SECURITY DEFINER est une API publique — elle doit valider
+-- l'appelant elle-même, sinon n'importe quel compte connecté peut agir sur les données
+-- d'un tiers en appelant simplement supabase.rpc().
+CREATE OR REPLACE FUNCTION public.transfer_funds(
+  from_account uuid, to_account uuid, amount integer
+)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''   -- sans ça, un search_path hostile détourne les noms de tables
+AS $$
 BEGIN
-  UPDATE accounts SET balance = balance - amount WHERE id = from_account;
-  UPDATE accounts SET balance = balance + amount WHERE id = to_account;
-  IF (SELECT balance FROM accounts WHERE id = from_account) < 0 THEN
-    RAISE EXCEPTION 'Solde insuffisant';
+  IF amount <= 0 THEN
+    RAISE EXCEPTION 'Montant invalide';
+  END IF;
+
+  -- Validation de l'appelant : RLS ne s'applique pas ici, ce guard la remplace
+  IF NOT EXISTS (
+    SELECT 1 FROM public.accounts
+    WHERE id = from_account AND user_id = (SELECT auth.uid())
+  ) THEN
+    RAISE EXCEPTION 'Compte source non autorisé';
+  END IF;
+
+  -- Ordre verrouillé par id : deux transferts croisés simultanés ne peuvent pas se deadlock
+  PERFORM 1 FROM public.accounts
+   WHERE id IN (from_account, to_account) ORDER BY id FOR UPDATE;
+
+  UPDATE public.accounts SET balance = balance - amount WHERE id = from_account;
+  UPDATE public.accounts SET balance = balance + amount WHERE id = to_account;
+
+  IF (SELECT balance FROM public.accounts WHERE id = from_account) < 0 THEN
+    RAISE EXCEPTION 'Solde insuffisant';   -- rollback implicite de toute la fonction
   END IF;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
+
+-- EXECUTE est accordé à `public` par défaut, donc à `anon`. Toujours révoquer puis
+-- accorder explicitement.
+REVOKE EXECUTE ON FUNCTION public.transfer_funds(uuid, uuid, integer) FROM public;
+GRANT  EXECUTE ON FUNCTION public.transfer_funds(uuid, uuid, integer) TO authenticated;
 ```
+
+### Règles `SECURITY DEFINER`
+
+Toute fonction `SECURITY DEFINER` :
+- déclare `SET search_path = ''` et qualifie ses tables en `public.<table>` (le linter Supabase le signale : `function_search_path_mutable`)
+- valide `auth.uid()` contre chaque paramètre qui désigne une ressource — c'est le seul contrôle d'accès, RLS étant contournée
+- est suivie d'un `REVOKE EXECUTE ... FROM public` puis d'un `GRANT` au rôle voulu
+
+**Vérifiable :** dans un diff, tout `SECURITY DEFINER` sans les trois éléments ci-dessus est un défaut HAUTE.
 
 ## Soft Deletes
 
@@ -145,16 +190,13 @@ export async function deleteItem(id: string) {
 
 ## Indexes
 
-**Quand créer un index :**
-- Colonnes dans les `WHERE` fréquents
-- Foreign keys (PostgreSQL ne les indexe pas automatiquement)
-- Colonnes de tri (`ORDER BY`)
-- Colonnes de recherche (`ILIKE`, full-text)
+**Vérifiable sur un diff — un index est créé dans la même migration pour :**
+- toute colonne `*_id` référençant une autre table (PostgreSQL n'indexe **pas** les foreign keys)
+- toute colonne utilisée dans un `.eq()`, `.in()`, `.order()` ou `.ilike()` d'une requête du diff
+- toute colonne servant de curseur de pagination (index composé `(colonne, id)`)
 
-**Quand NE PAS indexer :**
-- Tables avec très peu de lignes (< 1000)
-- Colonnes rarement filtrées
-- Colonnes avec très peu de valeurs distinctes (boolean)
+**Ne pas indexer :** une colonne booléenne seule, une colonne jamais filtrée, une table de
+référence figée de moins de 1 000 lignes. Un index inutile ralentit toutes les écritures.
 
 ```sql
 -- Index simple

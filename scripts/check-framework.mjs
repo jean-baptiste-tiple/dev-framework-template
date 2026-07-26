@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 /**
- * check-framework — vérifie la cohérence interne de la Tiple Method.
+ * check-framework — cohérence interne de la Tiple Method.
  *
- * Ce que ça empêche : que le framework pourrisse en silence. Un tag ajouté sans fichier de
- * conventions, un skill qui pointe vers un fichier disparu, une commande `/xxx` référencée dans
- * la doc mais qui n'existe plus, un glob oublié — autant de cas où Claude lit une instruction
- * fausse et agit dessus sans que rien ne signale l'incohérence.
+ * Ce que ça empêche : que le framework pourrisse en silence. Un tag sans fichier de
+ * conventions, un skill pointant vers un fichier disparu, une commande `/xxx` citée dans la
+ * doc mais inexistante, un glob qui ne matche plus rien après une réorganisation de `src/`,
+ * une section citée en review qui n'existe plus — autant de cas où Claude lit une instruction
+ * fausse et agit dessus sans que rien ne le signale.
  *
  * Lancé par `pnpm check:framework`, étape 1 du skill commit-push.
  */
-import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const CONV = join(ROOT, '.tiple/conventions')
 const SKILLS = join(ROOT, '.claude/skills')
+const CHECKLISTS = join(ROOT, '.tiple/checklists')
 const INDEX = join(CONV, '_index.md')
 
 const errors = []
@@ -34,32 +36,99 @@ const walk = (dir, out = []) => {
   return out
 }
 
-// ---------------------------------------------------------------- 1. _index.md
 if (!existsSync(INDEX)) {
   err('.tiple/conventions/_index.md est absent — le routing par tags est mort.')
   report()
 }
 
 const indexSrc = read(INDEX)
-const BASE_CONVENTIONS = ['coding-standards.md', 'component-registry.md', 'tech-stack.md']
+const BASE_CONVENTIONS = ['coding-standards.md']
+const WORKFLOW_SKILLS = ['tm-dev', 'tm-plan', 'tm-review', 'tm-verify', 'tm-wrap-up', 'commit-push']
+const STANDALONE_SKILLS = ['conventions']
+
+// ------------------------------------------------- 1. parsing de _index.md
+// Parsing par NOM DE COLONNE, pas par position : ajouter une colonne au tableau ne doit pas
+// décaler silencieusement la lecture des globs et tuer tout le routing sans un mot.
+const tableLines = indexSrc.split('\n')
+const headerIdx = tableLines.findIndex((l) => /^\|\s*Tag\s*\|/i.test(l))
+if (headerIdx < 0) {
+  err('_index.md : en-tête du tableau des tags introuvable (colonne `Tag` attendue).')
+  report()
+}
+const columns = tableLines[headerIdx]
+  .split('|')
+  .slice(1, -1)
+  .map((c) => c.trim().toLowerCase())
+const COL = {
+  tag: columns.indexOf('tag'),
+  file: columns.indexOf('fichier'),
+  globs: columns.indexOf('globs'),
+}
+for (const [name, idx] of Object.entries(COL)) {
+  if (idx < 0) err(`_index.md : colonne « ${name} » absente de l'en-tête du tableau.`)
+}
+if (errors.length) report()
 
 /** @type {{tag:string, file:string, globs:string[]}[]} */
 const tags = []
-for (const line of indexSrc.split('\n')) {
-  const m = line.match(/^\|\s*`([a-z0-9-]+)`\s*\|\s*`([a-z0-9.-]+\.md)`\s*\|([^|]*)\|/)
-  if (!m) continue
-  const globs = [...m[3].matchAll(/`([^`]+)`/g)].map((g) => g[1])
-  tags.push({ tag: m[1], file: m[2], globs })
+for (const line of tableLines.slice(headerIdx + 2)) {
+  if (!line.startsWith('|')) continue
+  if (/^\|[\s|:-]+\|$/.test(line)) continue
+  const cells = line.split('|').slice(1, -1)
+  if (cells.length !== columns.length) continue
+  const tag = cells[COL.tag].trim().replace(/`/g, '')
+  const file = cells[COL.file].trim().replace(/`/g, '')
+  if (!tag || !file) continue
+  if (!/^[a-z0-9-]+$/.test(tag)) {
+    err(`_index.md : tag « ${tag} » — seuls [a-z0-9-] sont admis (sinon il est ignoré en silence).`)
+    continue
+  }
+  if (!/^[a-z0-9.-]+\.md$/.test(file)) {
+    err(`_index.md : tag \`${tag}\` — fichier « ${file} » invalide (nom .md sans sous-dossier attendu).`)
+    continue
+  }
+  tags.push({ tag, file, globs: [...cells[COL.globs].matchAll(/`([^`]+)`/g)].map((g) => g[1]) })
 }
 
 if (tags.length === 0) err('_index.md : aucune ligne de tag parsée — le format du tableau a changé.')
 
+const seen = new Set()
+for (const { tag } of tags) {
+  if (seen.has(tag)) err(`_index.md : tag \`${tag}\` déclaré deux fois — seule la première ligne est routée.`)
+  seen.add(tag)
+}
+
+// ------------------------------------------- 2. tags → fichiers et globs vivants
 for (const { tag, file, globs } of tags) {
   if (!existsSync(join(CONV, file))) err(`_index.md : tag \`${tag}\` pointe vers ${file} qui n'existe pas.`)
   if (globs.length === 0) err(`_index.md : tag \`${tag}\` n'a aucun glob — il ne sera jamais routé automatiquement.`)
 }
 
-// ---------------------------------------------- 2. conventions orphelines
+// Un glob dont le préfixe littéral ne correspond à rien sur le disque ne matchera jamais :
+// c'est ce qui arrive quand `src/lib/actions/` devient `src/features/*/actions/`. Le routing
+// meurt en silence et plus aucune convention ne se charge.
+const PROSPECTIFS = /## Capacités non installées([\s\S]*?)(?=\n## |$)/.exec(indexSrc)?.[1] ?? ''
+const tagsProspectifs = new Set([...PROSPECTIFS.matchAll(/`([a-z0-9-]+)`/g)].map((m) => m[1]))
+
+for (const { tag, globs } of tags) {
+  if (tagsProspectifs.has(tag)) continue
+  const morts = globs.filter((g) => {
+    const prefix = g.split(/[*?[]/)[0]
+    const dir = prefix.endsWith('/') ? prefix.slice(0, -1) : dirname(prefix)
+    if (!dir || dir === '.') return false
+    return !existsSync(join(ROOT, dir))
+  })
+  if (morts.length === globs.length) {
+    err(
+      `_index.md : tag \`${tag}\` — aucun de ses globs ne peut matcher (${morts.join(', ')}). ` +
+        `Corriger les chemins, ou déclarer le tag sous « ## Capacités non installées ».`
+    )
+  } else if (morts.length) {
+    warn(`_index.md : tag \`${tag}\` — glob(s) sans dossier correspondant : ${morts.join(', ')}`)
+  }
+}
+
+// ---------------------------------------------- 3. conventions orphelines
 const declaredFiles = new Set([...tags.map((t) => t.file), ...BASE_CONVENTIONS])
 for (const f of readdirSync(CONV)) {
   if (!f.endsWith('.md') || f === '_index.md') continue
@@ -69,10 +138,17 @@ for (const f of BASE_CONVENTIONS) {
   if (!existsSync(join(CONV, f))) err(`Convention de base manquante : ${f}`)
 }
 
-// ------------------------------------------------------------- 3. skills
-const WORKFLOW_SKILLS = ['tm-dev', 'tm-plan', 'tm-review', 'tm-verify', 'tm-wrap-up', 'commit-push']
+// Un fichier de conventions trop long n'est plus lu en entier, il est survolé — et la
+// dégradation est invisible. Le seuil force l'élagage ou la scission.
+const MAX_LINES = 400
+for (const f of readdirSync(CONV)) {
+  if (!f.endsWith('.md')) continue
+  const n = read(join(CONV, f)).split('\n').length
+  if (n > MAX_LINES) err(`${f} : ${n} lignes (max ${MAX_LINES}). À élaguer ou scinder — au-delà, la lecture « en entier » devient une fiction.`)
+}
+
+// ------------------------------------------------------------- 4. skills
 const skillDirs = readdirSync(SKILLS).filter((d) => statSync(join(SKILLS, d)).isDirectory())
-const tagNames = new Set(tags.map((t) => t.tag))
 
 for (const dir of skillDirs) {
   const file = join(SKILLS, dir, 'SKILL.md')
@@ -80,82 +156,136 @@ for (const dir of skillDirs) {
     err(`Skill ${dir} : SKILL.md manquant.`)
     continue
   }
-  const src = read(file)
-  const fm = src.match(/^---\n([\s\S]*?)\n---\n/)
+  const fm = /^---\n([\s\S]*?)\n---\n/.exec(read(file))
   if (!fm) {
     err(`Skill ${dir} : frontmatter absent — le skill ne se déclenchera jamais automatiquement.`)
     continue
   }
-  const name = fm[1].match(/^name:\s*(.+)$/m)?.[1].trim()
-  const desc = fm[1].match(/^description:\s*(.+)$/m)?.[1].trim()
+  const name = /^name:\s*(.+)$/m.exec(fm[1])?.[1].trim()
+  const desc = /^description:\s*(.+)$/m.exec(fm[1])?.[1].trim()
   if (name !== dir) err(`Skill ${dir} : \`name: ${name}\` ne correspond pas au dossier.`)
   if (!desc) err(`Skill ${dir} : \`description\` absente — le déclenchement automatique repose dessus.`)
   else if (desc.replace(/^["']|["']$/g, '').length < 40)
-    warn(`Skill ${dir} : description très courte (${desc.length} car.) — le déclenchement sera peu fiable.`)
+    warn(`Skill ${dir} : description très courte (${desc.length} car.) — déclenchement peu fiable.`)
 
-  if (WORKFLOW_SKILLS.includes(dir)) continue
-
-  if (!tagNames.has(dir)) {
-    err(`Skill ${dir} : aucun tag correspondant dans _index.md (ni skill de workflow).`)
-    continue
+  if (![...WORKFLOW_SKILLS, ...STANDALONE_SKILLS].includes(dir)) {
+    err(`Skill ${dir} : inconnu. Les skills sont les 6 de workflow + ${STANDALONE_SKILLS.join(', ')} ; le routing des conventions passe par les globs de _index.md, pas par un skill par tag.`)
   }
-  const expected = tags.find((t) => t.tag === dir).file
-  if (!src.includes(expected)) err(`Skill ${dir} : ne pointe pas vers \`${expected}\` (fichier attendu selon _index.md).`)
+}
+for (const s of [...WORKFLOW_SKILLS, ...STANDALONE_SKILLS]) {
+  if (!skillDirs.includes(s)) err(`Skill manquant : ${s}`)
 }
 
-for (const { tag } of tags) {
-  if (!skillDirs.includes(tag)) warn(`Tag \`${tag}\` : pas de skill .claude/skills/${tag}/ — il ne se chargera pas hors routing explicite.`)
-}
-for (const s of WORKFLOW_SKILLS) {
-  if (!skillDirs.includes(s)) err(`Skill de workflow manquant : ${s}`)
-}
-
-// ------------------------------------------- 4. commandes / skills référencés
-const KNOWN = new Set([...skillDirs, 'commit-push'])
-const IGNORED_SLASH = new Set(['design-system', 'dashboard', 'auth', 'api'])
-// Le changelog est exclu : il cite des commandes supprimées, c'est son rôle de journal.
+// ------------------------------------- 5. commandes / skills / checklists référencés
+const KNOWN_SLASH = new Set(skillDirs)
 const mdFiles = walk(ROOT).filter((p) => p.endsWith('.md') && !p.includes('/docs/changelog.md'))
 
 for (const p of mdFiles) {
   const rel = p.slice(ROOT.length + 1)
-  for (const m of read(p).matchAll(/(?<![\w/`~])\/(tm-[a-z-]+|commit-push)\b/g)) {
-    const cmd = m[1]
-    if (IGNORED_SLASH.has(cmd)) continue
-    if (!KNOWN.has(cmd)) err(`${rel} : référence \`/${cmd}\` qui n'existe pas dans .claude/skills/.`)
+  const src = read(p)
+  for (const m of src.matchAll(/(?<![\w/`~])\/(tm-[a-z-]+|commit-push)\b/g)) {
+    if (!KNOWN_SLASH.has(m[1])) err(`${rel} : référence \`/${m[1]}\` qui n'existe pas dans .claude/skills/.`)
   }
 }
 
-// ------------------------------------------------- 5. hooks déclarés
+// Une checklist que rien n'appelle dérive sans que personne le voie : c'est exactement ce qui
+// est arrivé à story-done.md, resté sur une structure de review supprimée depuis.
+const checklistRefs = mdFiles
+  .filter((p) => !p.includes('/.tiple/checklists/'))
+  .map((p) => read(p))
+  .join('\n')
+for (const f of existsSync(CHECKLISTS) ? readdirSync(CHECKLISTS) : []) {
+  if (f.endsWith('.md') && !checklistRefs.includes(f)) {
+    err(`Checklist orpheline : .tiple/checklists/${f} n'est appelée par aucun skill ni convention.`)
+  }
+}
+
+// ------------------------------- 6. sections citées (`fichier.md § Section`)
+// La gravité HAUTE/MOYENNE d'une review repose sur une citation. Si la section a été renommée,
+// le blocage s'appuie sur une référence fantôme.
+const headingsByFile = new Map()
+for (const f of readdirSync(CONV)) {
+  if (!f.endsWith('.md')) continue
+  headingsByFile.set(
+    f,
+    [...read(join(CONV, f)).matchAll(/^#{2,4}\s+(.+)$/gm)].map((m) => norm(m[1]))
+  )
+}
+for (const p of mdFiles) {
+  const rel = p.slice(ROOT.length + 1)
+  for (const m of read(p).matchAll(/([a-z0-9-]+\.md)\s*§\s*([^`|\n.]+)/g)) {
+    const headings = headingsByFile.get(m[1])
+    if (!headings) continue
+    const wanted = norm(m[2])
+    if (wanted.includes('<') || wanted.includes('section')) continue
+    if (!headings.some((h) => h === wanted || h.startsWith(wanted) || wanted.startsWith(h))) {
+      err(`${rel} : cite \`${m[1]} § ${m[2].trim()}\` — aucune section de ce nom dans le fichier.`)
+    }
+  }
+}
+
+// ----------------------------- 7. registry ↔ composants réellement présents
+const registryPath = join(CONV, 'component-registry.md')
+const componentsDir = join(ROOT, 'src/components')
+if (existsSync(registryPath) && existsSync(componentsDir)) {
+  const registry = read(registryPath)
+  const listed = new Set([...registry.matchAll(/`(src\/[\w./-]+\.tsx?)`/g)].map((m) => m[1]))
+  const actual = walk(componentsDir)
+    .filter((p) => p.endsWith('.tsx'))
+    .map((p) => p.slice(ROOT.length + 1))
+
+  for (const f of actual) {
+    if (!listed.has(f)) err(`component-registry.md : ${f} existe mais n'y figure pas (règle absolue n°3 — vérifier le registry avant de créer).`)
+  }
+  for (const f of listed) {
+    if (f.startsWith('src/components/') && !existsSync(join(ROOT, f))) {
+      err(`component-registry.md : référence ${f} qui n'existe plus.`)
+    }
+  }
+}
+
+// -------------------------------------------------- 8. hooks déclarés
 const settingsPath = join(ROOT, '.claude/settings.json')
 if (existsSync(settingsPath)) {
   const settings = JSON.parse(read(settingsPath))
   const hooks = (settings.hooks?.PreToolUse ?? []).flatMap((h) => h.hooks ?? [])
   for (const h of hooks) {
-    const m = h.command?.match(/\.claude\/hooks\/([\w.-]+)/)
+    const m = /\.claude\/hooks\/([\w.-]+)/.exec(h.command ?? '')
     if (m && !existsSync(join(ROOT, '.claude/hooks', m[1]))) err(`settings.json : hook déclaré mais absent — .claude/hooks/${m[1]}`)
   }
-  for (const f of existsSync(join(ROOT, '.claude/hooks')) ? readdirSync(join(ROOT, '.claude/hooks')) : []) {
-    if (!hooks.some((h) => h.command?.includes(f))) warn(`Hook ${f} présent mais non déclaré dans settings.json — il ne s'exécute pas.`)
+  const hooksDir = join(ROOT, '.claude/hooks')
+  for (const f of existsSync(hooksDir) ? readdirSync(hooksDir) : []) {
+    if (!hooks.some((h) => (h.command ?? '').includes(f))) warn(`Hook ${f} présent mais non déclaré dans settings.json — il ne s'exécute pas.`)
   }
 }
 
-// ------------------------------------------------- 6. chemins cités dans CLAUDE.md
-const claudeMd = join(ROOT, 'CLAUDE.md')
-if (existsSync(claudeMd)) {
-  for (const m of read(claudeMd).matchAll(/`((?:\.tiple|\.claude|docs|src|scripts)\/[\w./()-]+)`/g)) {
+// ------------------------------------- 9. chemins cités dans CLAUDE.md / README
+for (const doc of ['CLAUDE.md', 'README.md']) {
+  const p = join(ROOT, doc)
+  if (!existsSync(p)) continue
+  for (const m of read(p).matchAll(/`((?:\.tiple|\.claude|docs|src|scripts|tests)\/[\w./()-]+)`/g)) {
     const target = m[1].replace(/\/$/, '')
     if (target.includes('*') || target.includes('<')) continue
-    if (!existsSync(join(ROOT, target))) err(`CLAUDE.md : chemin cité inexistant — ${target}`)
+    if (!existsSync(join(ROOT, target))) err(`${doc} : chemin cité inexistant — ${target}`)
   }
 }
 
 report()
 
+function norm(s) {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[`*_]/g, '')
+}
+
 function report() {
   for (const w of warnings) console.log(`⚠  ${w}`)
   for (const e of errors) console.log(`✖  ${e}`)
   if (errors.length === 0) {
-    console.log(`✔  Framework cohérent — ${tags.length} tags, ${skillDirs.length} skills${warnings.length ? `, ${warnings.length} avertissement(s)` : ''}.`)
+    console.log(`✔  Framework cohérent — ${tags?.length ?? 0} tags, ${readdirSync(SKILLS).length} skills${warnings.length ? `, ${warnings.length} avertissement(s)` : ''}.`)
     process.exit(0)
   }
   console.log(`\n${errors.length} erreur(s) de cohérence framework.`)

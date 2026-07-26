@@ -56,46 +56,14 @@ src/
 - Règle : pousser le "use client" le plus bas possible dans l'arbre
 - Pattern : Server Component parent (fetch data) → Client Component enfant (interactivité)
 
-## Server Actions
+## Server Actions et Supabase
 
-- Préférer les Server Actions aux API routes pour les mutations
-- Toujours valider les inputs avec Zod côté serveur
-- Toujours vérifier l'auth en début d'action
-- Pattern standard :
+Ces règles vivent dans les conventions routées, pas ici — les recopier avait déjà produit
+trois traitements contradictoires du même cas (throw / return / redirect).
 
-```typescript
-"use server"
-
-import { revalidatePath } from "next/cache"
-import { createClient } from "@/lib/supabase/server"
-import { createProjectSchema } from "@/lib/schemas/project"
-
-export async function createProjectAction(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error("Non authentifié")
-
-  const parsed = createProjectSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) return { error: parsed.error.flatten() }
-
-  const { data, error } = await supabase
-    .from("projects")
-    .insert({ ...parsed.data, user_id: user.id })
-    .select()
-    .single()
-
-  if (error) return { error: error.message }
-  revalidatePath("/projects")
-  return { data }
-}
-```
-
-## Supabase Client
-
-- JAMAIS de client Supabase côté client pour les mutations → Server Actions
-- Le browser client est UNIQUEMENT pour : realtime subscriptions, storage uploads, auth listeners
-- Le server client (avec cookies) est pour : Server Components (fetch), Server Actions (mutations), Route Handlers
-- Le service_role client est UNIQUEMENT pour : les opérations admin qui bypass RLS (cron jobs, webhooks)
+- Pattern Server Action, type de retour, `redirect()` dans un `try` → `api-patterns.md`
+- Client browser / server / service_role, RLS, codes d'erreur → `supabase-patterns.md`
+- Middleware et flows d'authentification → `auth-patterns.md`
 
 ## DRY
 
@@ -106,8 +74,8 @@ export async function createProjectAction(formData: FormData) {
 
 ## Imports
 
-- Alias : `@/` pointe vers `src/`
-- Ordre : 1) next/ react 2) libs externes 3) @/components 4) @/lib 5) @/types 6) relatifs
+Alias `@/` vers `src/`. L'ordre des groupes est appliqué par la règle ESLint `import/order` —
+ne pas le vérifier à la main.
 
 ## Error Handling
 
@@ -115,41 +83,6 @@ export async function createProjectAction(formData: FormData) {
 - Server Actions retournent `{ data }` ou `{ error }` — jamais de throw côté client
 - Composants UI : toujours gérer loading + error + empty states
 - Supabase : toujours vérifier le `.error` de la réponse
-
-## Error Handling avancé
-
-### Server Actions — pattern try/catch
-```typescript
-"use server"
-export async function riskyAction(formData: FormData): Promise<ActionResult<Data>> {
-  try {
-    // ... logique
-  } catch (error) {
-    // Logger l'erreur côté serveur (détails techniques)
-    console.error("[riskyAction]", error)
-    // Retourner un message user-friendly côté client
-    return { error: "Une erreur est survenue. Réessayez." }
-  }
-}
-```
-
-### Mapping des erreurs
-```typescript
-// lib/utils/errors.ts
-const ERROR_MESSAGES: Record<string, string> = {
-  AUTH_REQUIRED: "Vous devez être connecté",
-  VALIDATION_ERROR: "Données invalides",
-  NOT_FOUND: "Élément introuvable",
-  FORBIDDEN: "Accès non autorisé",
-  DUPLICATE: "Cet élément existe déjà",
-  INTERNAL_ERROR: "Une erreur est survenue",
-}
-```
-
-### Règle : ne JAMAIS exposer les erreurs techniques au client
-- Pas de `error.message` Supabase brut
-- Pas de stack traces
-- Pas de noms de tables/colonnes
 
 ## Comments & Documentation
 
@@ -179,62 +112,22 @@ export function calculateTotal(items: CartItem[], discount?: number): number {
 }
 ```
 
-## File Size & Complexity
+## Complexité
 
-| Métrique | Limite | Action si dépassé |
-|----------|--------|-------------------|
-| Lignes par fichier | ~300 | Extraire des sous-composants/utils |
-| Paramètres par fonction | 3-4 max | Utiliser un objet params |
-| Niveaux d'imbrication | 3 max | Early return, extraction |
-| Composant React | ~150 lignes | Extraire en sous-composants |
+Appliquée par ESLint, pas par la review : `max-lines` (300), `max-lines-per-function` (150),
+`max-params` (4), `max-depth` (3), `no-empty`. Ne pas les revérifier à la main.
 
-## Early Returns
+Le nombre de lignes n'est pas un critère de review. Ce qui l'est : **un composant exporté ne
+cumule pas plus de 3 responsabilités** parmi fetch de données, state local, effet de bord,
+branchement conditionnel de rendu, mapping de collection. Au-delà, extraire.
 
-```typescript
-// BON : early returns
-export async function updateItem(id: string, data: ItemData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Non authentifié" }
+Les pages catalogue (`src/app/design-system/**`) et les fichiers générés sont exemptés.
 
-  const parsed = itemSchema.safeParse(data)
-  if (!parsed.success) return { error: "Données invalides" }
+## TypeScript
 
-  // Logique principale sans indentation
-  const { error } = await supabase.from("items").update(parsed.data).eq("id", id)
-  if (error) return { error: "Échec de la mise à jour" }
-  return { data: { success: true } }
-}
+`prefer-const`, `no-var`, `no-explicit-any` et l'interdiction des `enum` sont appliqués par
+ESLint. Le reste (utility types, unions, type guards, branded types) est dans
+`typescript-patterns.md`, routé sur `src/types/**`.
 
-// MAUVAIS : imbrication profonde
-export async function updateItem(id: string, data: ItemData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    const parsed = itemSchema.safeParse(data)
-    if (parsed.success) {
-      // ... 3 niveaux d'indentation
-    }
-  }
-}
-```
-
-## TypeScript Strict Rules
-
-- **`const` par défaut**, `let` uniquement si réassignation nécessaire, jamais `var`
-- **Jamais de `any`** — utiliser `unknown` + type guard si type inconnu
-- **Pas de `as` assertion** sauf si nécessaire (et documenté)
-- **Enums :** préférer `as const` + type inféré aux `enum`
-
-```typescript
-// Préféré : const object
-const ORDER_STATUS = {
-  PENDING: "pending",
-  CONFIRMED: "confirmed",
-  DELIVERED: "delivered",
-} as const
-type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
-
-// Éviter : TypeScript enum
-enum OrderStatus { Pending, Confirmed, Delivered }
-```
+**Vérifiable :** toute assertion `as` (hors `as const`) est précédée d'un commentaire
+expliquant pourquoi le type ne peut pas être inféré. Un `as` nu est un défaut.
