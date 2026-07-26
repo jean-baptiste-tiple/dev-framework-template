@@ -3,9 +3,13 @@ name: flags
 description: "Feature flags : flags, A/B testing, rollouts progressifs, gating, toggles. FR : feature flag, drapeau, A/B test, déploiement progressif, toggle, activation."
 ---
 
-Consult [.tiple/conventions/feature-flags-patterns.md](.tiple/conventions/feature-flags-patterns.md) for the full patterns. Load it before adding a flag.
+# flags
 
-Key invariants:
-- Nommage clair en snake_case (`new_dashboard`, `beta_editor`) ; un flag = une feature
-- Nettoyer : supprimer le flag ET le code associé quand la feature est stable
-- Tester les deux chemins (avec et sans le flag), pas de flags imbriqués
+**Source de vérité : [`.tiple/conventions/feature-flags-patterns.md`](../../../.tiple/conventions/feature-flags-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `flags` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

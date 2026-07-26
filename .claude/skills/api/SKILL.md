@@ -3,9 +3,13 @@ name: api
 description: "API : Server Actions, data fetching, pagination, caching, revalidatePath, API response. FR : action serveur, requête API, fetch de données, pagination, cache, revalidation."
 ---
 
-Consult [.tiple/conventions/api-patterns.md](.tiple/conventions/api-patterns.md) for the full patterns. Load it before writing actions or fetch logic.
+# api
 
-Key invariants:
-- Pattern Server Action : auth → valider Zod → exécuter → `revalidatePath` → retourner `{data}` ou `{error}`
-- JAMAIS de `throw` dans une Server Action appelée par un formulaire — retourner `{error}`
-- Ne JAMAIS exposer les messages d'erreur Supabase bruts au client
+**Source de vérité : [`.tiple/conventions/api-patterns.md`](../../../.tiple/conventions/api-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `api` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

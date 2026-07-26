@@ -1,33 +1,77 @@
 ---
 name: tm-wrap-up
-description: "Proposer à l'utilisateur de capturer les apprentissages de la session (conventions, ADR, registry). Déclenche-toi quand l'utilisateur signale une fin de session/chantier : 'on a fini', 'c'est bouclé', 'wrap up', 'done', 'on termine', 'on arrête', 'on récapitule', OU après la clôture de plusieurs stories/fix dans la même session. NE PAS exécuter silencieusement : toujours proposer d'abord et attendre la validation."
+description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). Déclenche-toi quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .tiple/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
+argument-hint: "[scope optionnel]"
 ---
 
-# tm-wrap-up — Proposition de capture d'apprentissages
+# tm-wrap-up — Capturer ce qu'on a appris
 
-**IMPORTANT : ce skill ne s'exécute PAS silencieusement.**
+Le code et le changelog disent **ce qu'on a fait**. Ce skill capture **ce qu'on a appris** :
+les règles implicites, les pièges, les décisions d'archi qui ne se déduisent pas du code.
 
-Quand il s'active, Claude doit **proposer** à l'utilisateur de lancer la capture des apprentissages, pas l'exécuter directement.
+**Ne capturer que ce qui va revenir.** Un one-off ne devient pas une convention.
 
-## Comportement attendu
+## Phase 1 — Réflexion
 
-1. **Détecter le moment** : l'utilisateur signale la fin d'un chantier (story bouclée, feature livrée, fix non-trivial, refacto fini) OU utilise un mot-clé de clôture.
+Sur la session qui se termine :
+1. **Quel contexte manquait ?** — commandes découvertes, quirks de config, gotchas, docs incomplètes
+2. **Quels patterns ont marché ?** — approches validées, décisions de style, workflows émergents
+3. **Qu'est-ce qui aiderait une session vierge ?** — connaissance non déductible du code
 
-2. **Proposer, ne pas exécuter** :
+Ignorer ce qui est déjà évident à la lecture du code ou du changelog.
 
-   > "On vient de clôturer [X]. Je peux lancer `/tm-wrap-up` pour capturer les apprentissages méta (nouvelles règles de convention, ADR, composants réutilisables) avant de clore la session. Tu veux que je le fasse ?"
+## Phase 2 — Mapper les candidats
 
-3. **Si l'utilisateur accepte** : suivre le process complet dans [`.claude/commands/tm-wrap-up.md`](.claude/commands/tm-wrap-up.md) — la command est la source de vérité.
+| Type d'apprentissage | Destination |
+|---|---|
+| Nouvelle règle / invariant technique | `.tiple/conventions/<fichier>.md` (section Règles) |
+| Décision d'architecture non-triviale | Nouvel ADR dans `docs/decisions/` (`.tiple/templates/adr.tmpl.md`) |
+| Gotcha / config / commande projet-spécifique | `CLAUDE.md` |
+| Composant / hook / util réutilisable créé | `.tiple/conventions/component-registry.md` |
+| Nouveau domaine technique récurrent | Nouveau tag : ligne dans `_index.md` (avec ses **globs**) + fichier de conventions + `.claude/skills/<tag>/SKILL.md` |
+| Story / bug découvert en chemin | `docs/stories/` ou `.tiple/sprint/status.md` |
 
-4. **Si l'utilisateur refuse ou ignore** : ne rien faire, continuer normalement.
+Règles de sélection :
+- **Une seule occurrence = pas un pattern.** Attendre 2+ avant de promouvoir en convention.
+- Les skills `.claude/skills/<tag>/` sont des **pointeurs sans règles** : enrichir le fichier de
+  conventions suffit, il n'y a jamais de duplication à propager.
+- Créer un tag implique de renseigner sa colonne **Globs** dans `_index.md`, sinon aucune
+  review ne le chargera jamais. `pnpm check:framework` échoue si c'est oublié.
+- Préférer **mettre à jour** un fichier existant plutôt qu'en créer un.
 
-## Quand NE PAS proposer
+## Phase 3 — Proposer (ne pas écrire)
 
-- Session exploratoire / lecture de code (rien n'a été modifié)
-- Micro-modif (typo, rename d'une variable) — pas de méta à capturer
-- L'utilisateur vient déjà de lancer `/commit-push` sans passer par wrap-up (respecter son choix)
+```
+## Apprentissages de la session
+
+**Candidats :**
+1. [CONVENTION] api-patterns.md § Error handling — mapper les codes Supabase vers des messages user
+   → vu 3× cette session
+2. [ADR] docs/decisions/adr-004-soft-delete.md — soft delete via `deleted_at`, impact RLS
+3. [REGISTRY] component-registry.md — `<ConfirmDialog>`, utilisé 3×
+
+**Rejetés (one-off) :**
+- Typo dans une migration
+- Renommage d'une variable
+```
+
+Attendre la validation. Si l'utilisateur refuse ou ignore : ne rien faire, continuer.
+
+## Phase 4 — Appliquer (après validation seulement)
+
+Éditer les fichiers validés (Edit plutôt que Write), puis lister ce qui a été modifié.
+
+## Quand ne PAS proposer
+
+- Session exploratoire / lecture seule — rien n'a été modifié
+- Micro-modif (typo, rename) — pas de méta à capturer
 - L'utilisateur a déjà refusé la proposition dans la session en cours
+- L'utilisateur vient de lancer `commit-push` sans passer par wrap-up — respecter son choix
 
-## Règle absolue
+## Règles
 
-Ne JAMAIS écrire dans `.tiple/conventions/`, `docs/decisions/` ou `CLAUDE.md` sans validation explicite de l'utilisateur. Toujours proposer → attendre → exécuter (ou pas).
+1. **Jamais d'écriture sans validation explicite** dans `.tiple/conventions/`, `docs/decisions/`, `CLAUDE.md`
+2. Pas de capture du one-off — 2+ occurrences avant de promouvoir une règle
+3. Pas de doublon : si l'info existe déjà dans `.tiple/` ou `CLAUDE.md`, ne pas la redire
+4. Scope-aware : si un argument est fourni (ex: `wrap-up auth`), limiter la réflexion à ce scope
+5. **Zéro capture vaut mieux qu'un faux positif** qui pollue les conventions

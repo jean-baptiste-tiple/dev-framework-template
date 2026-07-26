@@ -23,30 +23,50 @@ Voir `.tiple/conventions/tech-stack.md` pour les versions exactes.
 Ce projet suit la Tiple Method. La documentation dans `docs/` est la source de vérité. Lis les fichiers pertinents avant chaque action.
 
 ## Règles absolues
-1. Ne JAMAIS coder sans story en statut 🟢 Ready dans `docs/stories/`
-2. TOUJOURS lire avant de coder : la story, la référence UI de la story (maquette, Figma, description — si applicable), `docs/architecture.md`, et les **conventions par tags** (voir ci-dessous)
+1. Un travail à l'échelle d'un module (nouveau parcours, changement DB, ≥ 6 fichiers) passe par une story 🟢 Ready dans `docs/stories/`. Un fix ou un petit ajout se fait en mode libre — mais **jamais sans conventions chargées ni review**.
+2. TOUJOURS lire avant de coder : la story (si applicable), sa référence UI si elle n'est pas `N/A`, `docs/architecture.md`, et les **conventions routées** (voir ci-dessous)
 3. Ne JAMAIS créer un composant/hook/util sans vérifier le component-registry d'abord — s'il existe, réutiliser
 4. Ne JAMAIS modifier un invariant d'architecture sans créer un ADR dans `docs/decisions/`
-5. Les tests sont écrits AVEC le code, pas après — unit tests d'abord, puis intégration, puis e2e si applicable
-6. Après implémentation : remplir la section "Post-implémentation" de la story
-7. Après implémentation : passer `.tiple/checklists/code-review.md` point par point
-8. **`/tm-plan` = documentation uniquement.** Ne JAMAIS installer de dépendances, créer de fichiers de code ou exécuter de builds pendant un cadrage. Seuls les fichiers dans `docs/` et `.tiple/sprint/` sont modifiés.
+5. Les tests sont écrits AVEC le code, pas après — unit d'abord, puis intégration, puis e2e si applicable
+6. Après implémentation : review (skill `tm-review`) puis, en mode story, section "Post-implémentation" remplie
+7. **Cadrage = documentation uniquement.** Ne JAMAIS installer de dépendances, créer des fichiers de code ou lancer un build pendant un `/tm-plan`. Seuls `docs/` et `.tiple/sprint/` sont modifiés.
 
-## Conventions par tags (chargement intelligent)
+## Conventions routées par globs
 
-Les conventions techniques sont dans `.tiple/conventions/`. Elles sont chargées **automatiquement** selon le contexte :
+Les conventions techniques vivent dans `.tiple/conventions/`. Le routing
+`fichier touché → tag → fichier de conventions` a **une seule source de vérité** :
+la colonne **Globs** de [`.tiple/conventions/_index.md`](.tiple/conventions/_index.md).
 
-- **Index :** `.tiple/conventions/_index.md` liste tous les tags et les fichiers associés
-- **Base (toujours lues) :** `coding-standards.md`, `component-registry.md`, `tech-stack.md`
-- **Mode story (`/tm-dev E01-S01`) :** le champ `Conventions` de la story déclare les tags → les fichiers correspondants sont chargés
-- **Mode libre (`/tm-dev` sans story) :** les tags sont déduits des fichiers touchés (ex: `lib/actions/` → `api`, `supabase/migrations/` → `database`)
+- **Base, toujours lues :** `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Par globs :** chaque fichier créé ou modifié active des tags → les fichiers correspondants sont lus **en entier**
+- **Mode story :** les tags du champ `Conventions` de la story s'ajoutent (union avec les globs)
+- **Annoncer les conventions chargées** avant d'implémenter et avant de reviewer
 
-Tags disponibles : `auth`, `database`, `supabase`, `api`, `forms`, `realtime`, `security`, `nextjs`, `typescript`, `state`, `feedback`, `performance`, `tables`, `uploads`, `seo`, `a11y`, `i18n`, `datetime`, `monitoring`, `flags`, `deploy`, `testing`
+Ne jamais déduire ce mapping de mémoire ni le recopier ailleurs. Les skills `.claude/skills/<tag>/`
+sont des **pointeurs sans règles** — la règle est dans le fichier de conventions, nulle part ailleurs.
+
+## Déclencheurs automatiques
+
+Il n'y a rien à taper : les skills se déclenchent sur l'intention. Les slash commands
+(`/tm-dev`, `/commit-push`…) restent disponibles comme raccourci explicite.
+
+| Situation | Skill déclenché | Automatique ? |
+|---|---|---|
+| Modification de code applicatif (`src/`, `tests/`, `supabase/`) | `tm-dev` | oui |
+| Fichier touché matchant un glob de `_index.md` | skill du tag → convention lue | oui |
+| Fin d'implémentation, avant finalisation | `tm-review` | oui |
+| « vérifie », « ça compile ? », après application de fix | `tm-verify` | oui |
+| « commit », « push », « envoie », chantier terminé et reviewé | `commit-push` | oui |
+| Fin de session / chantier bouclé | `tm-wrap-up` | **propose**, n'exécute pas |
+| Cadrage produit (PRD, archi, stories) | `tm-plan` | **non — invocation explicite** |
+
+`tm-plan` n'est jamais auto-déclenché : un cadrage réécrit PRD, architecture et stories. Face à
+un besoin produit large, le **proposer** et attendre l'accord.
 
 ## Règles avant push
-1. **TOUJOURS utiliser `/commit-push`** pour commit et push. Cette commande exécute `pnpm type-check` + `pnpm lint` + `pnpm test` (3 checks locaux), met à jour le changelog, commit et push.
-2. **Type-check + lint + tests = vérifiés EN LOCAL** par `/commit-push` avant push. La CI ne lance plus que `pnpm build` (validation Vercel + catch des erreurs Linux). Pas de duplication.
-3. Ne JAMAIS commit/push en dehors de `/commit-push` sauf demande explicite de l'utilisateur
+1. Le commit et le push passent par le skill **`commit-push`** : `check:framework` + `type-check` + `lint` + `test`, changelog, commit, push.
+2. Ce n'est pas une convention mais un **gate appliqué** : `.claude/hooks/enforce-git-gate.sh` bloque tout `git commit`/`git push` direct. `--no-verify` et `--force` sont bloqués sans échappement possible.
+3. Les 4 checks tournent **en local**. La CI ne lance que `pnpm build` (validation Vercel + erreurs spécifiques Linux). Pas de duplication.
 
 ## Règles Next.js
 1. **Server Components par défaut.** Pas de `"use client"` sauf si nécessaire (state, effects, event handlers). Pousser le `"use client"` le plus bas possible dans l'arbre.
@@ -77,11 +97,11 @@ Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
 5. Écrire les tests (unit + integ) au fur et à mesure
 6. Vérifier que les tests de la story passent
 7. **Type-check** (OBLIGATOIRE) : `pnpm type-check` → doit passer sans erreur
-8. **Code Review en agent isolé** (OBLIGATOIRE — `/tm-review`) :
-   - Lancer un agent autonome séparé (regard neuf, sans biais d'implémentation)
-   - L'agent passe `.tiple/checklists/code-review.md` point par point
-   - Couvrir : sécurité, qualité, DRY, tests, conventions, architecture, documentation
-   - Si problèmes HAUTE/MOYENNE → corriger puis relancer l'étape 7, puis nouveau review agent
+8. **Review** (OBLIGATOIRE — skill `tm-review`) :
+   - Router les conventions par globs sur le diff, les lire, confronter le code aux règles
+   - Puis passer `.tiple/checklists/code-review.md` (transverse uniquement)
+   - Chaque problème HAUTE/MOYENNE **cite sa source** (`conventions/<fichier>.md § <section>` ou un AC). Sans source → BASSE, non bloquant.
+   - Si HAUTE/MOYENNE → corriger, relancer l'étape 7, puis re-reviewer
 9. Mettre à jour la story (post-implémentation)
 10. Mettre à jour `.tiple/conventions/component-registry.md` si nouveaux composants
 11. Mettre à jour `.tiple/sprint/status.md` → story ✅ Done
@@ -104,19 +124,24 @@ Voir `.tiple/starters/supabase-auth/README.md` pour le détail.
 3. Ajouter au component-registry (nom, path, props, notes)
 4. Respecter `docs/design/system.md` pour les tokens visuels
 
-## Commandes disponibles
+## Skills
 
-Slash commands dans `.claude/commands/` :
+Tout vit dans `.claude/skills/` — le dossier `commands` a disparu. Un skill se déclenche
+**automatiquement** sur l'intention (voir « Déclencheurs automatiques ») et reste invocable
+explicitement en `/<nom>`.
 
-| Commande | Usage | Description |
-|----------|-------|-------------|
-| `/tm-plan` | Toute planification (initial ou évolution) | Cadrage complet : brief → PRD → archi → design → epics/stories → gate. Détecte auto le mode initial vs évolution (V2+). |
-| `/tm-dev` | Toute action code | Modes **story** (`E01-S01`/`next`), **fix**, **feature**, **refacto**, **explore** (read-only) — détectés auto depuis l'argument. |
-| `/tm-review` | Code review agent isolé | Review autonome passant `code-review.md` point par point. Appelé automatiquement par `/tm-dev`. |
-| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Peut aussi être proposé auto par Claude. |
-| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push) |
-| ~~`/tm-fix`~~ | Déprécié | Alias rétro-compatible de `/tm-dev` en mode fix. Sera supprimé. |
-| ~~`/tm-feature`~~ | Déprécié | Remplacé par `/tm-plan` (cadrage) + `/tm-dev` mode feature (code). Sera supprimé. |
+| Skill | Usage | Description |
+|-------|-------|-------------|
+| `tm-plan` | Cadrage (initial ou évolution) | brief → PRD par parcours → archi → design → epics/stories → gate. Mode détecté auto. **Invocation explicite uniquement.** |
+| `tm-dev` | Toute action code | Modes story (`E01-S01`/`next`), fix, feature, refacto, explore (read-only). |
+| `tm-review` | Review | Conventions routées par globs, confrontées au diff. Gravité indexée sur la source citée. |
+| `tm-verify` | Vérifications | `check:framework` + `type-check` + `lint` + `test`. |
+| `commit-push` | Commit & push | Les 4 checks + changelog + commit + push. Seul chemin autorisé (gate par hook). |
+| `tm-wrap-up` | Fin de chantier | Capture des apprentissages méta. Propose, n'écrit jamais sans accord. |
+| 22 skills de tag | `api`, `auth`, `security`… | Pointeurs vers `.tiple/conventions/` — aucune règle recopiée. |
+
+`pnpm check:framework` vérifie la cohérence de l'ensemble (tags ↔ conventions ↔ skills ↔ hooks
+↔ références). Il est exécuté en premier par `commit-push`.
 
 ## Design System
 

@@ -1,3 +1,7 @@
+> **ARCHIVE — document historique, non normatif.**
+> Ce fichier décrit une version passée de la Tiple Method et cite des commandes qui n'existent plus.
+> Source de vérité actuelle : `CLAUDE.md`, `.tiple/conventions/_index.md`, `.claude/skills/`.
+
 # Epics & Stories — Tiple Method Template
 
 > Découpage en stories exécutables par Claude Code.

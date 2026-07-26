@@ -1,43 +1,45 @@
 #!/bin/bash
 # .claude/hooks/enforce-bash-rules.sh
-# Bloque les violations des règles d'exécution Bash (CLAUDE.md)
-# Hook PreToolUse — s'exécute AVANT chaque appel Bash
-# Exit 0 = autorisé, Exit 2 = bloqué (message affiché à Claude)
-# Compatible macOS + Windows (pas de dépendance jq)
+# Hook PreToolUse — garde-fous d'exécution pour que la sortie des checks reste lisible.
+# Exit 0 = autorisé, Exit 2 = bloqué (message renvoyé à Claude).
+# Ce fichier EST la source de vérité de ces règles — ne pas les dupliquer dans CLAUDE.md.
+# Pas de dépendance jq (compatibilité macOS / Windows / Linux).
 
 INPUT=$(cat)
 
-# --- Règle 1 : JAMAIS de run_in_background ---
-# Vérifie plusieurs formats possibles du JSON (avec/sans espaces, minifié ou pretty-printed)
-if echo "$INPUT" | grep -q '"run_in_background"'; then
-  # Le champ existe — vérifier s'il est true
-  if echo "$INPUT" | grep -qE '"run_in_background"\s*:\s*true'; then
-    echo "BLOQUÉ: run_in_background=true est INTERDIT. Relance en foreground avec timeout: 120000 (ou jusqu'à 600000 pour les builds longs). Voir CLAUDE.md règle 1." >&2
-    exit 2
-  fi
-fi
-
-# Extraire la commande (entre les guillemets après "command":)
-# On utilise grep + sed car jq n'est pas toujours disponible
-COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
-
-# --- Règle 2 : Aucun pipe vers des commandes de troncature/filtrage ---
-if echo "$COMMAND" | grep -qE '\|\s*(tail|head|grep|wc|tee|less|more|awk|sed)\b'; then
-  echo "BLOQUÉ: Pipe interdit. Exécuter la commande brute sans '|'. Voir CLAUDE.md règle 2." >&2
+# --- Règle 1 : pas de run_in_background ---
+# Un check lancé en background rend sa sortie invisible ; l'échec passe inaperçu.
+if echo "$INPUT" | grep -qE '"run_in_background"[[:space:]]*:[[:space:]]*true'; then
+  echo "BLOQUÉ: run_in_background=true. Relancer en foreground (timeout: 120000, jusqu'à 600000 pour un build). Règle définie dans .claude/hooks/enforce-bash-rules.sh." >&2
   exit 2
 fi
 
-# --- Règle 3 : Aucune redirection fichier pour les commandes build/check ---
-if echo "$COMMAND" | grep -qE '(pnpm|npm|npx|tsc|node)\b.*\s+(>|>>|2>&1\s*>)\s'; then
-  echo "BLOQUÉ: Redirection de sortie interdite. La sortie doit aller dans le terminal. Voir CLAUDE.md règle 3." >&2
+# Matching sur le JSON brut : extraire le champ "command" avec grep tronque la commande au
+# premier guillemet échappé (`\"`), ce qui laisse passer silencieusement toute commande qui
+# contient des quotes. Le payload PreToolUse d'un appel Bash ne contient que la commande, sa
+# description et son timeout.
+COMMAND="$INPUT"
+
+# --- Règle 2 : pas de troncature de la sortie des checks ---
+# Cible UNIQUEMENT les commandes de check (type-check, lint, test, build, check:framework) :
+# y tronquer la sortie fait manquer les erreurs. Les pipes restent autorisés partout ailleurs
+# (git, ls, find, grep, et même `pnpm install`).
+CHECKS='((pnpm|npm|yarn)[[:space:]]+(run[[:space:]]+)?(type-check|lint|test|test:e2e|build|check:framework)|tsc|vitest|playwright[[:space:]]+test|eslint|next[[:space:]]+build)'
+if echo "$COMMAND" | grep -qE "$CHECKS"'\b[^|]*\|[[:space:]]*(tail|head|less|more|wc)\b'; then
+  echo "BLOQUÉ: sortie de check tronquée par un pipe. Exécuter la commande brute — les erreurs sont souvent en fin de sortie. Règle définie dans .claude/hooks/enforce-bash-rules.sh." >&2
   exit 2
 fi
 
-# --- Règle 4 : Aucune boucle d'attente / polling ---
-if echo "$COMMAND" | grep -qE 'while\s+(true|:)\s*;|watch\s+|until\s+.*;\s*do'; then
-  echo "BLOQUÉ: Boucle d attente/polling interdite. Voir CLAUDE.md règle 4." >&2
+# --- Règle 3 : pas de redirection fichier pour les checks ---
+if echo "$COMMAND" | grep -qE "$CHECKS"'\b.*[[:space:]](>|>>)[[:space:]]'; then
+  echo "BLOQUÉ: redirection de la sortie d'un check vers un fichier. La sortie doit rester dans le terminal. Règle définie dans .claude/hooks/enforce-bash-rules.sh." >&2
   exit 2
 fi
 
-# Tout OK
+# --- Règle 4 : pas de boucle d'attente / polling ---
+if echo "$COMMAND" | grep -qE 'while[[:space:]]+(true|:)[[:space:]]*;|(^|[;&[:space:]])watch[[:space:]]|until[[:space:]].*;[[:space:]]*do'; then
+  echo "BLOQUÉ: boucle d'attente/polling. Exécuter la commande une fois et lire le résultat. Règle définie dans .claude/hooks/enforce-bash-rules.sh." >&2
+  exit 2
+fi
+
 exit 0

@@ -10,6 +10,27 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Refonte du système d'agent : skills auto-déclenchés, review conventions-driven, gate git par hook
+**Quoi :**
+- **Routing unique par globs.** `.tiple/conventions/_index.md` gagne une colonne **Globs** — seule source de vérité `fichier → tag → convention`, consommée par `tm-dev` et `tm-review`. Le mapping en prose (7 tags sur 22) qui vivait dans `tm-dev.md` est supprimé.
+- **Review adossée aux conventions.** Nouveau skill `tm-review` : il route les conventions par globs sur le diff, les lit **en entier**, puis confronte le code aux règles. La gravité est indexée sur la source — HAUTE/MOYENNE seulement si le finding cite `conventions/<fichier>.md § <section>` ou un AC de la story ; sans citation, c'est BASSE et non bloquant. Avant, la review ne lisait que 2 fichiers de conventions sur 22.
+- **`code-review.md` réduit au transverse** (périmètre du diff, hygiène, conformité à la demande, documentation de méthode). Les ~40 règles qui doublonnaient les conventions sont supprimées — fin de la 3ᵉ source de vérité.
+- **Suppression de l'agent isolé.** La review tourne dans le contexte courant. La perte de recul est compensée par la mécanique : on ne demande plus au reviewer d'avoir des idées, mais de dérouler des règles lues juste avant.
+- **`.claude/commands/` supprimé, tout devient skill.** Un skill s'auto-déclenche sur l'intention *et* reste invocable en `/<nom>` ; une command n'offrait que le second. `tm-dev`, `tm-plan`, `tm-review`, `tm-verify`, `tm-wrap-up`, `commit-push` migrent. `tm-fix` et `tm-feature` (dépréciés) sont supprimés.
+- **Gate git déterministe.** `enforce-git-gate.sh` bloque tout `git commit`/`git push` hors du skill `commit-push` (échappement explicite par le marqueur ` # tiple-gate-ok`, posé après les checks). `--no-verify` et `--force` bloqués sans échappement. Le déclenchement d'un skill est probabiliste : acceptable pour charger des conventions, pas pour un gate de push.
+- **22 skills de tag réduits à des pointeurs.** Les 3 invariants recopiés dans chacun sont supprimés : ils divergeaient de la convention et donnaient l'illusion d'être informé sans lire la source.
+- **`pnpm check:framework`.** Valide tags ↔ conventions ↔ skills ↔ hooks ↔ références croisées. A détecté 8 incohérences existantes au premier run (`/tm-evolve`, `/tm-gate`, `/tm-sprint`, `/tm-status` référencés partout, inexistants) — toutes corrigées.
+- **`enforce-bash-rules.sh` réparé** : ne bloque plus `git log | head` (les règles ne ciblent plus que les commandes de check) et ne renvoie plus vers une section de `CLAUDE.md` supprimée en mai.
+- **`files/*.md` marqués ARCHIVE** — ces documents citaient des commandes disparues et étaient lus comme normatifs.
+
+**Pourquoi :** le système d'agent avait trois sources de vérité divergentes (conventions, checklist, skills), aucune review ne lisait les conventions, et les règles de qualité n'étaient appliquées que si Claude pensait à les appliquer. Les garanties sont maintenant soit mécaniques (routing par globs, citation obligatoire), soit appliquées par un hook.
+
+**Fichiers :**
+- `.tiple/conventions/_index.md`, `.tiple/checklists/code-review.md`, `.tiple/checklists/prd-evolution.md`, `.tiple/checklists/readiness-gate.md`, `.tiple/sprint/status.md`, `.tiple/templates/epic.tmpl.md`, `.tiple/templates/story.tmpl.md`
+- `.claude/skills/{tm-dev,tm-plan,tm-review,tm-verify,tm-wrap-up,commit-push}/SKILL.md` (créés) + 22 skills de tag réécrits
+- `.claude/commands/` (supprimé), `.claude/hooks/enforce-git-gate.sh` (créé), `.claude/hooks/enforce-bash-rules.sh`, `.claude/settings.json`
+- `scripts/check-framework.mjs` (créé), `package.json`, `CLAUDE.md`, `README.md`, `files/*.md`
+
 ## [2026-05-02] — CLAUDE.md : ajout section "Avant de coder (CRITIQUE)"
 **Quoi :** Ajout d'une section "Avant de coder" en tête du CLAUDE.md avec 4 règles : surfacer les hypothèses (pas trancher en silence), edits chirurgicaux (chaque ligne trace à la demande), critères de succès vérifiables, push back quand justifié. Suppression de la référence orpheline à "Règles d'exécution Bash" dans "Règles avant push" (section déjà retirée).
 **Pourquoi :** cadrer le comportement de Claude en amont du code : éviter les implémentations trop larges, les refactos non demandés, et le "make it work" flou. Pousse l'agent à clarifier au lieu d'inventer.

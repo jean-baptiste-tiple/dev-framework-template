@@ -1,85 +1,42 @@
-# Code Review Checklist
+# Checklist de review — transverse uniquement
 
-<!-- Utilisé par /tm-review. Pour chaque item : ✅ OK ou ❌ + explication. -->
+<!--
+  Lue par le skill tm-review, APRÈS le chargement des conventions routées par globs.
 
-## DRY & Réutilisation
+  RÈGLE DE MAINTENANCE : ce fichier ne contient QUE ce qui n'appartient à aucune convention.
+  Sécurité, tests, Next.js, Supabase, performance, a11y, naming, types → ces règles vivent
+  dans `.tiple/conventions/` et sont confrontées au code directement. Les recopier ici
+  créerait une seconde source de vérité qui divergerait. Ne pas le faire.
+-->
 
-- [ ] Pas de composant/hook/util dupliqué (vérifié dans component-registry)
-- [ ] Les schemas Zod sont partagés (pas de double validation manuelle)
-- [ ] Les types sont réutilisés depuis `types/` (pas de types inline redondants)
-- [ ] Factorisation à partir de 2 occurrences (pas d'abstraction prématurée)
+## Périmètre du diff
 
-## Qualité du code
+- [ ] Chaque fichier modifié trace à la demande (story, bug rapporté, demande utilisateur)
+- [ ] Aucun cleanup adjacent, reformatage opportuniste ou refacto non demandé
+- [ ] Le diff ne contient pas de changement de comportement non demandé
+- [ ] (si refacto) Les tests sont **identiques** avant/après — un test modifié = un comportement modifié = ce n'est plus un refacto
+- [ ] (si bugfix) Un test reproduit le bug et échouait avant le fix
 
-- [ ] Naming cohérent (kebab-case fichiers, PascalCase composants, camelCase fonctions)
-- [ ] Pas de `any` TypeScript (sauf cas documenté)
-- [ ] Pas de `console.log` oublié
-- [ ] Pas de TODO/FIXME/HACK sans explication
-- [ ] Imports dans l'ordre : next/react → libs → @/components → @/lib → @/types → relatifs
-- [ ] Pas de magic numbers/strings (constantes nommées)
+## Hygiène
 
-## Sécurité
+- [ ] Pas de `console.log` / `debugger` oublié
+- [ ] Pas de TODO / FIXME / HACK sans explication ni ticket
+- [ ] Pas de code mort ajouté (fonction, import, variable, prop non utilisée)
+- [ ] Aucun fichier sensible dans le diff (`.env`, credentials, clés, dumps)
+- [ ] Pas de dépendance ajoutée sans nécessité (vérifier `package.json` dans le diff)
 
-- [ ] Pas d'injection SQL (Supabase paramétrise automatiquement, mais vérifier les `.rpc()`)
-- [ ] Pas de XSS (pas de `dangerouslySetInnerHTML` sans sanitization)
-- [ ] Pas de secrets exposés côté client
-- [ ] Les inputs sont validés avec Zod côté serveur
-- [ ] Les messages d'erreur Supabase ne sont pas exposés bruts au client
+## Conformité à la demande
 
-## Next.js
+- [ ] (mode story) Tous les AC de la story sont couverts par le code livré
+- [ ] (mode story) Tous les tests listés dans « Tests attendus » existent
+- [ ] (mode libre) Ce qui est livré correspond à ce qui a été demandé — ni moins, ni plus
+- [ ] Les hypothèses prises face à une ambiguïté sont explicitées à l'utilisateur
+- [ ] (si référence UI fournie) L'écart avec la référence est documenté — **si `N/A`, ne pas pénaliser l'absence de maquette**
 
-- [ ] **Server Component vs Client Component justifié** — "use client" uniquement si nécessaire
-- [ ] **"use client" poussé le plus bas possible** dans l'arbre de composants
-- [ ] **Schemas Zod partagés** — le même schema valide le form ET l'action
-- [ ] **revalidatePath/revalidateTag après les mutations**
+## Documentation de méthode
 
-## Supabase (si activé)
-
-- [ ] **Pas de mutation Supabase côté client** — .insert()/.update()/.delete() uniquement dans Server Actions
-- [ ] **RLS policies en place** pour chaque nouvelle table
-- [ ] **Auth vérifiée dans chaque Server Action** (pas seulement le middleware)
-- [ ] **Middleware auth pas contourné** (pas de route non protégée par erreur)
-
-## Tests
-
-- [ ] Les tests couvrent les cas nominaux ET les cas d'erreur
-- [ ] Les tests vérifient le comportement, pas l'implémentation
-- [ ] (si Supabase) Supabase est mocké dans les tests unitaires
-- [ ] Les tests existants passent toujours (non-régression)
-- [ ] Le naming des tests suit la convention (`describe/it` — voir `testing-strategy.md`)
-
-## Design & UX
-
-- [ ] L'implémentation respecte la référence UI (si maquette fournie)
-- [ ] Les tokens du design system sont utilisés (pas de couleurs/spacing en dur)
-- [ ] Les 3 états sont gérés : loading, error, empty
-- [ ] L'accessibilité est respectée (labels, keyboard nav, contrast — voir `accessibility-patterns.md`)
-- [ ] Les toasts/feedbacks suivent les patterns (voir `feedback-patterns.md`)
-
-## Performance
-
-- [ ] Pas de N+1 queries (si Supabase : utiliser les jointures)
-- [ ] Les images utilisent `next/image` avec `width/height` ou `fill+sizes`
-- [ ] Les composants lourds sont lazy-loaded si non-critiques
-- [ ] Les données parallèles sont fetchées avec `Promise.all`
-
-## Architecture
-
-- [ ] La structure des fichiers suit les conventions (coding-standards.md)
-- [ ] Pas de violation des invariants d'architecture
-- [ ] Les Server Actions suivent le pattern standard (auth → validate → execute → revalidate → return)
-- [ ] Le state est au bon endroit (server > URL > state > context — voir `state-management.md`)
-- [ ] Les migrations DB ont un rollback documenté (si applicable)
-
-## Sécurité
-
-- [ ] Pas de secrets exposés (API keys, tokens, PII dans les logs)
-- [ ] (si Supabase) Les erreurs Supabase ne sont pas exposées brutes au client
-- [ ] Les inputs sont validés côté serveur avec Zod
-- [ ] (si auth) Rate limiting en place sur les actions sensibles (login, signup, reset)
-
-## Documentation
-
-- [ ] Le changelog est à jour
-- [ ] Le component-registry est à jour
-- [ ] La story post-implémentation est remplie (si mode story)
+- [ ] `docs/changelog.md` mis à jour
+- [ ] `.tiple/conventions/component-registry.md` mis à jour si nouveau composant réutilisable
+- [ ] (mode story) Section « Post-implémentation » de la story remplie
+- [ ] ADR créé dans `docs/decisions/` si un invariant d'architecture a été touché
+- [ ] Si une règle a dû être inventée pendant l'implémentation → la signaler (candidate à `tm-wrap-up`), ne pas l'écrire d'office dans les conventions

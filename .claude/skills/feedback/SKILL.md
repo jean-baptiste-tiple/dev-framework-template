@@ -3,9 +3,13 @@ name: feedback
 description: "Feedback UI : toasts, dialogs, confirmations, notifications, alertes, modales. FR : notification, confirmation, boîte de dialogue, alerte, message utilisateur, modale."
 ---
 
-Consult [.tiple/conventions/feedback-patterns.md](.tiple/conventions/feedback-patterns.md) for the full patterns. Load it before writing feedback UI.
+# feedback
 
-Key invariants:
-- Pas de toast pour les erreurs de validation de formulaire → errors inline
-- Confirmation obligatoire pour : suppression, envoi d'email, actions irréversibles
-- Toast 5s par défaut / 8s pour erreurs ; bouton destructif à droite dans un dialog
+**Source de vérité : [`.tiple/conventions/feedback-patterns.md`](../../../.tiple/conventions/feedback-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `feedback` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

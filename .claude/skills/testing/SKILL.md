@@ -3,9 +3,13 @@ name: testing
 description: "Tests : unit/integration/E2E, Vitest, Playwright, mocks Supabase, fixtures, coverage. FR : tests, unitaire, intégration, E2E, mock, fixture, couverture de test."
 ---
 
-Consult [.tiple/conventions/testing-strategy.md](.tiple/conventions/testing-strategy.md) for the full patterns. Load it before writing tests.
+# testing
 
-Key invariants:
-- Placement strict : unit → `tests/unit/` ; integration → `tests/integration/` ; e2e → `tests/e2e/`. Ne JAMAIS mélanger.
-- Mocker Supabase côté unit/integration (`vi.mock("@/lib/supabase/server")`), vraie DB uniquement en E2E
-- Tester le comportement, pas l'implémentation — couverture cible >80% sur `lib/actions/` et `lib/schemas/`
+**Source de vérité : [`.tiple/conventions/testing-strategy.md`](../../../.tiple/conventions/testing-strategy.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `testing` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

@@ -1,6 +1,6 @@
 # Story [ID] — [Titre]
 
-<!-- INSTRUCTIONS : Créé par /tm-plan (phase 5) ou /tm-evolve.
+<!-- INSTRUCTIONS : Créé par /tm-plan (phase 5), en mode initial ou évolution.
      Ce template est le plus important — il doit contenir TOUT ce dont
      Claude Code a besoin pour implémenter de manière autonome.
      IMPORTANT : Vérifier .tiple/conventions/component-registry.md avant de créer. -->

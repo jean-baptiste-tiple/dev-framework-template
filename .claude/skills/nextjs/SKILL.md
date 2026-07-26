@@ -3,9 +3,13 @@ name: nextjs
 description: "Next.js 15 App Router : page.tsx, layout.tsx, loading.tsx, error.tsx, route groups, dynamic routes, metadata. FR : page, layout, groupe de routes, route dynamique, App Router."
 ---
 
-Consult [.tiple/conventions/nextjs-patterns.md](.tiple/conventions/nextjs-patterns.md) for the full patterns. Load it before writing App Router code.
+# nextjs
 
-Key invariants:
-- Server Components par défaut — `"use client"` uniquement si state/effects/event handlers, poussé le plus bas possible
-- Server Actions pour les mutations, pas d'API routes (sauf webhooks/cron)
-- Route group avec `layout.tsx` DOIT avoir un `page.tsx` sinon le build échoue
+**Source de vérité : [`.tiple/conventions/nextjs-patterns.md`](../../../.tiple/conventions/nextjs-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `nextjs` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

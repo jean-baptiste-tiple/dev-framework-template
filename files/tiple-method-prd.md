@@ -1,3 +1,7 @@
+> **ARCHIVE — document historique, non normatif.**
+> Ce fichier décrit une version passée de la Tiple Method et cite des commandes qui n'existent plus.
+> Source de vérité actuelle : `CLAUDE.md`, `.tiple/conventions/_index.md`, `.claude/skills/`.
+
 # PRD — Tiple Method Template
 
 > Template Git réutilisable pour bootstrapper un projet avec la méthodologie Tiple Method.

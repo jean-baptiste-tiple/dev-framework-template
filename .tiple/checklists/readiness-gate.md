@@ -1,6 +1,6 @@
 # Readiness Gate — Prêt à coder ?
 
-<!-- Passer cette checklist avec /tm-gate ou à la fin de /tm-plan.
+<!-- Passer cette checklist à la fin de /tm-plan (phase 6).
      TOUS les items doivent être ✅ avant de commencer à implémenter. -->
 
 ## Documents

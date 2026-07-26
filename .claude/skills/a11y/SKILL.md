@@ -3,9 +3,13 @@ name: a11y
 description: "Accessibilité WCAG : ARIA, keyboard nav, focus management, screen readers, contraste, labels. FR : accessibilité, a11y, clavier, lecteur d'écran, contraste, label, navigation clavier."
 ---
 
-Consult [.tiple/conventions/accessibility-patterns.md](.tiple/conventions/accessibility-patterns.md) for the full patterns. Load it before writing interactive components.
+# a11y
 
-Key invariants:
-- HTML sémantique d'abord (`<button>`, `<nav>`, `<main>`), ARIA seulement en complément
-- Toute action clavier-accessible ; focus trap dans les dialogs (géré par Shadcn/Radix)
-- Contraste WCAG AA minimum (4.5:1 texte, 3:1 UI) ; labels associés à chaque input
+**Source de vérité : [`.tiple/conventions/accessibility-patterns.md`](../../../.tiple/conventions/accessibility-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `a11y` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

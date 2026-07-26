@@ -38,31 +38,38 @@ pnpm dev
 # /tm-plan dans Claude Code
 ```
 
-## Commandes
+## Skills
 
-**Deux points d'entrée principaux, 5 modes auto-détectés** :
+Tout est un **skill** (`.claude/skills/`) : il se déclenche **tout seul** sur l'intention, et
+reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 
-| Commande | Usage | Description |
-|----------|-------|-------------|
-| `/tm-plan` | **Toute planification** | Cadrage complet (brief → PRD → archi → design → epics/stories → gate). Détecte auto le mode **initial** (nouveau projet) vs **évolution** (V2, V3, grosse feature). |
-| `/tm-dev` | **Toute action code** | 5 modes auto-détectés depuis l'argument : **story** (`E01-S01`/`next`), **fix** (bug/corrige/cassé), **feature** (ajoute/implémente), **refacto** (nettoie/factorise), **explore** (comprends/analyse, read-only). |
-| `/tm-review` | Code review agent isolé | Agent autonome séparé passe `code-review.md` point par point. Appelé auto par `/tm-dev`. |
-| `/tm-verify` | Vérification triple | `pnpm type-check` + `pnpm lint` + `pnpm test` (debug local). |
-| `/tm-wrap-up` | Après un gros chantier | Capture les apprentissages méta (conventions, ADR, registry). Peut aussi être proposé auto par Claude. |
-| `/commit-push` | Commit & push | Type-check + lint + changelog + commit + push (OBLIGATOIRE pour tout push). |
+| Skill | Déclenchement | Description |
+|-------|---------------|-------------|
+| `tm-dev` | auto — avant toute modif de `src/`, `tests/`, `supabase/` | 5 modes : story (`E01-S01`/`next`), fix, feature, refacto, explore (read-only). |
+| `tm-review` | auto — fin d'implémentation, « review », « relis » | Route les conventions par globs sur le diff et confronte le code aux règles lues. |
+| `tm-verify` | auto — « vérifie », « ça compile ? », après un fix | `check:framework` + `type-check` + `lint` + `test`. |
+| `commit-push` | auto — « commit », « push », « envoie » | Les 4 checks + changelog + commit + push. **Seul chemin autorisé** (gate par hook). |
+| `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
+| `tm-plan` | **explicite uniquement** (`/tm-plan`) | Cadrage : brief → PRD par parcours → archi → design → epics/stories → gate. Mode initial vs évolution détecté auto. |
+| 22 skills de tag | auto — via les globs de `_index.md` | Pointeurs vers `.tiple/conventions/`, sans aucune règle recopiée. |
 
-**Commandes dépréciées** (alias rétro-compatibles, seront supprimés) :
+`tm-plan` est le seul à ne jamais s'auto-déclencher : un cadrage réécrit PRD, architecture et
+stories. Claude le **propose** face à un besoin produit large, il ne le lance pas.
 
-| Commande | Remplacé par |
-|---|---|
-| ~~`/tm-fix`~~ | `/tm-dev` (mode fix auto-détecté sur "bug", "corrige", "cassé"...) |
-| ~~`/tm-feature`~~ | `/tm-plan` (pour le cadrage) + `/tm-dev` (pour le code) |
+### Le gate de commit
+
+`git commit` et `git push` directs sont **bloqués** par `.claude/hooks/enforce-git-gate.sh`.
+Tout passe par le skill `commit-push`, qui exécute d'abord `check:framework`, `type-check`,
+`lint` et `test`. `--no-verify` et `--force` sont refusés sans échappement possible.
+
+Le déclenchement d'un skill est un jugement du modèle, donc probabiliste — acceptable pour
+charger des conventions, pas pour un gate de push. D'où le hook, qui lui est déterministe.
 
 ### Les 5 modes de `/tm-dev`
 
 | Mode | Déclencheur | Ce que ça fait |
 |---|---|---|
-| **Story** | ID (`E01-S01`) ou `next` | Flow complet piloté par la story : conventions auto-chargées, impl, type-check, review agent, finalisation (changelog, post-impl, registry, sprint status) |
+| **Story** | ID (`E01-S01`) ou `next` | Flow complet piloté par la story : conventions auto-chargées, impl, type-check, review, finalisation (changelog, post-impl, registry, sprint status) |
 | **Fix** | mots-clés : `bug`, `corrige`, `cassé`, `erreur`, `crash`, `ne marche pas`, `broken`, `régression` | Reproduire avant corriger, diff minimal, test de non-régression obligatoire |
 | **Feature** | mots-clés : `ajoute`, `implémente`, `nouvelle feature`, `nouvelle fonctionnalité`, `add` | Si non-trivial → propose `/tm-plan` pour cadrer d'abord. Sinon : respect registry/design system/a11y |
 | **Refacto** | mots-clés : `refacto`, `refactor`, `nettoie`, `factorise`, `simplifie`, `DRY`, `clean up` | Pas de changement de comportement, tests identiques avant/après, diff minimal |
@@ -77,20 +84,32 @@ Priorité en cas d'ambiguïté : Explore > Refacto > Fix > Feature. Sinon Claude
 - **Mode initial** (auto) : `docs/prd.md` n'existe pas → création from scratch de tous les documents
 - **Mode évolution** (auto) : `docs/prd.md` existe déjà ET tu mentionnes "V2", "V3", "évolution", "nouvelle version" → Claude **édite** les docs existants au lieu de les recréer, crée uniquement les nouveaux epics/stories, ajoute un ADR par invariant d'archi touché, et applique `.tiple/checklists/prd-evolution.md` en plus du readiness-gate.
 
-Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/commands/tm-plan.md](.claude/commands/tm-plan.md) pour le détail.
+Claude confirme toujours le mode détecté avant de continuer. Voir [.claude/skills/tm-plan/SKILL.md](.claude/skills/tm-plan/SKILL.md) pour le détail.
 
-### Skills auto-déclenchés
+### Routing des conventions
 
-En plus des slash commands, `.claude/skills/` contient 22 skills "shim" (un par tag de `.tiple/conventions/_index.md`) qui s'auto-activent selon le contexte — même **hors** de `/tm-dev`. Exemple : éditer un fichier d'auth en mode libre déclenche le skill `auth` qui charge les patterns de `.tiple/conventions/auth-patterns.md`. Les descriptions sont bilingues FR+EN pour un trigger robuste.
+Le mapping `fichier touché → tag → convention` a **une seule source de vérité** : la colonne
+**Globs** de [`.tiple/conventions/_index.md`](.tiple/conventions/_index.md). Elle est consommée
+par `tm-dev` (avant d'écrire) et par `tm-review` (avant de reviewer).
+
+Les 22 skills de tag sont des **pointeurs sans règles** : ils disent quel fichier de conventions
+lire, rien d'autre. Un résumé recopié dans un skill finirait par diverger de la convention tout
+en donnant l'illusion d'être informé — c'est pour ça qu'il n'y en a aucun.
+
+`pnpm check:framework` vérifie que tags, conventions, skills, hooks et références croisées
+restent cohérents. Il échoue si un tag n'a pas de globs, si un skill pointe vers un fichier
+disparu, ou si la doc référence un `/skill` inexistant.
 
 ## Structure
 
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
 ├── .claude/
-│   ├── commands/                # 8 slash commands (tm-plan, tm-dev, tm-fix, tm-feature, tm-review, tm-verify, tm-wrap-up, commit-push)
-│   ├── skills/                  # 22 skills shim pour auto-déclenchement des conventions + tm-wrap-up
-│   └── hooks/                   # enforce-bash-rules.sh (foreground, no pipe, no redirect)
+│   ├── skills/                  # 6 skills de workflow + 22 skills de tag (pointeurs conventions)
+│   ├── hooks/                   # enforce-git-gate.sh (gate commit/push) + enforce-bash-rules.sh
+│   └── settings.json            # Déclaration des hooks
+├── scripts/
+│   └── check-framework.mjs      # Cohérence tags ↔ conventions ↔ skills ↔ hooks ↔ références
 ├── .tiple/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
@@ -131,18 +150,18 @@ Puis lancer `/tm-plan` pour démarrer la phase de cadrage (qui activera les star
 
 ## Conventions par tags
 
-Les conventions techniques sont dans `.tiple/conventions/` et chargées **automatiquement** selon le contexte :
+Les conventions techniques sont dans `.tiple/conventions/`, chargées automatiquement :
 
-- **Base (toujours chargées)** : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
-- **Par tags** : chaque story déclare ses tags (ex: `auth`, `database`, `api`) → les fichiers correspondants sont chargés
-- **Index** : `.tiple/conventions/_index.md`
+- **Base (toujours)** : `coding-standards.md`, `component-registry.md`, `tech-stack.md`
+- **Par globs** : chaque fichier créé ou modifié active des tags → les conventions sont lues **en entier**
+- **Mode story** : les tags du champ `Conventions` de la story s'ajoutent (union avec les globs)
 
-| Mode | Chargement des conventions |
-|------|----------------------------|
-| `/tm-dev E01-S01` | Tags déclarés dans le champ `Conventions` de la story |
-| `/tm-dev` (libre) | Tags déduits des fichiers touchés (ex: `lib/actions/` → `api`) |
-| `/tm-fix` | Même déduction automatique que le mode libre |
-| **Hors workflow** (édit libre, Q&A) | Skills de `.claude/skills/` auto-déclenchés par mots-clés FR+EN |
+| Contexte | Chargement |
+|---|---|
+| `/tm-dev E01-S01` | Globs du diff **∪** tags déclarés dans la story |
+| `/tm-dev` (libre) | Globs des fichiers visés |
+| `tm-review` | Globs du diff — mêmes règles, même source |
+| Hors workflow (édit libre, Q&A) | Skills de tag auto-déclenchés par mots-clés FR+EN |
 
 ## Qualité & Déploiement
 
@@ -150,12 +169,18 @@ Répartition claire des checks :
 
 | Check | Où | Quand |
 |---|---|---|
-| `pnpm type-check` | **Local** (via `/commit-push`) | Avant chaque push |
-| `pnpm lint` | **Local** (via `/commit-push`) | Avant chaque push |
-| `pnpm test` | **CI GitHub** (`.github/workflows/ci.yml`) | Après chaque push — Vercel ne déploie que si la CI est verte |
+| `pnpm check:framework` | **Local** (via `commit-push`) | Avant chaque push |
+| `pnpm type-check` | **Local** (via `commit-push`) | Avant chaque push |
+| `pnpm lint` | **Local** (via `commit-push`) | Avant chaque push |
+| `pnpm test` | **Local** (via `commit-push`) | Avant chaque push |
+| `pnpm build` | **CI GitHub** (`.github/workflows/ci.yml`) | Après chaque push — validation Vercel + erreurs spécifiques Linux |
 
-Pourquoi cette séparation : type-check + lint sont rapides et doivent bloquer le push ; les tests tournent sur CI pour profiter d'un environnement Linux propre, éviter les timeouts locaux, et laisser Vercel gater le déploiement sur le résultat.
+Pourquoi cette séparation : les 4 checks locaux bloquent le push, donc rien de cassé ne part ; la
+CI ne refait pas ce travail et se concentre sur ce qui ne peut être vérifié qu'en environnement
+Linux propre — le build de production.
 
-Un hook Claude Code (`.claude/hooks/enforce-bash-rules.sh`) garantit que les commandes sont exécutées correctement (foreground, sans pipe, sans redirection) — voir la section "Règles d'exécution Bash" de `CLAUDE.md`.
+Deux hooks Claude Code appliquent ces règles sans dépendre du raisonnement du modèle :
+`enforce-git-gate.sh` (aucun commit/push hors du skill `commit-push`) et `enforce-bash-rules.sh`
+(sortie des checks jamais tronquée ni redirigée). Chaque hook documente ses propres règles.
 
 Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter Supabase + Auth si activé.

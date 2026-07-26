@@ -3,9 +3,13 @@ name: realtime
 description: "Realtime : Supabase Realtime subscriptions, presence, channels, live updates, websocket. FR : temps réel, abonnement, souscription, mise à jour live, canal realtime."
 ---
 
-Consult [.tiple/conventions/supabase-patterns.md](.tiple/conventions/supabase-patterns.md) (section Realtime) for the full patterns. Load it before writing realtime code.
+# realtime
 
-Key invariants:
-- Toujours cleanup : `removeChannel` dans le `return` du `useEffect`
-- Un channel par composant — pas de channel global sans justification
-- Filtrer les events côté serveur — ne pas écouter toute la table
+**Source de vérité : [`.tiple/conventions/supabase-patterns.md`](../../../.tiple/conventions/supabase-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `realtime` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

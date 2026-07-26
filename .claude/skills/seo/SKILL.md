@@ -3,9 +3,13 @@ name: seo
 description: "SEO : metadata API, Open Graph, Twitter Cards, sitemap.xml, robots.txt, structured data JSON-LD, canonical URLs. FR : référencement, meta, balise, SEO, indexation, page publique."
 ---
 
-Consult [.tiple/conventions/seo-patterns.md](.tiple/conventions/seo-patterns.md) for the full patterns. Load it before writing SEO metadata.
+# seo
 
-Key invariants:
-- Toute page publique a un `title` et une `description` uniques (Metadata API Next.js)
-- Pages auth (login/signup/reset) en `noindex`
-- Un seul `h1` par page, hiérarchie de headings logique, images avec `alt` descriptif
+**Source de vérité : [`.tiple/conventions/seo-patterns.md`](../../../.tiple/conventions/seo-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `seo` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

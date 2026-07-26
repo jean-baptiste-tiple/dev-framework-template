@@ -3,9 +3,13 @@ name: supabase
 description: "Supabase : Storage, RLS policies, triggers DB, fonctions RPC, error codes, postgres. FR : policy RLS, bucket Storage, fonction stockée, trigger DB, code erreur Supabase."
 ---
 
-Consult [.tiple/conventions/supabase-patterns.md](.tiple/conventions/supabase-patterns.md) for the full patterns. Load it before writing Supabase code.
+# supabase
 
-Key invariants:
-- RLS activée sur TOUTE table — sans exception (ADR obligatoire pour dérogation)
-- Pas de `service_role` sauf cas documenté par ADR
-- USING filtre les lignes visibles, WITH CHECK valide les données insérées/modifiées
+**Source de vérité : [`.tiple/conventions/supabase-patterns.md`](../../../.tiple/conventions/supabase-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `supabase` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).

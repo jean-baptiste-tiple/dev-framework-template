@@ -3,9 +3,13 @@ name: monitoring
 description: "Observability : error tracking (Sentry), analytics, health checks, logging, instrumentation. FR : monitoring, erreurs, logs, suivi d'erreurs, analyse, santé, observabilité."
 ---
 
-Consult [.tiple/conventions/monitoring-patterns.md](.tiple/conventions/monitoring-patterns.md) for the full patterns. Load it before writing logging/tracking code.
+# monitoring
 
-Key invariants:
-- Capturer les erreurs inattendues (catch blocks, error boundaries) ; pas les erreurs de validation attendues
-- Ne JAMAIS logger de PII (mots de passe, tokens, emails en clair, données personnelles)
-- Ajouter du contexte (userId, action) mais filtré — utile au debug, pas un risque RGPD
+**Source de vérité : [`.tiple/conventions/monitoring-patterns.md`](../../../.tiple/conventions/monitoring-patterns.md)**
+
+Lire ce fichier **en entier, maintenant**, avant d'écrire ou de reviewer du code sur ce sujet.
+
+Ce skill ne contient volontairement aucune règle : un résumé recopié ici finirait par diverger
+de la convention et donnerait l'illusion d'être informé sans avoir lu la source.
+
+Tag `monitoring` — globs de routing dans [`.tiple/conventions/_index.md`](../../../.tiple/conventions/_index.md).
