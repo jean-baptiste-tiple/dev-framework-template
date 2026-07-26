@@ -10,6 +10,17 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Guide de migration v1 → v2 pour les projets existants
+**Quoi :** `docs/migration-tiple-v2.md` — prompt à coller dans une session Claude Code ouverte sur un projet issu de l'ancienne version du template. Découpé en 8 lots (hooks, scripts, skills, conventions, checklists, config, code, docs), chacun expliquant *pourquoi* le changement a eu lieu, pour que les décisions puissent être adaptées au projet cible.
+
+Trois garde-fous y sont posés en tête : ne jamais écraser le code métier ni les documents produits (`docs/prd.md`, stories, epics, ADR) ; préserver les conventions personnalisées en appliquant les corrections plutôt qu'en remplaçant les fichiers ; et **adapter les globs à l'arborescence réelle du projet** — un glob qui ne matche rien désactive silencieusement le chargement d'une convention.
+
+Le lot D3 liste les 17 règles de la v1 techniquement fausses ou dangereuses, avec leur correction. Le document demande explicitement de **signaler sans corriger** le code métier qui suit l'une d'elles (middleware auth perdant les cookies rafraîchis, Server Actions exposant `error.message`, autorisation placée dans un layout) : c'est une décision qui revient au propriétaire du projet.
+
+**Pourquoi :** la v2 change la structure de `.claude/` et de `.tiple/`, ce qu'aucun merge du template ne peut résoudre seul sur un projet qui a divergé.
+
+**Fichiers :** `docs/migration-tiple-v2.md`
+
 ## [2026-07-26] — Régressions de la refonte, trouvées par contre-audit
 **Quoi :** un audit indépendant a été passé sur le résultat de la refonte précédente, avec pour consigne de chercher ce qu'elle avait cassé. Douze findings, tous vérifiés avant correction.
 
