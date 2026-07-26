@@ -37,8 +37,8 @@ varier le seul cérémonial.
 Quatre conséquences structurantes :
 
 1. **Routing par globs.** `.method/conventions/_index.md` gagne une colonne `Globs`. C'est la
-   seule source de vérité `fichier touché → tag → convention`, lue par `tm-dev` avant d'écrire
-   et par `tm-review` avant de reviewer.
+   seule source de vérité `fichier touché → tag → convention`, lue par `dev` avant d'écrire
+   et par `revue` avant de reviewer.
 2. **La review confronte le code aux règles lues**, et la gravité est indexée sur la source
    citée : pas de citation → BASSE non bloquante.
 3. **Tout est skill**, plus aucune commande. Un skill s'auto-déclenche *et* reste invocable en
@@ -138,14 +138,14 @@ faits. C'est normal.
 
 **Pourquoi :** un skill s'auto-déclenche *et* s'invoque en `/<nom>` ; une commande ne fait que
 le second. Les deux artefacts faisaient doublon. Et depuis le routing par globs, les 22 skills
-de tag n'étaient plus qu'un niveau d'indirection : `tm-dev` et `tm-review` matchent `_index.md`
+de tag n'étaient plus qu'un niveau d'indirection : `dev` et `revue` matchent `_index.md`
 eux-mêmes.
 
-1. **Supprime `.claude/commands/` en entier**, y compris `tm-fix.md` et `tm-feature.md` (dépréciés).
+1. **Supprime `.claude/commands/` en entier**, y compris `dev.md` et `dev.md` (dépréciés).
 2. **Supprime les 22 skills de tag** : `a11y`, `api`, `auth`, `database`, `datetime`, `deploy`,
    `feedback`, `flags`, `forms`, `i18n`, `monitoring`, `nextjs`, `performance`, `realtime`,
    `security`, `seo`, `state`, `supabase`, `tables`, `testing`, `typescript`, `uploads`.
-3. Copie les 7 skills v2 : `tm-dev`, `tm-plan`, `tm-review`, `tm-verify`, `tm-wrap-up`,
+3. Copie les 7 skills v2 : `dev`, `plan`, `revue`, `verify`, `wrap-up`,
    `commit-push`, `conventions`.
 
 Après ce lot, **ne crée jamais de `.claude/skills/<tag>/`** : `check:framework` rejette tout
@@ -223,7 +223,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
 - `story-done.md` : ne réénumère plus les rubriques de `code-review.md` et n'exige plus une
   review « par un agent isolé » (la v2 n'en utilise pas).
 - `readiness-gate.md` : les items d'infrastructure (`pnpm install`, `.env.local`, serveur
-  démarré) sortent du gate — `tm-plan` n'a pas le droit de lancer une commande système, le gate
+  démarré) sortent du gate — `plan` n'a pas le droit de lancer une commande système, le gate
   était donc impassable. Ils deviennent les AC de la story de setup.
 - `story-ready.md` : items conditionnels pour les stories techniques (pas de parcours ni de FR).
 
@@ -259,7 +259,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
 changement », « Conventions routées par globs », « Skills », « Vérifier, commiter, pousser ».
 
 **Attention :** la section « Projet » et toute règle spécifique à ce projet (domaine métier,
-contraintes, gotchas capturés par `tm-wrap-up`) doivent être **reportées** dans le nouveau
+contraintes, gotchas capturés par `wrap-up`) doivent être **reportées** dans le nouveau
 fichier. Liste-les-moi avant d'écraser.
 
 Retire les sections qui doublonnent les conventions routées (règles Next.js et Supabase

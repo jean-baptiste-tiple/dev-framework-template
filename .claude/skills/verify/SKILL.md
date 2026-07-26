@@ -1,12 +1,12 @@
 ---
-name: tm-verify
+name: verify
 description: "Lance les 4 vérifications du projet via `pnpm verify` : cohérence framework, type-check, lint, tests — puis écrit le reçu qui évite de les rejouer au commit."
 when_to_use: "Quand l'utilisateur demande de vérifier que tout passe : 'vérifie', 'ça compile ?', 'lance les tests', 'tout passe ?'. Et après avoir appliqué des corrections issues d'une review. NE PAS déclencher pour un commit : commit-push inclut déjà ces checks et réutilise le reçu."
 ---
 
-# tm-verify — Vérifications projet
+# verify — Vérifications projet
 
-Utilisable seul (debug local) ou appelé par `tm-review` (après application des fix) et par
+Utilisable seul (debug local) ou appelé par `revue` (après application des fix) et par
 `commit-push` (étape 1).
 
 ## Une seule commande

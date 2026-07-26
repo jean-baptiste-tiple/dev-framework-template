@@ -1,7 +1,7 @@
 # Story Ready — Definition of Ready
 
 <!--
-  Vérifiée par tm-dev avant d'implémenter une story.
+  Vérifiée par dev avant d'implémenter une story.
   Les items marqués « (story fonctionnelle) » ne s'appliquent pas à une story technique
   (setup, migration d'outillage, dette) : celle-ci n'a ni parcours ni FR à référencer, et ses
   AC ne sont pas tous vérifiables par un test automatisé. Les déclarer sans objet, avec la

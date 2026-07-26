@@ -1,7 +1,7 @@
 # Index des conventions
 
 > **Source de vérité unique du routing `fichier → tag → convention`.**
-> Lu par le skill `tm-dev` (avant d'écrire) et par le skill `tm-review` (avant de reviewer).
+> Lu par le skill `dev` (avant d'écrire) et par le skill `revue` (avant de reviewer).
 > Ne PAS dupliquer ce mapping ailleurs — ni dans un skill, ni dans `CLAUDE.md`.
 
 ## Convention de base (toujours lue)
@@ -79,5 +79,5 @@ vérification des globs, et un chemin devenu faux échouera au lieu de passer in
 1. **Un fichier peut activer plusieurs tags** — charger tous les fichiers correspondants (dédupliqués : `supabase` et `realtime` pointent vers le même).
 2. **Aucun glob ne matche** → seule la convention de base s'applique. Ce n'est pas une erreur.
 3. **Annoncer les conventions chargées** avant d'agir : `Conventions : coding-standards, api-patterns, security-patterns`. Si rien au-delà de la base, le dire.
-4. **Lire le fichier en entier**, pas un résumé. Il n'existe **pas** de skill par tag : `tm-dev` et `tm-review` matchent ces globs eux-mêmes.
+4. **Lire le fichier en entier**, pas un résumé. Il n'existe **pas** de skill par tag : `dev` et `revue` matchent ces globs eux-mêmes.
 5. **Ajouter un tag** = une ligne ici + le fichier de conventions. Rien d'autre — créer un `.claude/skills/<tag>/` ferait échouer `pnpm check:framework`. Le check échoue aussi si le fichier manque, si les globs sont vides, si aucun glob ne peut matcher un dossier réel, ou si le fichier dépasse 400 lignes.

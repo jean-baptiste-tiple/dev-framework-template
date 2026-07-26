@@ -1,6 +1,6 @@
 # Architecture — [Nom du projet]
 
-<!-- INSTRUCTIONS : Ce document est généré par /tm-plan — artefact « architecture », depuis le PRD.
+<!-- INSTRUCTIONS : Ce document est généré par /plan — artefact « architecture », depuis le PRD.
      Les sections "Invariants" sont pré-remplies avec la stack framework.
      Les sections "À remplir" sont spécifiques au projet. -->
 

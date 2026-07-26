@@ -1,6 +1,6 @@
 # Story [ID] — [Titre]
 
-<!-- INSTRUCTIONS : Créé par /tm-plan — artefact « epics/stories », en mode initial ou évolution.
+<!-- INSTRUCTIONS : Créé par /plan — artefact « epics/stories », en mode initial ou évolution.
      Ce template est le plus important — il doit contenir TOUT ce dont
      Claude Code a besoin pour implémenter de manière autonome.
      IMPORTANT : Vérifier .method/conventions/component-registry.md avant de créer. -->
@@ -59,7 +59,7 @@
 
 ## Post-implémentation
 
-<!-- Rempli APRÈS le dev par /tm-dev -->
+<!-- Rempli APRÈS le dev par /dev -->
 
 ### Écarts avec la référence UI
 <!-- Lister les écarts entre l'implémentation et la référence UI, et pourquoi -->

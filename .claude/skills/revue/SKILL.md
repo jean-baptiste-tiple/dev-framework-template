@@ -1,11 +1,11 @@
 ---
-name: tm-review
+name: revue
 description: "Code review adossée aux conventions : route .method/conventions/ par globs sur le diff, confronte le code aux règles lues, et indexe la gravité sur la source citée."
 when_to_use: "Après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation. Et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface — une relecture inline du diff suffit."
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
-# tm-review — Code review adossée aux conventions
+# revue — Code review adossée aux conventions
 
 **Principe : la review ne juge pas à l'instinct, elle confronte le code aux règles écrites.**
 Chaque problème remonté doit pointer une règle existante dans `.method/conventions/`, dans
@@ -17,7 +17,7 @@ perte de recul est **la mécanique** : on ne demande pas au reviewer d'avoir des
 demande de dérouler des règles lues juste avant. Ne jamais reviewer de mémoire.
 
 **Échelle.** Ce protocole complet s'applique à partir de l'échelle Standard (≥ 3 fichiers, ou
-création d'une surface : route, table, action, composant). Sur un changement micro, `tm-dev`
+création d'une surface : route, table, action, composant). Sur un changement micro, `dev`
 fait une relecture inline du diff contre les conventions chargées — mêmes règles, sans rapport
 formaté. La vérification ne disparaît jamais ; seul le cérémonial s'adapte.
 
@@ -99,7 +99,7 @@ convention ne dit qu'un export CSV doit respecter les filtres actifs.
 
 **Règle absolue : pas de citation → pas de HAUTE ni de MOYENNE.** Si une règle te semble
 manquante dans les conventions, remonte-la en BASSE avec la mention « convention à créer »
-— c'est le rôle de `tm-wrap-up`, pas de la review, de l'ajouter.
+— c'est le rôle de `wrap-up`, pas de la review, de l'ajouter.
 
 **Vérifier que la section citée existe** avant de l'écrire : une citation vers une section
 renommée fait reposer un blocage sur une référence fantôme. `pnpm check:framework` valide les

@@ -2,7 +2,7 @@
 /**
  * verify-receipt — évite de rejouer les checks déjà passés sur un arbre inchangé.
  *
- * Le problème : `tm-dev` termine par une vérification complète, puis `commit-push` relance
+ * Le problème : `dev` termine par une vérification complète, puis `commit-push` relance
  * exactement les 4 mêmes commandes trente secondes plus tard sur le même code. Sur un projet
  * réel (tests + build), c'est plusieurs minutes perdues à chaque chantier.
  *

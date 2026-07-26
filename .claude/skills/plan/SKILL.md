@@ -1,12 +1,12 @@
 ---
-name: tm-plan
+name: plan
 description: "Cadrage produit : brief, PRD par parcours, architecture, design, epics/stories. Quatre niveaux — refus, story seule, évolution ciblée, initial."
-when_to_use: "Uniquement sur invocation explicite de l'utilisateur (/tm-plan). Face à un besoin produit large exprimé autrement, PROPOSER un cadrage et attendre l'accord — un cadrage réécrit PRD, architecture et stories."
+when_to_use: "Uniquement sur invocation explicite de l'utilisateur (/plan). Face à un besoin produit large exprimé autrement, PROPOSER un cadrage et attendre l'accord — un cadrage réécrit PRD, architecture et stories."
 disable-model-invocation: true
 argument-hint: "[scope / version optionnels]"
 ---
 
-# tm-plan — Cadrage
+# plan — Cadrage
 
 Un dialogue qui produit les documents de cadrage. Pas un formulaire, pas un pipeline
 obligatoire : **une liste d'artefacts dont seuls les manquants ou les impactés sont produits.**
@@ -15,7 +15,7 @@ obligatoire : **une liste d'artefacts dont seuls les manquants ou les impactés 
 > Ce skill ne modifie que des Markdown dans `docs/` et `.method/sprint/`. Interdit pendant un
 > cadrage : installer des dépendances, créer/modifier `.ts` `.tsx` `.js` `.css` `.json`, lancer
 > un build/lint/test, copier des fichiers de starter, créer des dossiers dans `src/`,
-> `supabase/`, `.github/`. L'installation technique est faite par `tm-dev`, dans la story de setup.
+> `supabase/`, `.github/`. L'installation technique est faite par `dev`, dans la story de setup.
 
 ## Étape 0 — Choisir le niveau (ou refuser)
 
@@ -24,15 +24,15 @@ la demande touche :
 
 | Niveau | Quand | Ce qui est produit |
 |--------|-------|--------------------|
-| **Refus** | La demande tient en quelques fichiers, sans nouveau parcours ni changement de modèle de données | **Rien.** Le dire et basculer sur `tm-dev`. |
-| **Story seule** | `tm-dev` a détecté l'échelle Module et l'utilisateur a accepté une story — mais le parcours existe déjà au PRD | **Une story**, rien d'autre |
+| **Refus** | La demande tient en quelques fichiers, sans nouveau parcours ni changement de modèle de données | **Rien.** Le dire et basculer sur `dev`. |
+| **Story seule** | `dev` a détecté l'échelle Module et l'utilisateur a accepté une story — mais le parcours existe déjà au PRD | **Une story**, rien d'autre |
 | **Évolution** | `docs/prd.md` est rempli et la demande ouvre ou modifie un parcours | Le parcours concerné + la cascade réellement impactée |
 | **Initial** | `docs/prd.md` absent, vide ou placeholder | La chaîne complète |
 
-**Story seule** est le niveau attendu quand `tm-dev` propose « je cadre une story d'abord » :
+**Story seule** est le niveau attendu quand `dev` propose « je cadre une story d'abord » :
 écrire la story depuis `.method/templates/story.tmpl.md` — AC en Given/When/Then, fichiers à
 créer, tests attendus, tags `Conventions` — **sans toucher au PRD ni à l'architecture**. Gate
-réduit à `.method/checklists/story-ready.md`. Puis **rendre la main à `tm-dev`** sur cette story.
+réduit à `.method/checklists/story-ready.md`. Puis **rendre la main à `dev`** sur cette story.
 
 Ne jamais déclencher une évolution de PRD complète pour une demande qui n'ouvre pas de parcours :
 c'est le piège qui rend la proposition de story dissuasive.
@@ -93,7 +93,7 @@ Trois situations, toutes valides :
   manquants, mettre à jour `docs/design/screens/_index.md` et `components/_index.md`
 - **Pas de maquettes, design system à personnaliser** → questions ciblées (couleur primaire,
   secondaire, font, style) → mettre à jour `docs/design/system.md`. Les fichiers de code
-  (`globals.css`, `tailwind.config.ts`) seront modifiés par `tm-dev` à la story de setup
+  (`globals.css`, `tailwind.config.ts`) seront modifiés par `dev` à la story de setup
 - **Pas de maquettes, design system par défaut** → ne rien faire, le dire, passer à la suite
 
 L'absence de maquette n'est jamais un blocage : les stories portent alors une description
@@ -138,5 +138,5 @@ et la première story à implémenter.
 sur une phrase qui relance l'implémentation, sinon la session s'arrête là et l'utilisateur doit
 relancer à la main.
 
-> « Cadrage terminé. Je reprends en `tm-dev` sur `E0X-SYY` — conventions rechargées par globs
+> « Cadrage terminé. Je reprends en `dev` sur `E0X-SYY` — conventions rechargées par globs
 > plus les tags déclarés dans la story. »

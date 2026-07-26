@@ -1,10 +1,10 @@
 ---
-name: tm-wrap-up
+name: wrap-up
 description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). Déclenche-toi quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .method/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
 argument-hint: "[scope optionnel]"
 ---
 
-# tm-wrap-up — Capturer ce qu'on a appris
+# wrap-up — Capturer ce qu'on a appris
 
 Le code et le changelog disent **ce qu'on a fait**. Ce skill capture **ce qu'on a appris** :
 les règles implicites, les pièges, les décisions d'archi qui ne se déduisent pas du code.

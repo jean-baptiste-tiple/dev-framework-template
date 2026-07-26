@@ -1,6 +1,6 @@
 # PRD Evolution Checklist
 
-<!-- Utilisé par /tm-plan en mode évolution, quand le scope change.
+<!-- Utilisé par /plan en mode évolution, quand le scope change.
      Identifier tous les impacts avant de modifier. -->
 
 ## Identification du changement

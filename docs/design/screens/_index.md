@@ -5,7 +5,7 @@
 
 | Écran | Fichier | Parcours | Persona | Description |
 |-------|---------|----------|---------|-------------|
-<!-- Rempli par /tm-plan — artefact « design ». Exemple :
+<!-- Rempli par /plan — artefact « design ». Exemple :
 | Login | login.jsx | Authentification | Tous | Formulaire de connexion email/password |
 | Dashboard | dashboard.jsx | Accueil | Gérant | Vue d'ensemble avec stats et raccourcis |
 -->

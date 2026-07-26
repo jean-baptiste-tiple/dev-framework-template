@@ -1,9 +1,9 @@
 # Story Done — Definition of Done
 
 <!--
-  Passée par tm-dev (étape 7) avant de basculer une story en ✅ Done.
+  Passée par dev (étape 7) avant de basculer une story en ✅ Done.
   RÈGLE DE MAINTENANCE : ne réénumère JAMAIS les rubriques de code-review.md ni les règles des
-  conventions — elles sont confrontées au code par tm-review, qui route les fichiers par globs.
+  conventions — elles sont confrontées au code par revue, qui route les fichiers par globs.
   Cette checklist ne vérifie que ce qui n'est vérifiable qu'à la fin : livraison et traçabilité.
 -->
 
@@ -16,7 +16,7 @@
 
 ## Review
 
-- [ ] Le skill `tm-review` a été passé : routing annoncé, conventions chargées en entier, findings sourcés
+- [ ] Le skill `revue` a été passé : routing annoncé, conventions chargées en entier, findings sourcés
 - [ ] Les findings HAUTE et MOYENNE sont corrigés, et les checks relancés après correction
 - [ ] Les findings BASSE restants sont signalés à l'utilisateur, pas appliqués d'office
 

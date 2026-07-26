@@ -1,7 +1,7 @@
 # Readiness Gate — Prêt à coder ?
 
 <!--
-  Passée au gate de sortie de /tm-plan, niveau Initial ou Évolution.
+  Passée au gate de sortie de /plan, niveau Initial ou Évolution.
   Le niveau « Story seule » ne passe QUE story-ready.md ; le niveau « Refus » ne passe rien.
 
   Chaque item est ✅ **ou explicitement déclaré sans objet, avec sa raison**. Un « sans objet »
@@ -38,15 +38,15 @@
 - [ ] `.method/conventions/_index.md` est à jour : chaque tag a un fichier **et des globs qui matchent l'arborescence réelle**
 - [ ] Chaque story 🟢 Ready a son champ **Conventions** renseigné
 
-> `pnpm check:framework` n'est **pas** dans ce gate : `/tm-plan` s'interdit toute commande
+> `pnpm check:framework` n'est **pas** dans ce gate : `/plan` s'interdit toute commande
 > système. Il est exécuté par `pnpm verify`, donc à chaque commit.
 
 ## Ce qui n'est PAS dans ce gate
 
 L'infrastructure (`pnpm install`, `.env.local`, serveur qui démarre, clés Supabase, middleware
-auth) **ne peut pas** être vérifiée ici : `/tm-plan` s'interdit toute commande système et toute
+auth) **ne peut pas** être vérifiée ici : `/plan` s'interdit toute commande système et toute
 création de fichier non-Markdown. Exiger ces points au gate de cadrage créait une dépendance
 circulaire — le gate ne pouvait pas passer honnêtement.
 
 Ces vérifications sont les **critères d'acceptation de la story de setup technique**, écrite en
-phase de découpage et implémentée par `tm-dev`.
+phase de découpage et implémentée par `dev`.

@@ -1,4 +1,4 @@
-# Renommage : `.tiple/` → `.method/`
+# Renommage : `.tiple/` → `.method/`, et suppression du préfixe `tm-`
 
 > **Mode d'emploi.** Prompt à coller dans une session Claude Code ouverte sur un projet **déjà
 > migré en v2** mais dont le dossier de méthode s'appelle encore `.tiple/`.
@@ -18,12 +18,21 @@ C'est un renommage **mécanique** : aucune règle, aucun comportement, aucun wor
 | Avant | Après |
 |---|---|
 | dossier `.tiple/` | `.method/` |
+| skill `tm-dev` | `dev` |
+| skill `tm-plan` | `plan` |
+| skill `tm-review` | **`revue`** |
+| skill `tm-verify` | `verify` |
+| skill `tm-wrap-up` | `wrap-up` |
 | marqueur d'échappement du gate ` # tiple-gate-ok` | ` # checks-ok` |
 | variable d'env `TIPLE_RECEIPT_PATH` | `VERIFY_RECEIPT_PATH` |
 | `"name": "tiple-method-template"` dans `package.json` | le vrai nom du projet |
 | « Tiple Method » en prose | « le framework » / « la méthode » |
 
 Le nom reste dans le **README** — c'est le seul endroit où il est assumé.
+
+**Pourquoi `revue` et pas `review` :** `/review` est une slash command intégrée à Claude Code
+(et `/code-review` aussi). Un skill projet portant l'un de ces noms entre en collision. Le reste
+du framework étant rédigé en français, `revue` est cohérent et sans ambiguïté.
 
 ## Étape 1 — État des lieux (lecture seule)
 
@@ -47,7 +56,18 @@ git mv .tiple .method
 `git mv` préserve l'historique des fichiers. Ne pas faire `mv` + `git add` : git perdrait le
 suivi de renommage sur certains fichiers.
 
-## Étape 3 — Remplacer les références
+## Étape 3 — Renommer les skills
+
+```
+cd .claude/skills
+git mv tm-dev dev && git mv tm-plan plan && git mv tm-review revue
+git mv tm-verify verify && git mv tm-wrap-up wrap-up
+```
+
+Puis, dans chaque `SKILL.md` renommé, mettre à jour le champ **`name:`** du frontmatter — il doit
+être identique au nom du dossier, sinon `check:framework` échoue.
+
+## Étape 4 — Remplacer les références
 
 Applique ces remplacements sur **tous les fichiers versionnés** (`git ls-files`), en excluant
 `pnpm-lock.yaml` et les binaires :
@@ -55,9 +75,15 @@ Applique ces remplacements sur **tous les fichiers versionnés** (`git ls-files`
 **Partout, README compris** — un chemin faux casse le routing :
 - `.tiple/` → `.method/`
 - `` `.tiple` `` → `` `.method` ``
+- `tm-dev` → `dev` · `tm-plan` → `plan` · `tm-review` → `revue` · `tm-verify` → `verify` · `tm-wrap-up` → `wrap-up`
+- `tm-fix` et `tm-feature` (skills supprimés en v2, mentions résiduelles possibles) → `dev`
 - `tiple-gate-ok` → `checks-ok`
 - `TIPLE_RECEIPT_PATH` → `VERIFY_RECEIPT_PATH`
 - `tiple-method-template` → le nom réel du projet (regarde `package.json` et le nom du dépôt)
+
+`tm-dev` et consorts sont des **tokens uniques** : les remplacer ne peut pas abîmer de prose.
+Trier du plus long au plus court avant de remplacer, et remplacer `tm-wrap-up` avant tout motif
+plus court qui en serait un préfixe.
 
 **Partout SAUF `README.md`** — la prose :
 - « Tiple Method » → « le framework » ou « la méthode » selon la phrase
@@ -80,16 +106,19 @@ Trois fichiers contiennent `.tiple` **à l'intérieur d'expressions régulières
 
 Vérifie explicitement ces trois fichiers après le remplacement.
 
-## Étape 4 — Ce qu'il ne faut PAS renommer
+## Étape 5 — Ce qu'il ne faut PAS renommer
 
 - **`.claude/`** — imposé par Claude Code.
-- **Les skills `tm-*`** (`tm-dev`, `tm-plan`, `tm-review`, `tm-verify`, `tm-wrap-up`) — ce sont
-  les slash commands utilisées au quotidien. Les renommer casse les habitudes et toutes les
-  références croisées. `tm` ne contient pas le terme visé.
+- **`commit-push` et `conventions`** — déjà sans préfixe, ne pas y toucher.
 - **Le nom du dépôt GitHub et de son propriétaire** — même s'il contient le terme, c'est une URL.
-- **Le code métier, les stories, le PRD, les ADR** — sauf pour les chemins `.tiple/` qu'ils citent.
+- **Le code métier, les stories, le PRD, les ADR** — sauf pour les chemins et les slash commands qu'ils citent.
 
-## Étape 5 — Vérification
+Attention aussi à `scripts/check-framework.mjs` : il porte une liste `SLASH_OBSOLETES` des noms
+de skills disparus, qui doit **conserver** les anciens noms `tm-*`. C'est elle qui détecte une
+référence oubliée dans la doc — la vider reviendrait à désactiver le filet juste après l'avoir
+tendu.
+
+## Étape 6 — Vérification
 
 ```
 pnpm verify
@@ -112,12 +141,12 @@ git push --dry-run          # doit être BLOQUÉ
 
 Puis un cycle complet `pnpm verify` → commit avec ` # checks-ok` en fin de commande.
 
-## Étape 6 — Rapport
+## Étape 7 — Rapport
 
 1. Fichiers renommés et nombre de fichiers dont le contenu a changé.
 2. Les trois fichiers à regex : confirmés corrigés, un par un.
 3. Sortie de `pnpm verify`, de `pnpm build` et du `grep` final.
 4. Tout ce que tu as choisi de **ne pas** renommer, avec la raison.
 
-Commite en une fois : `chore: renomme .tiple en .method`. Le renommage est mécanique et se relit
+Commite en une fois : `chore: renomme .tiple en .method et supprime le prefixe tm-`. Le renommage est mécanique et se relit
 mieux d'un bloc que réparti sur plusieurs commits.

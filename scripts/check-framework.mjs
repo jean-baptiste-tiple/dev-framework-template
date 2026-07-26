@@ -43,7 +43,7 @@ if (!existsSync(INDEX)) {
 
 const indexSrc = read(INDEX)
 const BASE_CONVENTIONS = ['coding-standards.md']
-const WORKFLOW_SKILLS = ['tm-dev', 'tm-plan', 'tm-review', 'tm-verify', 'tm-wrap-up', 'commit-push']
+const WORKFLOW_SKILLS = ['dev', 'plan', 'revue', 'verify', 'wrap-up', 'commit-push']
 const STANDALONE_SKILLS = ['conventions']
 
 // ------------------------------------------------- 1. parsing de _index.md
@@ -178,12 +178,20 @@ for (const s of [...WORKFLOW_SKILLS, ...STANDALONE_SKILLS]) {
 
 // ------------------------------------- 5. commandes / skills / checklists référencés
 const KNOWN_SLASH = new Set(skillDirs)
+
+// Noms de skills supprimés ou renommés. Une référence qui subsiste dans la doc pointe vers une
+// commande qui n'existe plus : c'est le mode de dérive le plus courant après un renommage.
+const SLASH_OBSOLETES = [
+  'tm-dev', 'tm-plan', 'tm-review', 'tm-verify', 'tm-wrap-up',
+  'tm-fix', 'tm-feature', 'tm-sprint', 'tm-status', 'tm-evolve', 'tm-gate',
+]
 const mdFiles = walk(ROOT).filter((p) => p.endsWith('.md') && !p.includes('/docs/changelog.md'))
 
 for (const p of mdFiles) {
   const rel = p.slice(ROOT.length + 1)
   const src = read(p)
-  for (const m of src.matchAll(/(?<![\w/`~])\/(tm-[a-z-]+|commit-push)\b/g)) {
+  const motif = new RegExp(`(?<![\\w/\`~])\\/(${[...KNOWN_SLASH, ...SLASH_OBSOLETES].join('|')})\\b`, 'g')
+  for (const m of src.matchAll(motif)) {
     if (!KNOWN_SLASH.has(m[1])) err(`${rel} : référence \`/${m[1]}\` qui n'existe pas dans .claude/skills/.`)
   }
 }

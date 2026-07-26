@@ -27,7 +27,7 @@ Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 4. Ne jamais modifier un invariant d'architecture sans ADR dans `docs/decisions/`.
 5. Les tests s'écrivent AVEC le code : unit, puis intégration, puis e2e si applicable.
 6. **Aucun artefact n'est obligatoire ; son absence est déclarée, pas subie.** Pas de maquette, pas de story, pas de base de données : le travail se fait quand même. Une référence UI à `N/A` n'est jamais un défaut et la review ne la pénalise pas.
-7. **Cadrage = documentation uniquement.** Pendant un `/tm-plan` : aucune dépendance installée, aucun fichier de code créé, aucun build lancé. Seuls `docs/` et `.method/sprint/` sont modifiés.
+7. **Cadrage = documentation uniquement.** Pendant un `/plan` : aucune dépendance installée, aucun fichier de code créé, aucun build lancé. Seuls `docs/` et `.method/sprint/` sont modifiés.
 
 ## Échelle du changement
 
@@ -37,7 +37,7 @@ demande. En cas de doute entre deux échelles, prendre la plus haute et le dire.
 | Échelle | Reconnaissance | Process |
 |---------|----------------|---------|
 | **Micro** | 1-2 fichiers, aucune nouvelle surface | conventions → implémentation → type-check → **review inline** |
-| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests → skill `tm-review` → changelog |
+| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests → skill `revue` → changelog |
 | **Module** | nouvelle surface (route, table, parcours), changement DB, ou ≥ 6 fichiers | **proposer une story avant de coder** → tout le Standard → registry → ADR si invariant → sprint status |
 
 Micro ne veut pas dire « sans garantie » : ce qui disparaît est le cérémonial (rapport de review,
@@ -70,7 +70,7 @@ Registry et stack sont **routés**, pas systématiques : vérifier le registry n
 créant un composant, la stack qu'en touchant aux dépendances.
 
 Ne jamais déduire ce mapping de mémoire ni le recopier ailleurs. Il n'existe **pas** de skill par
-tag : `tm-dev` et `tm-review` matchent les globs eux-mêmes.
+tag : `dev` et `revue` matchent les globs eux-mêmes.
 
 **Ce qu'ESLint ou TypeScript applique n'est jamais répété en prose.** Une règle mécanisée est
 vérifiée à chaque `pnpm lint` ; la recopier n'ajoute que du volume à lire.
@@ -82,15 +82,15 @@ Tout vit dans `.claude/skills/`. Un skill se déclenche **sur l'intention** et r
 
 | Skill | Déclenchement | Rôle |
 |-------|---------------|------|
-| `tm-dev` | auto — modification de `src/`, `tests/`, `supabase/`, config | 2 modes (lecture / écriture) × 3 échelles |
-| `tm-review` | auto — fin d'implémentation dès l'échelle Standard | Conventions routées, confrontées au diff |
-| `tm-verify` | auto — « vérifie », « ça compile ? », après un fix | `pnpm verify` : 4 checks + reçu |
+| `dev` | auto — modification de `src/`, `tests/`, `supabase/`, config | 2 modes (lecture / écriture) × 3 échelles |
+| `revue` | auto — fin d'implémentation dès l'échelle Standard | Conventions routées, confrontées au diff |
+| `verify` | auto — « vérifie », « ça compile ? », après un fix | `pnpm verify` : 4 checks + reçu |
 | `commit-push` | auto — « commit », « push », « envoie » | Checks (sans les rejouer) + changelog + commit + push |
-| `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | **Propose** de capturer les apprentissages, n'écrit jamais sans accord |
+| `wrap-up` | auto — « on a fini », « c'est bouclé » | **Propose** de capturer les apprentissages, n'écrit jamais sans accord |
 | `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source |
-| `tm-plan` | **explicite uniquement** | Cadrage : refus / story seule / évolution / initial |
+| `plan` | **explicite uniquement** | Cadrage : refus / story seule / évolution / initial |
 
-`tm-plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
+`plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
 architecture et stories. Face à un besoin produit large, le **proposer** et attendre l'accord.
 
 ## Vérifier, commiter, pousser
@@ -132,7 +132,7 @@ documentation dans `docs/design/system.md`, preview sur la route `/design-system
 4. Implémenter : migration DB → schemas Zod → Server Actions + tests → composants + tests → page + tests d'intégration.
 5. Appliquer les garde-fous conditionnels.
 6. `pnpm verify`.
-7. Review — inline en Micro, skill `tm-review` dès Standard. Tout problème HAUTE ou MOYENNE **cite sa source** (`conventions/<fichier>.md § <section>`, `CLAUDE.md § <section>`, `checklists/code-review.md § <section>`, ou un AC). Sans source : BASSE, non bloquant.
+7. Review — inline en Micro, skill `revue` dès Standard. Tout problème HAUTE ou MOYENNE **cite sa source** (`conventions/<fichier>.md § <section>`, `CLAUDE.md § <section>`, `checklists/code-review.md § <section>`, ou un AC). Sans source : BASSE, non bloquant.
 8. Finaliser selon l'échelle : changelog · registry · post-implémentation · sprint status · ADR.
 9. `commit-push`.
 

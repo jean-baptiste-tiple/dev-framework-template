@@ -1,5 +1,5 @@
 ---
-name: tm-dev
+name: dev
 description: "Écrire ou explorer du code en respectant les conventions du projet : conventions routées par globs, implémentation, tests, vérification, review, finalisation."
 when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .method/, README), ni pour répondre à une question sans toucher au code : c'est le skill conventions."
 argument-hint: "[E01-S01 | next | description de ce qu'il faut faire]"
@@ -11,7 +11,7 @@ paths:
   - "package.json"
 ---
 
-# tm-dev — Écrire du code
+# dev — Écrire du code
 
 Deux modes seulement. **Lecture** (aucune écriture) ou **écriture**. Tout le reste — l'ampleur
 du process — est déterminé par l'**échelle du changement**, pas par les mots employés dans la
@@ -44,7 +44,7 @@ En cas de doute entre deux échelles, prendre la plus haute et le dire.
 | Échelle | Reconnaissance | Process |
 |---------|----------------|---------|
 | **Micro** | 1-2 fichiers, aucune nouvelle surface (pas de route, table, Server Action ou dépendance nouvelle) | conventions → implémentation → type-check → **review inline** (pas de rapport) |
-| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests écrits avec le code → **review complète** (skill `tm-review`) → changelog |
+| **Standard** | 3-5 fichiers, ou création d'une fonction / composant / action | + tests écrits avec le code → **review complète** (skill `revue`) → changelog |
 | **Module** | nouvelle surface (route, table, parcours), changement DB, ou ≥ 6 fichiers | **proposer une story avant de coder** → tout le Standard → registry → ADR si invariant → sprint status |
 
 **Micro** ne veut pas dire « sans garantie » : les conventions sont chargées et le type-check
@@ -52,7 +52,7 @@ tourne. Ce qui disparaît, c'est le cérémonial (rapport de review, entrée de 
 changement invisible), pas la vérification.
 
 **Module** : proposer une story, ne pas l'imposer. Formuler :
-> « Ça touche [surface] sur [n] fichiers — je propose d'écrire une story d'abord (`tm-plan`,
+> « Ça touche [surface] sur [n] fichiers — je propose d'écrire une story d'abord (`plan`,
 > niveau « story seule » : AC et tests attendus, sans toucher au PRD). Les AC servent ensuite
 > de critère de review. Sinon je code directement. »
 
@@ -118,8 +118,8 @@ de tout rejouer sur du code identique.
 
 - **Micro** : review inline — relire le diff contre les conventions chargées, signaler ce qui
   cloche. Pas de rapport formaté.
-- **Standard et Module** : skill `tm-review`. ❌ CHANGES REQUESTED → corriger HAUTE et MOYENNE →
-  `tm-verify` → re-reviewer. Les BASSE sont signalées, jamais appliquées sans accord.
+- **Standard et Module** : skill `revue`. ❌ CHANGES REQUESTED → corriger HAUTE et MOYENNE →
+  `verify` → re-reviewer. Les BASSE sont signalées, jamais appliquées sans accord.
 
 Au-delà de 2 cycles sans converger → s'arrêter et remonter à l'utilisateur.
 

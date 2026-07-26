@@ -1,7 +1,7 @@
 # Starter : Supabase + Auth
 
 Ce starter ajoute Supabase (base de données, auth, realtime) au projet.
-Il est activé automatiquement par `/tm-plan` quand le projet nécessite une base de données ou de l'authentification.
+Il est activé automatiquement par `/plan` quand le projet nécessite une base de données ou de l'authentification.
 
 ## Ce que ce starter installe
 
