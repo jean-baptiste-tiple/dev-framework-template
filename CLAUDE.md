@@ -1,10 +1,10 @@
-# CLAUDE.md — Tiple Method
+# CLAUDE.md — Méthode de développement
 
 ## Projet
 <!-- À REMPLIR : nom du projet, description en 1 ligne -->
 
 Stack : Next.js 15 (App Router) · TypeScript strict · Tailwind · Shadcn/ui.
-Base de données et auth optionnelles via `.tiple/starters/supabase-auth/`.
+Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 
 ## Style de réponse
 
@@ -23,11 +23,11 @@ Base de données et auth optionnelles via `.tiple/starters/supabase-auth/`.
 
 1. **Conventions chargées + `pnpm type-check` : à toute échelle, sans exception** — y compris pour un changement d'une ligne.
 2. Lire avant de coder : la story si applicable, sa référence UI si elle n'est pas `N/A`, `docs/architecture.md`, et les conventions routées.
-3. Ne jamais créer un composant, hook ou util sans avoir vérifié `.tiple/conventions/component-registry.md`. S'il existe, le réutiliser.
+3. Ne jamais créer un composant, hook ou util sans avoir vérifié `.method/conventions/component-registry.md`. S'il existe, le réutiliser.
 4. Ne jamais modifier un invariant d'architecture sans ADR dans `docs/decisions/`.
 5. Les tests s'écrivent AVEC le code : unit, puis intégration, puis e2e si applicable.
 6. **Aucun artefact n'est obligatoire ; son absence est déclarée, pas subie.** Pas de maquette, pas de story, pas de base de données : le travail se fait quand même. Une référence UI à `N/A` n'est jamais un défaut et la review ne la pénalise pas.
-7. **Cadrage = documentation uniquement.** Pendant un `/tm-plan` : aucune dépendance installée, aucun fichier de code créé, aucun build lancé. Seuls `docs/` et `.tiple/sprint/` sont modifiés.
+7. **Cadrage = documentation uniquement.** Pendant un `/tm-plan` : aucune dépendance installée, aucun fichier de code créé, aucun build lancé. Seuls `docs/` et `.method/sprint/` sont modifiés.
 
 ## Échelle du changement
 
@@ -59,7 +59,7 @@ Déclenchés par la **nature réelle** du travail, quel que soit le vocabulaire 
 ## Conventions routées par globs
 
 Le routing `fichier touché → tag → convention` a **une seule source de vérité** : la colonne
-**Globs** de [`.tiple/conventions/_index.md`](.tiple/conventions/_index.md).
+**Globs** de [`.method/conventions/_index.md`](.method/conventions/_index.md).
 
 - **Base, toujours lue :** `coding-standards.md` — une seule, volontairement courte.
 - **Par globs :** chaque fichier créé ou modifié active des tags ; les fichiers correspondants sont lus **en entier**.
@@ -87,7 +87,7 @@ Tout vit dans `.claude/skills/`. Un skill se déclenche **sur l'intention** et r
 | `tm-verify` | auto — « vérifie », « ça compile ? », après un fix | `pnpm verify` : 4 checks + reçu |
 | `commit-push` | auto — « commit », « push », « envoie » | Checks (sans les rejouer) + changelog + commit + push |
 | `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | **Propose** de capturer les apprentissages, n'écrit jamais sans accord |
-| `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.tiple/conventions/` en citant la source |
+| `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source |
 | `tm-plan` | **explicite uniquement** | Cadrage : refus / story seule / évolution / initial |
 
 `tm-plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
@@ -120,7 +120,7 @@ retirés — Next ne le signale pas, il en choisit un en silence.
 Violet corporate, dark mode class-based (next-themes), Inter. Tokens dans `src/app/globals.css`,
 documentation dans `docs/design/system.md`, preview sur la route `/design-system`.
 
-- **Réutiliser avant de créer** : `.tiple/conventions/component-registry.md` puis `src/components/ui/`.
+- **Réutiliser avant de créer** : `.method/conventions/component-registry.md` puis `src/components/ui/`.
 - **Classes sémantiques uniquement** (`bg-primary`, `text-muted-foreground`, `border-border`). Aucune couleur Tailwind numérotée (`bg-emerald-500`) dans `src/`.
 - **Tester les deux thèmes** avant de considérer un écran terminé.
 
@@ -128,7 +128,7 @@ documentation dans `docs/design/system.md`, preview sur la route `/design-system
 
 1. Déterminer l'échelle (Micro / Standard / Module).
 2. Charger les conventions routées par globs, plus les tags de la story si applicable. **Annoncer la liste.**
-3. Story : la lire entièrement, passer `.tiple/checklists/story-ready.md`, lire la référence UI si ≠ `N/A`. Sinon : reformuler en critères vérifiables et, dès l'échelle Standard, proposer le plan avant d'éditer.
+3. Story : la lire entièrement, passer `.method/checklists/story-ready.md`, lire la référence UI si ≠ `N/A`. Sinon : reformuler en critères vérifiables et, dès l'échelle Standard, proposer le plan avant d'éditer.
 4. Implémenter : migration DB → schemas Zod → Server Actions + tests → composants + tests → page + tests d'intégration.
 5. Appliquer les garde-fous conditionnels.
 6. `pnpm verify`.
@@ -139,7 +139,7 @@ documentation dans `docs/design/system.md`, preview sur la route `/design-system
 ## Quand le PRD évolue
 
 1. Modifier `docs/prd.md` — parcours concerné, statut 🔶 Draft.
-2. Passer `.tiple/checklists/prd-evolution.md`.
+2. Passer `.method/checklists/prd-evolution.md`.
 3. Identifier les impacts **réels** : parcours, référence UI, architecture, epics, stories, DB. Ne pas cascader par principe.
 4. Mettre à jour `docs/architecture.md`, plus un ADR si un invariant est touché.
 5. Mettre à jour les epics et stories impactées, créer uniquement les nouvelles.

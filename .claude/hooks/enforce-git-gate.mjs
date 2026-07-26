@@ -13,11 +13,11 @@
  * elle matche le JSON brut (et bloque `grep "git commit"`, ou laisse passer un marqueur écrit
  * dans le message de commit). `JSON.parse` supprime la classe de bug entière.
  *
- * Échappement : ` # tiple-gate-ok` **en fin de commande**, posé par le skill commit-push une
+ * Échappement : ` # checks-ok` **en fin de commande**, posé par le skill commit-push une
  * fois les 4 checks passés. C'est un garde-fou contre l'oubli, pas une barrière de sécurité.
  */
 
-const MARKER = /#\s*tiple-gate-ok\s*$/
+const MARKER = /#\s*checks-ok\s*$/
 
 const BLOCK_MESSAGE = `BLOQUÉ: commit/push direct interdit.
 
@@ -30,7 +30,7 @@ Passer par le skill \`commit-push\` (.claude/skills/commit-push/SKILL.md), qui e
   6. commit + push
 
 Une fois ces étapes réellement exécutées et passées, relancer la commande git en ajoutant
-' # tiple-gate-ok' à la fin. Ne pas ajouter ce marqueur pour contourner des checks qui échouent.`
+' # checks-ok' à la fin. Ne pas ajouter ce marqueur pour contourner des checks qui échouent.`
 
 const deny = (msg) => {
   process.stderr.write(msg + '\n')
@@ -85,7 +85,7 @@ process.stdin.on("end", async () => {
   }
   if (/\s--amend\b/.test(bare) && !marked) {
     deny(
-      "BLOQUÉ: --amend interdit sans demande explicite de l'utilisateur. Si l'utilisateur l'a demandé et que les checks sont passés, ajouter ' # tiple-gate-ok' en fin de commande."
+      "BLOQUÉ: --amend interdit sans demande explicite de l'utilisateur. Si l'utilisateur l'a demandé et que les checks sont passés, ajouter ' # checks-ok' en fin de commande."
     )
   }
 

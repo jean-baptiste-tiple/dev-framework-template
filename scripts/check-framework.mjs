@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-framework — cohérence interne de la Tiple Method.
+ * check-framework — cohérence interne du framework.
  *
  * Ce que ça empêche : que le framework pourrisse en silence. Un tag sans fichier de
  * conventions, un skill pointant vers un fichier disparu, une commande `/xxx` citée dans la
@@ -15,9 +15,9 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const CONV = join(ROOT, '.tiple/conventions')
+const CONV = join(ROOT, '.method/conventions')
 const SKILLS = join(ROOT, '.claude/skills')
-const CHECKLISTS = join(ROOT, '.tiple/checklists')
+const CHECKLISTS = join(ROOT, '.method/checklists')
 const INDEX = join(CONV, '_index.md')
 
 const errors = []
@@ -37,7 +37,7 @@ const walk = (dir, out = []) => {
 }
 
 if (!existsSync(INDEX)) {
-  err('.tiple/conventions/_index.md est absent — le routing par tags est mort.')
+  err('.method/conventions/_index.md est absent — le routing par tags est mort.')
   report()
 }
 
@@ -191,12 +191,12 @@ for (const p of mdFiles) {
 // Une checklist que rien n'appelle dérive sans que personne le voie : c'est exactement ce qui
 // est arrivé à story-done.md, resté sur une structure de review supprimée depuis.
 const checklistRefs = mdFiles
-  .filter((p) => !p.includes('/.tiple/checklists/'))
+  .filter((p) => !p.includes('/.method/checklists/'))
   .map((p) => read(p))
   .join('\n')
 for (const f of existsSync(CHECKLISTS) ? readdirSync(CHECKLISTS) : []) {
   if (f.endsWith('.md') && !checklistRefs.includes(f)) {
-    err(`Checklist orpheline : .tiple/checklists/${f} n'est appelée par aucun skill ni convention.`)
+    err(`Checklist orpheline : .method/checklists/${f} n'est appelée par aucun skill ni convention.`)
   }
 }
 
@@ -263,7 +263,7 @@ if (existsSync(settingsPath)) {
 for (const doc of ['CLAUDE.md', 'README.md']) {
   const p = join(ROOT, doc)
   if (!existsSync(p)) continue
-  for (const m of read(p).matchAll(/`((?:\.tiple|\.claude|docs|src|scripts|tests)\/[\w./()-]+)`/g)) {
+  for (const m of read(p).matchAll(/`((?:\.method|\.claude|docs|src|scripts|tests)\/[\w./()-]+)`/g)) {
     const target = m[1].replace(/\/$/, '')
     if (target.includes('*') || target.includes('<')) continue
     if (!existsSync(join(ROOT, target))) err(`${doc} : chemin cité inexistant — ${target}`)

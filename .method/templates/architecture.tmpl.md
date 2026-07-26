@@ -1,7 +1,7 @@
 # Architecture — [Nom du projet]
 
 <!-- INSTRUCTIONS : Ce document est généré par /tm-plan — artefact « architecture », depuis le PRD.
-     Les sections "Invariants" sont pré-remplies avec la stack Tiple Method.
+     Les sections "Invariants" sont pré-remplies avec la stack framework.
      Les sections "À remplir" sont spécifiques au projet. -->
 
 **Dernière MAJ :** [date]
@@ -41,7 +41,7 @@ graph TB
 
 ## 3. Structure du projet
 
-<!-- INVARIANT — structure standard Tiple Method -->
+<!-- INVARIANT — structure standard framework -->
 
 ```
 src/
@@ -96,7 +96,7 @@ erDiagram
 
 ## 6. Auth & Sécurité
 
-<!-- INVARIANT — pattern standard Tiple Method -->
+<!-- INVARIANT — pattern standard framework -->
 
 ### Flux d'authentification
 - Supabase Auth (email/password par défaut, extensible OAuth)

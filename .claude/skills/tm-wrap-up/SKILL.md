@@ -1,6 +1,6 @@
 ---
 name: tm-wrap-up
-description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). Déclenche-toi quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .tiple/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
+description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). Déclenche-toi quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .method/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
 argument-hint: "[scope optionnel]"
 ---
 
@@ -24,12 +24,12 @@ Ignorer ce qui est déjà évident à la lecture du code ou du changelog.
 
 | Type d'apprentissage | Destination |
 |---|---|
-| Nouvelle règle / invariant technique | `.tiple/conventions/<fichier>.md` (section Règles) |
-| Décision d'architecture non-triviale | Nouvel ADR dans `docs/decisions/` (`.tiple/templates/adr.tmpl.md`) |
+| Nouvelle règle / invariant technique | `.method/conventions/<fichier>.md` (section Règles) |
+| Décision d'architecture non-triviale | Nouvel ADR dans `docs/decisions/` (`.method/templates/adr.tmpl.md`) |
 | Gotcha / config / commande projet-spécifique | `CLAUDE.md` |
-| Composant / hook / util réutilisable créé | `.tiple/conventions/component-registry.md` |
+| Composant / hook / util réutilisable créé | `.method/conventions/component-registry.md` |
 | Nouveau domaine technique récurrent | Nouveau tag : une ligne dans `_index.md` (avec ses **globs**) + le fichier de conventions. Rien d'autre. |
-| Story / bug découvert en chemin | `docs/stories/` ou `.tiple/sprint/status.md` |
+| Story / bug découvert en chemin | `docs/stories/` ou `.method/sprint/status.md` |
 
 Règles de sélection :
 - **Une seule occurrence = pas un pattern.** Attendre 2+ avant de promouvoir en convention.
@@ -85,8 +85,8 @@ Attendre la validation. Si l'utilisateur refuse ou ignore : ne rien faire, conti
 
 ## Règles
 
-1. **Jamais d'écriture sans validation explicite** dans `.tiple/conventions/`, `docs/decisions/`, `CLAUDE.md`
+1. **Jamais d'écriture sans validation explicite** dans `.method/conventions/`, `docs/decisions/`, `CLAUDE.md`
 2. Pas de capture du one-off — 2+ occurrences avant de promouvoir une règle
-3. Pas de doublon : si l'info existe déjà dans `.tiple/` ou `CLAUDE.md`, ne pas la redire
+3. Pas de doublon : si l'info existe déjà dans `.method/` ou `CLAUDE.md`, ne pas la redire
 4. Scope-aware : si un argument est fourni (ex: `wrap-up auth`), limiter la réflexion à ce scope
 5. **Zéro capture vaut mieux qu'un faux positif** qui pollue les conventions

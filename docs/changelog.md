@@ -10,16 +10,35 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Renommage : `.tiple/` devient `.method/`
+**Quoi :** le nom commercial du framework disparaît de l'arborescence et du code. Il ne subsiste que dans le `README.md`, seul endroit où il est assumé.
+
+- `.tiple/` → **`.method/`** (`git mv`, historique préservé) — conventions, checklists, templates, starters, sprint status
+- marqueur d'échappement du gate : ` # tiple-gate-ok` → ` # checks-ok`
+- variable d'environnement : `TIPLE_RECEIPT_PATH` → `VERIFY_RECEIPT_PATH`
+- `package.json` : `tiple-method-template` → `dev-framework-template`
+- prose « Tiple Method » → « le framework » / « la méthode » dans `CLAUDE.md`, les skills, les conventions, les checklists et les templates
+- `docs/migration-tiple-v2.md` → `docs/migration-v2.md`, avec un **lot A « Renommer le dossier de méthode »** ajouté en tête et les lots suivants décalés (9 au lieu de 8)
+- `docs/migration-renommage.md` (créé) : prompt court pour les projets **déjà migrés en v2** qui portent encore `.tiple/` — le guide v1→v2 fait désormais le renommage en une passe, ce second document ne sert qu'aux instances migrées avant ce changement
+
+**Points d'attention traités :** trois fichiers contiennent le chemin **à l'intérieur d'expressions régulières**, où le point est échappé — un remplacement naïf de `.tiple/` les rate. `scripts/check-framework.mjs` (motif de validation des chemins cités), `scripts/verify-receipt.mjs` (liste `EXCLUS`) et `.claude/hooks/enforce-git-gate.mjs` (constante `MARKER`). Vérifiés un par un.
+
+**Non renommés, volontairement :** `.claude/` (imposé par Claude Code) · les skills `tm-*`, qui sont les slash commands du quotidien et ne contiennent pas le terme visé · le dépôt GitHub et son propriétaire, qui sont une URL.
+
+**Pourquoi :** un nom de produit dans un chemin de dossier est une dette de nommage — il se propage dans chaque import, chaque citation de convention et chaque message de hook, et devient coûteux à retirer plus tard.
+
+**Fichiers :** 26 fichiers modifiés, `.tiple/` → `.method/`, `docs/migration-renommage.md` créé
+
 ## [2026-07-26] — Guide de migration v1 → v2 pour les projets existants
-**Quoi :** `docs/migration-tiple-v2.md` — prompt à coller dans une session Claude Code ouverte sur un projet issu de l'ancienne version du template. Découpé en 8 lots (hooks, scripts, skills, conventions, checklists, config, code, docs), chacun expliquant *pourquoi* le changement a eu lieu, pour que les décisions puissent être adaptées au projet cible.
+**Quoi :** `docs/migration-v2.md` — prompt à coller dans une session Claude Code ouverte sur un projet issu de l'ancienne version du template. Découpé en 9 lots (renommage, hooks, scripts, skills, conventions, checklists, config, code, docs), chacun expliquant *pourquoi* le changement a eu lieu, pour que les décisions puissent être adaptées au projet cible.
 
 Trois garde-fous y sont posés en tête : ne jamais écraser le code métier ni les documents produits (`docs/prd.md`, stories, epics, ADR) ; préserver les conventions personnalisées en appliquant les corrections plutôt qu'en remplaçant les fichiers ; et **adapter les globs à l'arborescence réelle du projet** — un glob qui ne matche rien désactive silencieusement le chargement d'une convention.
 
-Le lot D3 liste les 17 règles de la v1 techniquement fausses ou dangereuses, avec leur correction. Le document demande explicitement de **signaler sans corriger** le code métier qui suit l'une d'elles (middleware auth perdant les cookies rafraîchis, Server Actions exposant `error.message`, autorisation placée dans un layout) : c'est une décision qui revient au propriétaire du projet.
+Le lot E3 liste les 17 règles de la v1 techniquement fausses ou dangereuses, avec leur correction. Le document demande explicitement de **signaler sans corriger** le code métier qui suit l'une d'elles (middleware auth perdant les cookies rafraîchis, Server Actions exposant `error.message`, autorisation placée dans un layout) : c'est une décision qui revient au propriétaire du projet.
 
-**Pourquoi :** la v2 change la structure de `.claude/` et de `.tiple/`, ce qu'aucun merge du template ne peut résoudre seul sur un projet qui a divergé.
+**Pourquoi :** la v2 change la structure de `.claude/` et de `.method/`, ce qu'aucun merge du template ne peut résoudre seul sur un projet qui a divergé.
 
-**Fichiers :** `docs/migration-tiple-v2.md`
+**Fichiers :** `docs/migration-v2.md`
 
 ## [2026-07-26] — Régressions de la refonte, trouvées par contre-audit
 **Quoi :** un audit indépendant a été passé sur le résultat de la refonte précédente, avec pour consigne de chercher ce qu'elle avait cassé. Douze findings, tous vérifiés avant correction.
@@ -27,7 +46,7 @@ Le lot D3 liste les 17 règles de la v1 techniquement fausses ou dangereuses, av
 - **Instructions devenues fausses, qui faisaient échouer le check.** `_index.md` et `tm-wrap-up` disaient encore « ajouter un tag = ligne + convention + `.claude/skills/<tag>/` » alors que `check:framework` **rejette** désormais un skill par tag. Suivre la doc cassait le gate de commit. Reproduit puis corrigé des deux côtés.
 - **Le gate était contournable par shell imbriqué.** `bash -c "git commit -m x"` et `eval "git push"` passaient : la neutralisation des chaînes entre quotes — nécessaire pour ne pas bloquer `grep "git commit"` — effaçait la commande. Le hook refuse maintenant tout shell imbriqué, faute de pouvoir l'analyser.
 - **Le reçu plantait sur un dépôt sans commit.** `git rev-parse HEAD` échouait, donc `pnpm verify` mourait **après** avoir passé les 4 checks, et le hook refusait ensuite le commit en boucle — sans échappement, `--no-verify` étant bloqué. Le premier commit d'un projet issu du template était impossible. Garde ajouté, plus un fallback par fichier pour les chemins que git ne sait pas hacher.
-- **Les tests écrivaient dans le vrai reçu.** Un `pnpm test` interrompu laissait derrière lui un reçu déclarant les 4 checks passés alors que seul vitest avait tourné — le gate autorisait alors un commit sans type-check ni lint. Les tests écrivent désormais dans un reçu isolé (`TIPLE_RECEIPT_PATH`).
+- **Les tests écrivaient dans le vrai reçu.** Un `pnpm test` interrompu laissait derrière lui un reçu déclarant les 4 checks passés alors que seul vitest avait tourné — le gate autorisait alors un commit sans type-check ni lint. Les tests écrivent désormais dans un reçu isolé (`VERIFY_RECEIPT_PATH`).
 - **Renommage non détecté.** `git diff --name-status` n'émet qu'une ligne `R100 ancien nouveau` ; en ne retenant que la destination, la disparition de l'ancien chemin n'était pas enregistrée. Restaurer l'ancien fichier à côté du nouveau laissait le reçu valide alors que les deux coexistaient. Résolu par `--no-renames`.
 - **Le reçu ne servait qu'en Micro.** Il n'excluait que le changelog, alors que la finalisation écrit ensuite dans le sprint status, les stories et les ADR — tout chantier Standard ou Module invalidait donc le reçu et rejouait les 4 checks, c'est-à-dire exactement ce que le mécanisme prétendait supprimer. Exclusions étendues.
 - **Trous de routing.** Le tag `api` n'était pas routé sur `src/app/**/page.tsx`, alors que trois sections d'`api-patterns.md` sont du code de page — dont la règle sur les `searchParams` validés par Zod, jamais chargée sur le fichier qu'elle vise. Et `supabase-patterns.md` n'était pas chargé sur `src/lib/actions/**` alors qu'`api-patterns.md` y impose `handleSupabaseError`.
@@ -37,7 +56,7 @@ Le lot D3 liste les 17 règles de la v1 techniquement fausses ou dangereuses, av
 
 **Pourquoi :** une refonte de cette ampleur introduit ses propres régressions, et les plus dangereuses sont celles qui rendent une garantie inopérante sans rien signaler. Trois des quatre HAUTE touchaient le gate de commit ou le reçu — c'est-à-dire précisément ce qui doit être infaillible.
 
-**Fichiers :** `.claude/hooks/enforce-git-gate.mjs`, `enforce-bash-rules.mjs` · `scripts/verify-receipt.mjs` · `tests/unit/hooks.test.ts` (16 cas) · `.tiple/conventions/_index.md`, `api-patterns.md`, `forms-patterns.md`, `nextjs-patterns.md` · `.claude/skills/tm-wrap-up/SKILL.md`, `tm-review/SKILL.md` · `.tiple/checklists/readiness-gate.md` · `eslint.config.mjs`, `README.md`
+**Fichiers :** `.claude/hooks/enforce-git-gate.mjs`, `enforce-bash-rules.mjs` · `scripts/verify-receipt.mjs` · `tests/unit/hooks.test.ts` (16 cas) · `.method/conventions/_index.md`, `api-patterns.md`, `forms-patterns.md`, `nextjs-patterns.md` · `.claude/skills/tm-wrap-up/SKILL.md`, `tm-review/SKILL.md` · `.method/checklists/readiness-gate.md` · `eslint.config.mjs`, `README.md`
 
 ## [2026-07-26] — Refonte issue de l'audit : conventions corrigées, volume divisé par 2, reçu de vérification
 **Quoi :**
@@ -86,7 +105,7 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 ## [2026-07-26] — Correctifs issus de l'audit multi-agents : gate git réparé et testé, 404 au premier lancement, lint impassable
 **Quoi :** neuf audits indépendants (4 scénarios d'usage, 4 lots de conventions, 1 sur l'architecture des skills) ont été passés sur le framework. Cette entrée ne couvre que les défauts **vérifiés et corrigés** ; le reste est arbitré séparément.
 
-- **Gate git réparé — c'était une régression introduite le jour même.** Le hook cherchait le marqueur d'échappement dans le payload JSON brut : `git commit -m "docs: expliquer tiple-gate-ok"` passait le gate sans qu'aucun check n'ait tourné. Trois autres contournements : `git -C /repo commit`, `git --no-pager push`, `git -c k=v push` (le motif exigeait `git` suivi immédiatement de la sous-commande). Et deux faux positifs : `grep -rn "git commit" docs/` était bloqué, et un message de commit contenant `--force` était bloqué définitivement.
+- **Gate git réparé — c'était une régression introduite le jour même.** Le hook cherchait le marqueur d'échappement dans le payload JSON brut : `git commit -m "docs: expliquer checks-ok"` passait le gate sans qu'aucun check n'ait tourné. Trois autres contournements : `git -C /repo commit`, `git --no-pager push`, `git -c k=v push` (le motif exigeait `git` suivi immédiatement de la sous-commande). Et deux faux positifs : `grep -rn "git commit" docs/` était bloqué, et un message de commit contenant `--force` était bloqué définitivement.
 - **Les deux hooks passent de bash à Node.** La cause racine était unique : bash ne sait pas parser du JSON. Toute extraction du champ `command` par grep/sed est fausse dans un sens (troncature au premier guillemet échappé) ou dans l'autre (matching du JSON entier). `JSON.parse` supprime la classe de bug. Les chaînes entre quotes sont neutralisées avant analyse, et le marqueur n'est accepté qu'**en fin de commande**.
 - **`tests/unit/hooks.test.ts`** : 18 cas de non-régression sur les deux hooks, exécutés par `pnpm test`, donc par `commit-push`. Le gate ne peut plus se casser en silence.
 - **404 au premier lancement.** `src/app/page.tsx` et `src/app/(dashboard)/page.tsx` résolvaient tous les deux `/`. Next 15 n'échoue pas : il en choisit un silencieusement. `app/page.tsx` gagnait et redirigeait vers `/dashboard`, route qu'aucun fichier ne produit — un clone frais tombait donc sur un 404, et la page du route group ainsi que son layout n'étaient jamais rendus. `src/app/page.tsx` supprimé.
@@ -100,22 +119,22 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 **Fichiers :**
 - `.claude/hooks/enforce-git-gate.mjs`, `.claude/hooks/enforce-bash-rules.mjs` (créés) — versions `.sh` supprimées
 - `.claude/settings.json`, `tests/unit/hooks.test.ts` (créé), `eslint.config.mjs`, `vitest.config.ts`
-- `src/app/page.tsx` (supprimé), `.tiple/checklists/story-done.md`, `.claude/skills/tm-dev/SKILL.md`
+- `src/app/page.tsx` (supprimé), `.method/checklists/story-done.md`, `.claude/skills/tm-dev/SKILL.md`
 - `CLAUDE.md`, `README.md`, `.claude/skills/commit-push/SKILL.md`, `.claude/skills/tm-verify/SKILL.md`
 
 ## [2026-07-26] — Ménage : suppression des documents morts et des références obsolètes
 **Quoi :**
 - **`plan.md` supprimé** — plan d'implémentation ponctuel d'un chantier terminé (restructuration du PRD en parcours), laissé à la racine où Claude le lisait comme normatif.
-- **`files/` supprimé** (2 341 lignes) — PRD, architecture, stories et guide de migration de la Tiple Method elle-même. Ces documents décrivaient une version passée de la méthode, citaient trois commandes qui n'ont jamais existé dans le template (`/tm-evolve`, `/tm-status`, `/tm-sprint`) et n'étaient référencés par rien de normatif. Historique conservé dans git.
+- **`files/` supprimé** (2 341 lignes) — PRD, architecture, stories et guide de migration de la méthode elle-même. Ces documents décrivaient une version passée de la méthode, citaient trois commandes qui n'ont jamais existé dans le template (`/tm-evolve`, `/tm-status`, `/tm-sprint`) et n'étaient référencés par rien de normatif. Historique conservé dans git.
 - **`.gitignore`** : suppression de l'exception `!.claude/commands/` — le dossier n'existe plus.
-- **Références « phase N » de `/tm-plan` remplacées** dans les 4 templates, les 2 checklists, `.tiple/sprint/status.md` et les 6 placeholders de `docs/` : `tm-plan` ne fonctionne plus par phases numérotées mais par artefacts produits à la demande.
+- **Références « phase N » de `/tm-plan` remplacées** dans les 4 templates, les 2 checklists, `.method/sprint/status.md` et les 6 placeholders de `docs/` : `tm-plan` ne fonctionne plus par phases numérotées mais par artefacts produits à la demande.
 - **`check:framework`** : l'exclusion de `files/` disparaît, seul le changelog reste exclu (son rôle de journal est de citer des commandes supprimées).
 
 **Pourquoi :** ces fichiers étaient lus comme source de vérité par Claude alors qu'ils décrivaient un état révolu du framework. Un template qui embarque 2 400 lignes de méta-documentation périmée fait porter cette dette à chaque projet cloné.
 
 **Fichiers :**
-- Supprimés : `plan.md`, `files/guide-mise-a-jour-framework.md`, `files/tiple-method-architecture.md`, `files/tiple-method-prd.md`, `files/tiple-method-stories.md`
-- Modifiés : `.gitignore`, `scripts/check-framework.mjs`, `.tiple/templates/{brief,prd,architecture,epic,story}.tmpl.md`, `.tiple/checklists/readiness-gate.md`, `.tiple/sprint/status.md`, `docs/{brief,prd,architecture}.md`, `docs/epics/_index.md`, `docs/design/{screens,components}/_index.md`
+- Supprimés : `plan.md`, les 4 documents d'archive de `files/`
+- Modifiés : `.gitignore`, `scripts/check-framework.mjs`, `.method/templates/{brief,prd,architecture,epic,story}.tmpl.md`, `.method/checklists/readiness-gate.md`, `.method/sprint/status.md`, `docs/{brief,prd,architecture}.md`, `docs/epics/_index.md`, `docs/design/{screens,components}/_index.md`
 
 ## [2026-07-26] — Simplification tm-dev / tm-plan : échelles au lieu de modes, cadrage à la carte
 **Quoi :**
@@ -134,12 +153,12 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 
 ## [2026-07-26] — Refonte du système d'agent : skills auto-déclenchés, review conventions-driven, gate git par hook
 **Quoi :**
-- **Routing unique par globs.** `.tiple/conventions/_index.md` gagne une colonne **Globs** — seule source de vérité `fichier → tag → convention`, consommée par `tm-dev` et `tm-review`. Le mapping en prose (7 tags sur 22) qui vivait dans `tm-dev.md` est supprimé.
+- **Routing unique par globs.** `.method/conventions/_index.md` gagne une colonne **Globs** — seule source de vérité `fichier → tag → convention`, consommée par `tm-dev` et `tm-review`. Le mapping en prose (7 tags sur 22) qui vivait dans `tm-dev.md` est supprimé.
 - **Review adossée aux conventions.** Nouveau skill `tm-review` : il route les conventions par globs sur le diff, les lit **en entier**, puis confronte le code aux règles. La gravité est indexée sur la source — HAUTE/MOYENNE seulement si le finding cite `conventions/<fichier>.md § <section>` ou un AC de la story ; sans citation, c'est BASSE et non bloquant. Avant, la review ne lisait que 2 fichiers de conventions sur 22.
 - **`code-review.md` réduit au transverse** (périmètre du diff, hygiène, conformité à la demande, documentation de méthode). Les ~40 règles qui doublonnaient les conventions sont supprimées — fin de la 3ᵉ source de vérité.
 - **Suppression de l'agent isolé.** La review tourne dans le contexte courant. La perte de recul est compensée par la mécanique : on ne demande plus au reviewer d'avoir des idées, mais de dérouler des règles lues juste avant.
 - **`.claude/commands/` supprimé, tout devient skill.** Un skill s'auto-déclenche sur l'intention *et* reste invocable en `/<nom>` ; une command n'offrait que le second. `tm-dev`, `tm-plan`, `tm-review`, `tm-verify`, `tm-wrap-up`, `commit-push` migrent. `tm-fix` et `tm-feature` (dépréciés) sont supprimés.
-- **Gate git déterministe.** `enforce-git-gate.sh` bloque tout `git commit`/`git push` hors du skill `commit-push` (échappement explicite par le marqueur ` # tiple-gate-ok`, posé après les checks). `--no-verify` et `--force` bloqués sans échappement. Le déclenchement d'un skill est probabiliste : acceptable pour charger des conventions, pas pour un gate de push.
+- **Gate git déterministe.** `enforce-git-gate.sh` bloque tout `git commit`/`git push` hors du skill `commit-push` (échappement explicite par le marqueur ` # checks-ok`, posé après les checks). `--no-verify` et `--force` bloqués sans échappement. Le déclenchement d'un skill est probabiliste : acceptable pour charger des conventions, pas pour un gate de push.
 - **22 skills de tag réduits à des pointeurs.** Les 3 invariants recopiés dans chacun sont supprimés : ils divergeaient de la convention et donnaient l'illusion d'être informé sans lire la source.
 - **`pnpm check:framework`.** Valide tags ↔ conventions ↔ skills ↔ hooks ↔ références croisées. A détecté 8 incohérences existantes au premier run (`/tm-evolve`, `/tm-gate`, `/tm-sprint`, `/tm-status` référencés partout, inexistants) — toutes corrigées.
 - **`enforce-bash-rules.sh` réparé** : ne bloque plus `git log | head` (les règles ne ciblent plus que les commandes de check) et ne renvoie plus vers une section de `CLAUDE.md` supprimée en mai.
@@ -148,7 +167,7 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 **Pourquoi :** le système d'agent avait trois sources de vérité divergentes (conventions, checklist, skills), aucune review ne lisait les conventions, et les règles de qualité n'étaient appliquées que si Claude pensait à les appliquer. Les garanties sont maintenant soit mécaniques (routing par globs, citation obligatoire), soit appliquées par un hook.
 
 **Fichiers :**
-- `.tiple/conventions/_index.md`, `.tiple/checklists/code-review.md`, `.tiple/checklists/prd-evolution.md`, `.tiple/checklists/readiness-gate.md`, `.tiple/sprint/status.md`, `.tiple/templates/epic.tmpl.md`, `.tiple/templates/story.tmpl.md`
+- `.method/conventions/_index.md`, `.method/checklists/code-review.md`, `.method/checklists/prd-evolution.md`, `.method/checklists/readiness-gate.md`, `.method/sprint/status.md`, `.method/templates/epic.tmpl.md`, `.method/templates/story.tmpl.md`
 - `.claude/skills/{tm-dev,tm-plan,tm-review,tm-verify,tm-wrap-up,commit-push}/SKILL.md` (créés) + 22 skills de tag réécrits
 - `.claude/commands/` (supprimé), `.claude/hooks/enforce-git-gate.sh` (créé), `.claude/hooks/enforce-bash-rules.sh`, `.claude/settings.json`
 - `scripts/check-framework.mjs` (créé), `package.json`, `CLAUDE.md`, `README.md`, `files/*.md`
@@ -180,7 +199,7 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 
 ## [2026-04-30] — CLAUDE.md : règle de style de réponse (concis, pas de récap)
 **Quoi :** Ajout d'une section "Style de réponse (CRITIQUE)" en tête du CLAUDE.md imposant des réponses courtes, sans récap qui répète l'user, sans tableaux décoratifs ni emojis non demandés, sans phrases d'intro/transition.
-**Pourquoi :** réduire le bruit dans les réponses Claude pendant les workflows Tiple Method, particulièrement utile dans les sessions longues où chaque tour répétait inutilement le contexte.
+**Pourquoi :** réduire le bruit dans les réponses Claude pendant les workflows framework, particulièrement utile dans les sessions longues où chaque tour répétait inutilement le contexte.
 **Fichiers :**
 - `CLAUDE.md` (nouvelle section au début)
 
@@ -226,8 +245,8 @@ Ajout : parsing de `_index.md` **par nom de colonne** (ajouter une colonne tuait
 - `CLAUDE.md` (ajout de `/tm-wrap-up` dans la table des commandes)
 
 ## [2026-04-19] — Template : skills "shim" pour conventions
-**Quoi :** Ajout de 22 skills Claude Code (un par tag de `.tiple/conventions/_index.md`) dans `.claude/skills/`. Chaque skill est un shim ~8 lignes (frontmatter `name`+`description` + pointeur vers `.tiple/conventions/<file>.md` + 2-3 invariants-clés).
-**Pourquoi :** Les conventions étaient chargées uniquement par `/tm-dev` / `/tm-fix` via déduction de tags manuelle. Hors de ces workflows (édit libre, Q&A), elles étaient ignorées. Les skills permettent à Claude de les auto-déclencher contextuellement sans toucher à la source de vérité (`.tiple/conventions/` inchangé) ni aux slash commands.
+**Quoi :** Ajout de 22 skills Claude Code (un par tag de `.method/conventions/_index.md`) dans `.claude/skills/`. Chaque skill est un shim ~8 lignes (frontmatter `name`+`description` + pointeur vers `.method/conventions/<file>.md` + 2-3 invariants-clés).
+**Pourquoi :** Les conventions étaient chargées uniquement par `/tm-dev` / `/tm-fix` via déduction de tags manuelle. Hors de ces workflows (édit libre, Q&A), elles étaient ignorées. Les skills permettent à Claude de les auto-déclencher contextuellement sans toucher à la source de vérité (`.method/conventions/` inchangé) ni aux slash commands.
 **Fichiers :**
 - `.claude/skills/{auth,database,supabase,api,forms,realtime,security,nextjs,typescript,state,feedback,performance,tables,uploads,seo,a11y,i18n,datetime,monitoring,flags,deploy,testing}/SKILL.md` (22 nouveaux shims)
 - `.gitignore` : whitelist `!.claude/skills/`

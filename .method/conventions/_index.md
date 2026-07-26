@@ -66,7 +66,7 @@ une régression, et `check:framework` les exempte de la détection de globs mort
 
 | Tag | Activé par |
 |-----|------------|
-| `supabase`, `database`, `auth`, `realtime` | starter `.tiple/starters/supabase-auth/` |
+| `supabase`, `database`, `auth`, `realtime` | starter `.method/starters/supabase-auth/` |
 | `i18n` | ajout de `next-intl` (ou équivalent) |
 | `flags` | ajout d'une librairie de feature flags |
 | `monitoring` | ajout de Sentry / d'un provider d'analytics |

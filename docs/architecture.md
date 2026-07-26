@@ -1,4 +1,4 @@
 # Architecture
 
 > Généré par `/tm-plan` — artefact « architecture ».
-> Template : .tiple/templates/architecture.tmpl.md
+> Template : .method/templates/architecture.tmpl.md

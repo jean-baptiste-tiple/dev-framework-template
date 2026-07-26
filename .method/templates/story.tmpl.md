@@ -3,7 +3,7 @@
 <!-- INSTRUCTIONS : Créé par /tm-plan — artefact « epics/stories », en mode initial ou évolution.
      Ce template est le plus important — il doit contenir TOUT ce dont
      Claude Code a besoin pour implémenter de manière autonome.
-     IMPORTANT : Vérifier .tiple/conventions/component-registry.md avant de créer. -->
+     IMPORTANT : Vérifier .method/conventions/component-registry.md avant de créer. -->
 
 ## Meta
 
@@ -14,7 +14,7 @@
 | **Statut** | ⬜ Draft / 🟢 Ready / 🔵 In Progress / ✅ Done |
 | **Priorité** | Must / Should / Could |
 | **Référence UI** | _Fichier JSX, lien Figma, wireframe, description texte, ou N/A_ |
-| **Conventions** | auth, database, forms, security (tags depuis `.tiple/conventions/_index.md`) |
+| **Conventions** | auth, database, forms, security (tags depuis `.method/conventions/_index.md`) |
 | **Estimation** | S / M / L |
 
 ## Contexte
@@ -43,8 +43,8 @@
 - `src/...`
 
 ### Patterns à suivre
-- Voir `.tiple/conventions/coding-standards.md` — section [X]
-- Voir `.tiple/conventions/api-patterns.md` — section [X]
+- Voir `.method/conventions/coding-standards.md` — section [X]
+- Voir `.method/conventions/api-patterns.md` — section [X]
 
 ## Tests attendus
 

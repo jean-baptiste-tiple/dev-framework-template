@@ -12,7 +12,7 @@ Un dialogue qui produit les documents de cadrage. Pas un formulaire, pas un pipe
 obligatoire : **une liste d'artefacts dont seuls les manquants ou les impactés sont produits.**
 
 > **RÈGLE CRITIQUE — zéro code, zéro commande système.**
-> Ce skill ne modifie que des Markdown dans `docs/` et `.tiple/sprint/`. Interdit pendant un
+> Ce skill ne modifie que des Markdown dans `docs/` et `.method/sprint/`. Interdit pendant un
 > cadrage : installer des dépendances, créer/modifier `.ts` `.tsx` `.js` `.css` `.json`, lancer
 > un build/lint/test, copier des fichiers de starter, créer des dossiers dans `src/`,
 > `supabase/`, `.github/`. L'installation technique est faite par `tm-dev`, dans la story de setup.
@@ -30,9 +30,9 @@ la demande touche :
 | **Initial** | `docs/prd.md` absent, vide ou placeholder | La chaîne complète |
 
 **Story seule** est le niveau attendu quand `tm-dev` propose « je cadre une story d'abord » :
-écrire la story depuis `.tiple/templates/story.tmpl.md` — AC en Given/When/Then, fichiers à
+écrire la story depuis `.method/templates/story.tmpl.md` — AC en Given/When/Then, fichiers à
 créer, tests attendus, tags `Conventions` — **sans toucher au PRD ni à l'architecture**. Gate
-réduit à `.tiple/checklists/story-ready.md`. Puis **rendre la main à `tm-dev`** sur cette story.
+réduit à `.method/checklists/story-ready.md`. Puis **rendre la main à `tm-dev`** sur cette story.
 
 Ne jamais déclencher une évolution de PRD complète pour une demande qui n'ouvre pas de parcours :
 c'est le piège qui rend la proposition de story dissuasive.
@@ -51,7 +51,7 @@ En **Évolution**, confirmer avant d'écrire :
 2. Préserver le contenu existant sauf demande explicite
 3. **ADR obligatoire** dans `docs/decisions/` pour tout invariant touché (structure, sécurité, modèle de données)
 4. Stories et epics existants non retouchés, sauf si leur scope change (le noter dans leur historique)
-5. Passer `.tiple/checklists/prd-evolution.md` en plus du readiness-gate
+5. Passer `.method/checklists/prd-evolution.md` en plus du readiness-gate
 
 ## Les artefacts
 
@@ -65,7 +65,7 @@ MVP IN/OUT explicites · contraintes (techniques, business, légales, RGPD) · K
 risques. Quantifier la douleur : « perd 2h/semaine » > « c'est lent ».
 
 En Évolution : ajouter une section de version, ne pas réécrire l'existant.
-→ `.tiple/templates/brief.tmpl.md`
+→ `.method/templates/brief.tmpl.md`
 
 ### `docs/prd.md` — le PRD par parcours
 
@@ -76,14 +76,14 @@ Cohérence à vérifier : chaque FR a une référence UI (maquette, description 
 chaque écran est dans un flow · max 60 % de Must · chaque FR est testable.
 
 En Évolution : les nouvelles sections sont marquées 🔶 Draft, les parcours existants intacts.
-→ `.tiple/templates/prd.tmpl.md`
+→ `.method/templates/prd.tmpl.md`
 
 ### `docs/architecture.md` — le socle technique
 
 Modèle de données (Mermaid ER) · RLS par table · Server Actions par parcours · points
 performance. Commencer simple. RLS dès le jour 1. Un schema Zod = une source de vérité.
 
-→ `.tiple/templates/architecture.tmpl.md` · consulter `.tiple/conventions/_index.md`
+→ `.method/templates/architecture.tmpl.md` · consulter `.method/conventions/_index.md`
 
 ### `docs/design/` — le design
 
@@ -101,11 +101,11 @@ textuelle ou `N/A`.
 
 ### `docs/epics/` et `docs/stories/` — le découpage
 
-Epics (`.tiple/templates/epic.tmpl.md`) référençant leur parcours. Stories
-(`.tiple/templates/story.tmpl.md`) avec contexte, AC Given/When/Then, fichiers à créer, tests
+Epics (`.method/templates/epic.tmpl.md`) référençant leur parcours. Stories
+(`.method/templates/story.tmpl.md`) avec contexte, AC Given/When/Then, fichiers à créer, tests
 attendus, référence UI.
 
-Chaque story déclare ses tags `Conventions` (liste dans `.tiple/conventions/_index.md`). Ils
+Chaque story déclare ses tags `Conventions` (liste dans `.method/conventions/_index.md`). Ils
 s'ajoutent aux tags déduits des globs au moment du dev — les déclarer sert à couvrir ce que les
 chemins de fichiers ne révèlent pas encore.
 
@@ -118,7 +118,7 @@ En Évolution : **uniquement les nouveaux** epics et stories.
 
 Le projet a-t-il besoin d'une base de données et/ou d'authentification ?
 
-**Oui** → lire `.tiple/starters/supabase-auth/README.md`, prévoir une story « Setup technique »
+**Oui** → lire `.method/starters/supabase-auth/README.md`, prévoir une story « Setup technique »
 (dépendances, copie des fichiers du starter, `.env.local`, type-check), noter l'activation dans
 `docs/architecture.md`. Adapter si les besoins auth sont spécifiques (ex : accès par code →
 ne pas copier les pages auth du starter).
@@ -127,10 +127,10 @@ ne pas copier les pages auth du starter).
 
 ## Gate de sortie
 
-Passer `.tiple/checklists/readiness-gate.md` (+ `prd-evolution.md` en Évolution). Vérifier la
+Passer `.method/checklists/readiness-gate.md` (+ `prd-evolution.md` en Évolution). Vérifier la
 cohérence PRD ↔ architecture ↔ design ↔ stories. Si KO, corriger avant de clore.
 
-Initialiser ou mettre à jour `.tiple/sprint/status.md` : dates, epic focus, stories
+Initialiser ou mettre à jour `.method/sprint/status.md` : dates, epic focus, stories
 sélectionnées. Puis résumer : ce qui a été produit, ce qui a été volontairement laissé de côté,
 et la première story à implémenter.
 

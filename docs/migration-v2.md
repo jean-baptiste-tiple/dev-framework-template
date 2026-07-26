@@ -1,16 +1,17 @@
-# Migration Tiple Method v1 → v2
+# Migration du framework v1 → v2
 
 > **Mode d'emploi.** Ce document est un **prompt à coller** dans une session Claude Code ouverte
 > sur un projet existant issu de l'ancienne version du template. Tout ce qui suit la ligne de
 > séparation est destiné à être lu par Claude, pas par un humain.
 >
-> Avant de le coller : être sur une branche dédiée (`git checkout -b chore/tiple-v2`) et avoir
-> un arbre propre. La migration touche `.claude/`, `.tiple/`, la config et quelques fichiers de
+> Avant de le coller : être sur une branche dédiée (`git checkout -b chore/framework-v2`) et avoir
+> un arbre propre. La migration touche `.claude/`, le dossier de méthode, la config et quelques
+> fichiers de
 > `src/` — jamais le code métier.
 
 ---
 
-Tu vas migrer ce projet vers la version 2 de la Tiple Method. Le template de référence est
+Tu vas migrer ce projet vers la version 2 du framework. Le template de référence est
 `jean-baptiste-tiple/dev-framework-template`, branche `main`.
 
 ## Règle qui prime sur tout le reste
@@ -20,7 +21,7 @@ Rien de tout ça ne doit être écrasé.** Tu migres le *framework*, pas le *pro
 
 Concrètement, ne touche jamais à : `src/` (sauf les 4 fichiers listés au lot G), `docs/prd.md`,
 `docs/brief.md`, `docs/architecture.md`, `docs/stories/`, `docs/epics/`, `docs/decisions/`,
-`.tiple/sprint/status.md` (contenu), `supabase/migrations/`, `tests/` (sauf ajout).
+le sprint status (contenu), `supabase/migrations/`, `tests/` (sauf ajout).
 
 Si une convention a été **personnalisée** pour ce projet (règle métier ajoutée, seuil ajusté),
 tu la préserves : tu appliques les corrections décrites, tu ne remplaces pas le fichier en bloc.
@@ -35,7 +36,7 @@ varier le seul cérémonial.
 
 Quatre conséquences structurantes :
 
-1. **Routing par globs.** `.tiple/conventions/_index.md` gagne une colonne `Globs`. C'est la
+1. **Routing par globs.** `.method/conventions/_index.md` gagne une colonne `Globs`. C'est la
    seule source de vérité `fichier touché → tag → convention`, lue par `tm-dev` avant d'écrire
    et par `tm-review` avant de reviewer.
 2. **La review confronte le code aux règles lues**, et la gravité est indexée sur la source
@@ -52,14 +53,15 @@ Avant toute modification, établis l'état des lieux et **affiche-le** :
 ```
 git log --oneline -5
 ls -R .claude
-ls .tiple/conventions .tiple/checklists
+ls .tiple/conventions .tiple/checklists   # ou .method/ si déjà renommé
 cat package.json
 ```
 
 Réponds à ces questions avant de continuer :
 - `.claude/commands/` existe-t-il ? combien de fichiers ?
 - combien de skills dans `.claude/skills/` ? sont-ils des « shims » avec des invariants recopiés ?
-- `.tiple/conventions/_index.md` a-t-il une colonne `Globs` ?
+- le dossier de méthode s'appelle-t-il `.tiple/` ou `.method/` ?
+- `<methode>/conventions/_index.md` a-t-il une colonne `Globs` ?
 - `scripts/check-framework.mjs` existe-t-il ?
 - les hooks sont-ils en `.sh` ou en `.mjs` ?
 - des conventions ont-elles été personnalisées pour ce projet (diff par rapport au template d'origine si tu peux le récupérer) ?
@@ -71,7 +73,7 @@ Si le projet est **déjà en v2** sur certains points, saute les lots correspond
 Récupère le template v2 dans un dossier temporaire hors du projet :
 
 ```
-git clone --depth 1 https://github.com/jean-baptiste-tiple/dev-framework-template /tmp/tiple-v2
+git clone --depth 1 https://github.com/jean-baptiste-tiple/dev-framework-template /tmp/framework-v2
 ```
 
 Si le clone est impossible (réseau, accès), demande-moi de te fournir les fichiers et
@@ -80,7 +82,22 @@ compte, et une reconstitution approximative est pire que pas de migration.
 
 ---
 
-## Lot A — Hooks et gate de commit
+## Lot A — Renommer le dossier de méthode
+
+La v2 nomme ce dossier `.method/` : il contient les conventions, checklists, templates, starters
+et le sprint status. En v1 il s'appelait `.tiple/`.
+
+```
+git mv .tiple .method
+```
+
+Puis remplace **toutes** les occurrences de `.tiple/` par `.method/` dans les fichiers versionnés
+— `CLAUDE.md`, `README.md`, `.claude/`, les conventions, les checklists, les templates, les
+scripts, les docs. Un chemin oublié se traduit par une convention jamais chargée, en silence.
+
+Si ce projet a déjà `.method/`, saute ce lot.
+
+## Lot B — Hooks et gate de commit
 
 **Pourquoi :** en v1 les hooks étaient en bash et extrayaient le champ `command` du payload JSON
 avec `grep`/`sed`. C'est faux dans les deux sens : soit la commande est tronquée au premier
@@ -96,10 +113,10 @@ entier (et `grep "git commit"` est bloqué à tort). Les hooks v2 sont en Node e
 Le gate refuse désormais : `git commit`/`git push` nus, les options globales de git
 (`git -C`, `git --no-pager`, `git -c k=v`), les shells imbriqués (`bash -c`, `eval`),
 `--no-verify` et `--force` sans échappement possible. L'échappement légitime est
-` # tiple-gate-ok` **en fin de commande**, et il n'est accepté que si un reçu couvre l'état
+` # checks-ok` **en fin de commande**, et il n'est accepté que si un reçu couvre l'état
 exact du code.
 
-## Lot B — Scripts et commandes pnpm
+## Lot C — Scripts et commandes pnpm
 
 1. Copie `scripts/check-framework.mjs`.
 2. Ajoute à `package.json` :
@@ -114,10 +131,10 @@ exact du code.
 l'empreinte exacte du code ; `commit-push` lance `verify:cached` et ne rejoue rien si le code
 n'a pas bougé. C'est ce qui supprime la suite de tests jouée deux fois de suite.
 
-Ne lance pas encore `pnpm check:framework` : il échouera tant que les lots C et D ne sont pas
+Ne lance pas encore `pnpm check:framework` : il échouera tant que les lots D et E ne sont pas
 faits. C'est normal.
 
-## Lot C — Skills
+## Lot D — Skills
 
 **Pourquoi :** un skill s'auto-déclenche *et* s'invoque en `/<nom>` ; une commande ne fait que
 le second. Les deux artefacts faisaient doublon. Et depuis le routing par globs, les 22 skills
@@ -134,11 +151,11 @@ eux-mêmes.
 Après ce lot, **ne crée jamais de `.claude/skills/<tag>/`** : `check:framework` rejette tout
 skill inconnu. Ajouter une convention = une ligne dans `_index.md` + le fichier, rien d'autre.
 
-## Lot D — Conventions
+## Lot E — Conventions
 
 C'est le lot le plus délicat : **c'est ici que les personnalisations du projet vivent.**
 
-### D1. Routing (`_index.md`)
+### E1. Routing (`_index.md`)
 
 Reprends la structure du template : colonne `Globs`, tags `registry` et `stack` (qui ne sont
 plus des conventions de base), sections « Tags non routables par chemin » et « Capacités non
@@ -153,14 +170,14 @@ Retire du tableau « Capacités non installées » les tags dont la capacité **
 ce projet (typiquement `supabase`, `database`, `auth`, `realtime` si le starter a été activé) :
 ils redeviennent soumis à la vérification des globs.
 
-### D2. Scission d'`api-patterns.md`
+### E2. Scission d'`api-patterns.md`
 
 En v1, `api-patterns.md` (478 lignes) servait 4 tags : reviewer un composant de tableau chargeait
 267 lignes de Server Actions. Copie `forms-patterns.md`, `tables-patterns.md` et
 `uploads-patterns.md`, et retire d'`api-patterns.md` les sections déplacées (Pattern Form,
 Optimistic Updates, File Upload) ainsi que la section Auth qui dupliquait `auth-patterns.md`.
 
-### D3. Corrections techniques — **à appliquer même si les conventions sont personnalisées**
+### E3. Corrections techniques — **à appliquer même si les conventions sont personnalisées**
 
 Ces règles de la v1 sont fausses ou dangereuses. Applique chaque correction, en préservant les
 ajouts propres au projet :
@@ -190,7 +207,7 @@ ajouts propres au projet :
 middleware auth (cookies perdus au redirect) et les Server Actions qui renvoient `error.message`
 brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concernés et attends.
 
-### D4. Allègement
+### E4. Allègement
 
 - `coding-standards.md` : retire les sections « Server Actions » et « Supabase Client » (elles
   **contredisaient** `api-patterns.md` — trois traitements différents de l'auth manquante),
@@ -198,7 +215,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
   Rules ». Elles sont remplacées par des renvois et par des règles ESLint.
 - **Conventions de base : 3 → 1.** Seul `coding-standards.md` est lu systématiquement.
 
-## Lot E — Checklists
+## Lot F — Checklists
 
 - `code-review.md` : réduit au **transverse** (périmètre du diff, hygiène, conformité à la
   demande, documentation de méthode). Les ~40 règles qui doublonnaient les conventions sont
@@ -210,7 +227,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
   était donc impassable. Ils deviennent les AC de la story de setup.
 - `story-ready.md` : items conditionnels pour les stories techniques (pas de parcours ni de FR).
 
-## Lot F — Configuration
+## Lot G — Configuration
 
 1. **`eslint.config.mjs`** : ajoute la liste `ignores` (`.next/**` en tête — sans elle,
    `pnpm lint` explose dès qu'un build a été lancé une fois, et le gate devient impassable),
@@ -222,7 +239,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
    v1 il était vide alors que le fichier importe les matchers jest-dom.
 3. Lance `npx eslint . --fix` pour absorber l'ordre des imports, puis vérifie le diff.
 
-## Lot G — Code applicatif (4 fichiers seulement)
+## Lot H — Code applicatif (4 fichiers seulement)
 
 1. **Conflit de route.** Si `src/app/page.tsx` **et** `src/app/(dashboard)/page.tsx` existent
    tous les deux, ils résolvent le même chemin `/`. Next 15 n'échoue pas : il en choisit un en
@@ -236,7 +253,7 @@ brut. Ne corrige pas le code métier sans mon accord : liste les fichiers concer
 4. **`.env.example`** : si la variable déclarée est `NEXT_PUBLIC_APP_URL` alors que le code lit
    `NEXT_PUBLIC_SITE_URL`, aligner. Vérifie lequel des deux ce projet utilise réellement.
 
-## Lot H — CLAUDE.md et README.md
+## Lot I — CLAUDE.md et README.md
 
 `CLAUDE.md` est réécrit : cible < 200 lignes (recommandation officielle), sections « Échelle du
 changement », « Conventions routées par globs », « Skills », « Vérifier, commiter, pousser ».

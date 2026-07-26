@@ -17,11 +17,11 @@ const RECEIPT_SCRIPT = join(process.cwd(), "scripts/verify-receipt.mjs")
 // Les tests écrivent dans un reçu ISOLÉ, jamais dans `.claude/.verify-receipt.json`.
 // Un `pnpm test` interrompu laisserait sinon un reçu déclarant les 4 checks passés alors que
 // seul vitest a tourné — et le gate autoriserait un commit sans type-check ni lint.
-const TEST_RECEIPT = join(tmpdir(), `tiple-receipt-test-${process.pid}.json`)
-const RECEIPT_ENV = { ...process.env, TIPLE_RECEIPT_PATH: TEST_RECEIPT }
+const TEST_RECEIPT = join(tmpdir(), `verify-receipt-test-${process.pid}.json`)
+const RECEIPT_ENV = { ...process.env, VERIFY_RECEIPT_PATH: TEST_RECEIPT }
 
 const HOOKS = join(process.cwd(), ".claude/hooks")
-const MARKER = "# tiple-gate-ok"
+const MARKER = "# checks-ok"
 
 function runHook(hook: string, command: string, extra: Record<string, unknown> = {}): number {
   const payload = JSON.stringify({ tool_name: "Bash", tool_input: { command, ...extra } })
@@ -29,7 +29,7 @@ function runHook(hook: string, command: string, extra: Record<string, unknown> =
     execFileSync("node", [join(HOOKS, hook)], {
       input: payload,
       stdio: "pipe",
-      env: { ...process.env, TIPLE_RECEIPT_PATH: TEST_RECEIPT },
+      env: { ...process.env, VERIFY_RECEIPT_PATH: TEST_RECEIPT },
     })
     return 0
   } catch (error) {
@@ -78,8 +78,8 @@ describe("enforce-git-gate", () => {
   })
 
   it("n'accepte le marqueur qu'en fin de commande, jamais dans un message ou une description", () => {
-    expect(gate('git commit -m "docs: expliquer tiple-gate-ok"')).toBe(BLOCKED)
-    expect(gate("git push", { description: "voir tiple-gate-ok" })).toBe(BLOCKED)
+    expect(gate('git commit -m "docs: expliquer checks-ok"')).toBe(BLOCKED)
+    expect(gate("git push", { description: "voir checks-ok" })).toBe(BLOCKED)
     expect(gate(`git commit -m "feat: x" ${MARKER}`)).toBe(ALLOWED)
     expect(gate(`git push -u origin ma-branche ${MARKER}`)).toBe(ALLOWED)
   })
@@ -173,11 +173,11 @@ describe("verify-receipt", () => {
     // Premier commit d'un projet issu du template : `git rev-parse HEAD` échoue. Sans garde,
     // `pnpm verify` mourait APRÈS avoir passé les 4 checks, et le gate refusait le commit en
     // boucle — sans échappement possible puisque `--no-verify` est bloqué.
-    const repo = join(tmpdir(), `tiple-empty-repo-${process.pid}`)
+    const repo = join(tmpdir(), `empty-repo-${process.pid}`)
     rmSync(repo, { recursive: true, force: true })
     execFileSync("git", ["init", "--quiet", repo], { stdio: "pipe" })
     try {
-      const env = { ...process.env, TIPLE_RECEIPT_PATH: join(repo, "receipt.json") }
+      const env = { ...process.env, VERIFY_RECEIPT_PATH: join(repo, "receipt.json") }
       execFileSync("node", [RECEIPT_SCRIPT, "write"], { cwd: repo, stdio: "pipe", env })
     } finally {
       rmSync(repo, { recursive: true, force: true })

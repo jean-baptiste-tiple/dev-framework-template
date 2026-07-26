@@ -10,7 +10,7 @@
  * passés. `commit-push` ne les rejoue que si l'empreinte a changé — donc si le code a bougé.
  *
  * Effet de bord voulu : le reçu est une PREUVE que les checks ont tourné sur CE code. Le hook
- * s'en sert pour que le marqueur ` # tiple-gate-ok` ne puisse plus être posé par réflexe sur un
+ * s'en sert pour que le marqueur ` # checks-ok` ne puisse plus être posé par réflexe sur un
  * arbre jamais vérifié.
  *
  *   node scripts/verify-receipt.mjs write [check1,check2,...]   → écrit le reçu
@@ -24,11 +24,11 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 
-// `TIPLE_RECEIPT_PATH` permet aux tests d'écrire un reçu ISOLÉ. Sans ça, la suite de tests
+// `VERIFY_RECEIPT_PATH` permet aux tests d'écrire un reçu ISOLÉ. Sans ça, la suite de tests
 // écrivait dans le vrai reçu un document déclarant les 4 checks passés alors que seul vitest
 // avait tourné : un `pnpm test` interrompu laissait derrière lui un reçu valide, et le gate
 // autorisait un commit sans que type-check ni lint n'aient jamais été lancés.
-const RECEIPT = process.env.TIPLE_RECEIPT_PATH ?? join(ROOT, '.claude/.verify-receipt.json')
+const RECEIPT = process.env.VERIFY_RECEIPT_PATH ?? join(ROOT, '.claude/.verify-receipt.json')
 const MAX_AGE_MS = 60 * 60 * 1000 // 1 h : au-delà, l'environnement a pu bouger (deps, node)
 
 // Documents de méthode écrits APRÈS les checks, par la finalisation puis par `commit-push` :
@@ -36,7 +36,7 @@ const MAX_AGE_MS = 60 * 60 * 1000 // 1 h : au-delà, l'environnement a pu bouger
 // Sans ces exclusions, le reçu serait systématiquement invalidé par les étapes qui le suivent —
 // et ne servirait donc qu'aux changements Micro, c'est-à-dire là où il ne fait pas gagner grand
 // chose. Le registry n'est PAS exclu : `check:framework` le compare à `src/components/`.
-const EXCLUS = [/^docs\/changelog\.md$/, /^\.tiple\/sprint\//, /^docs\/stories\//, /^docs\/decisions\//]
+const EXCLUS = [/^docs\/changelog\.md$/, /^\.method\/sprint\//, /^docs\/stories\//, /^docs\/decisions\//]
 const estExclu = (path) => EXCLUS.some((r) => r.test(path))
 
 const git = (args) =>

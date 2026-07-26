@@ -1,7 +1,7 @@
 ---
 name: tm-dev
 description: "Écrire ou explorer du code en respectant les conventions du projet : conventions routées par globs, implémentation, tests, vérification, review, finalisation."
-when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .tiple/, README), ni pour répondre à une question sans toucher au code : c'est le skill conventions."
+when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .method/, README), ni pour répondre à une question sans toucher au code : c'est le skill conventions."
 argument-hint: "[E01-S01 | next | description de ce qu'il faut faire]"
 paths:
   - "src/**"
@@ -66,15 +66,15 @@ moment-là, pas après.
 
 ### 2. Charger le contexte
 
-**Toujours** — lire `.tiple/conventions/_index.md`, charger la convention de base
+**Toujours** — lire `.method/conventions/_index.md`, charger la convention de base
 (`coding-standards.md`) puis les conventions dont un tag est activé par les **globs** des
 fichiers visés. **Annoncer la liste chargée.**
 
 Le registry (`registry`) et la stack (`stack`) sont routés comme les autres : ils se chargent
 quand le diff touche ce qu'ils couvrent, pas à chaque changement d'une ligne.
 
-**Si une story pilote le travail** (`E01-S01` ou `next` → `.tiple/sprint/status.md`) — lire la
-story, vérifier `.tiple/checklists/story-ready.md`, ajouter les tags de son champ `Conventions`
+**Si une story pilote le travail** (`E01-S01` ou `next` → `.method/sprint/status.md`) — lire la
+story, vérifier `.method/checklists/story-ready.md`, ajouter les tags de son champ `Conventions`
 (union avec les globs), lire sa référence UI **si elle n'est pas `N/A`**.
 
 **Sinon** — reformuler la demande en **critères de succès vérifiables** (test qui reproduit,
@@ -130,10 +130,10 @@ Au-delà de 2 cycles sans converger → s'arrêter et remonter à l'utilisateur.
 | `docs/changelog.md` | si comportement visible | oui | oui |
 | `component-registry.md` | — | si composant réutilisable | oui |
 | Story post-implémentation | — | si story | si story |
-| `.tiple/sprint/status.md` | — | si story | si story |
+| `.method/sprint/status.md` | — | si story | si story |
 | ADR `docs/decisions/` | — | si invariant touché | si invariant touché |
 
-En mode story, passer `.tiple/checklists/story-done.md` avant de basculer la story en ✅ Done.
+En mode story, passer `.method/checklists/story-done.md` avant de basculer la story en ✅ Done.
 
 Le commit et le push passent par le skill `commit-push` — un `git commit`/`git push` direct est
 bloqué par le hook.

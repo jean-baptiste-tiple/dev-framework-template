@@ -23,11 +23,11 @@ Un design system **violet corporate** complet est inclus, prêt à l'emploi :
 
 ## Starters
 
-Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont **identifiés** par `/tm-plan` (qui ne fait que documenter) et **installés** par `/tm-dev` dans la story de setup technique.
+Le template est minimal par défaut. Les starters dans `.method/starters/` ajoutent des fonctionnalités complètes. Ils sont **identifiés** par `/tm-plan` (qui ne fait que documenter) et **installés** par `/tm-dev` dans la story de setup technique.
 
 | Starter | Dossier | Ce qu'il ajoute |
 |---------|---------|-----------------|
-| **Supabase + Auth** | `.tiple/starters/supabase-auth/` | Base de données, auth (login/signup/reset), middleware, Server Actions, pages auth, CI migrations |
+| **Supabase + Auth** | `.method/starters/supabase-auth/` | Base de données, auth (login/signup/reset), middleware, Server Actions, pages auth, CI migrations |
 
 ## Quick Start
 
@@ -66,7 +66,7 @@ reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 | `commit-push` | auto — « commit », « push », « envoie » | Les 4 checks + changelog + commit + push. **Seul chemin autorisé** (gate par hook). |
 | `tm-wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
 | `tm-plan` | **explicite uniquement** (`/tm-plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 3 niveaux — initial, évolution ciblée, ou **refus** quand ça n'en vaut pas la peine. |
-| `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.tiple/conventions/` en citant la source, jamais de mémoire. |
+| `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source, jamais de mémoire. |
 
 `tm-plan` est le seul à ne jamais s'auto-déclencher : un cadrage réécrit PRD, architecture et
 stories. Claude le **propose** face à un besoin produit large, il ne le lance pas.
@@ -118,7 +118,7 @@ Détail : [.claude/skills/tm-plan/SKILL.md](.claude/skills/tm-plan/SKILL.md).
 ### Routing des conventions
 
 Le mapping `fichier touché → tag → convention` a **une seule source de vérité** : la colonne
-**Globs** de [`.tiple/conventions/_index.md`](.tiple/conventions/_index.md). Elle est consommée
+**Globs** de [`.method/conventions/_index.md`](.method/conventions/_index.md). Elle est consommée
 par `tm-dev` (avant d'écrire) et par `tm-review` (avant de reviewer).
 
 **Il n'y a pas de skill par tag.** `tm-dev` et `tm-review` lisent `_index.md` et matchent les
@@ -146,7 +146,7 @@ dépasse 400 lignes, si une checklist n'est appelée par rien, si un composant d
 │   └── settings.json            # Déclaration des hooks
 ├── scripts/
 │   └── check-framework.mjs      # Cohérence tags ↔ conventions ↔ skills ↔ hooks ↔ références
-├── .tiple/
+├── .method/
 │   ├── templates/               # 6 templates de documents
 │   ├── checklists/              # 5 checklists quality gates
 │   ├── conventions/             # Conventions techniques routées par globs (_index.md = routing)
@@ -179,14 +179,14 @@ Après le clone :
 
 1. **`CLAUDE.md`** — Section "Projet" : nom et description
 2. **`docs/design/system.md`** — Ajuster les tokens si besoin (couleurs, radius)
-3. **`.tiple/conventions/tech-stack.md`** — Ajouter les libs spécifiques
+3. **`.method/conventions/tech-stack.md`** — Ajouter les libs spécifiques
 4. **`package.json`** — Nom du projet
 
 Puis lancer `/tm-plan` pour démarrer la phase de cadrage (qui activera les starters si nécessaire).
 
 ## Conventions par tags
 
-Les conventions techniques sont dans `.tiple/conventions/`, chargées automatiquement :
+Les conventions techniques sont dans `.method/conventions/`, chargées automatiquement :
 
 - **Base (toujours)** : `coding-standards.md` — une seule, volontairement courte
 - **Par globs** : chaque fichier créé ou modifié active des tags → les conventions sont lues **en entier**

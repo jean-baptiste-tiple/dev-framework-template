@@ -5,7 +5,7 @@
 
   RÈGLE DE MAINTENANCE : ce fichier ne contient QUE ce qui n'appartient à aucune convention.
   Sécurité, tests, Next.js, Supabase, performance, a11y, naming, types → ces règles vivent
-  dans `.tiple/conventions/` et sont confrontées au code directement. Les recopier ici
+  dans `.method/conventions/` et sont confrontées au code directement. Les recopier ici
   créerait une seconde source de vérité qui divergerait. Ne pas le faire.
 -->
 
@@ -36,7 +36,7 @@
 ## Documentation de méthode
 
 - [ ] `docs/changelog.md` mis à jour
-- [ ] `.tiple/conventions/component-registry.md` mis à jour si nouveau composant réutilisable
+- [ ] `.method/conventions/component-registry.md` mis à jour si nouveau composant réutilisable
 - [ ] (mode story) Section « Post-implémentation » de la story remplie
 - [ ] ADR créé dans `docs/decisions/` si un invariant d'architecture a été touché
 - [ ] Si une règle a dû être inventée pendant l'implémentation → la signaler (candidate à `tm-wrap-up`), ne pas l'écrire d'office dans les conventions

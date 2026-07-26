@@ -14,7 +14,7 @@
 - [ ] La section « Tests attendus » liste les tests à écrire
 - [ ] La référence UI est renseignée (fichier JSX, lien, description texte, **ou `N/A`**)
 - [ ] Les stories prérequises sont ✅ Done
-- [ ] Le champ **Conventions** est renseigné dans la section Meta — utile surtout pour les tags que les globs ne peuvent pas déduire (`datetime`, `i18n`, `flags`), voir `.tiple/conventions/_index.md`
+- [ ] Le champ **Conventions** est renseigné dans la section Meta — utile surtout pour les tags que les globs ne peuvent pas déduire (`datetime`, `i18n`, `flags`), voir `.method/conventions/_index.md`
 - [ ] (story fonctionnelle) Chaque AC est vérifiable par un test automatisé
 - [ ] (story fonctionnelle) Les refs PRD (parcours + FR) et architecture sont renseignées
 

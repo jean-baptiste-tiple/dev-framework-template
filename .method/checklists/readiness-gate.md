@@ -35,7 +35,7 @@
 
 ## Conventions
 
-- [ ] `.tiple/conventions/_index.md` est à jour : chaque tag a un fichier **et des globs qui matchent l'arborescence réelle**
+- [ ] `.method/conventions/_index.md` est à jour : chaque tag a un fichier **et des globs qui matchent l'arborescence réelle**
 - [ ] Chaque story 🟢 Ready a son champ **Conventions** renseigné
 
 > `pnpm check:framework` n'est **pas** dans ce gate : `/tm-plan` s'interdit toute commande

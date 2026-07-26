@@ -64,18 +64,18 @@ cas, le dire plutôt que d'écrire une entrée vide de sens.
 - `git add <fichiers explicites>` — **jamais `git add -A`**, inclure `docs/changelog.md`
 - Message : préfixe `fix:` / `feat:` / `refactor:` / `docs:` / `chore:` / `perf:`, 1-2 lignes,
   centré sur le **pourquoi**
-- Le marqueur `# tiple-gate-ok` atteste que les 4 checks de l'étape 1 sont réellement passés.
+- Le marqueur `# checks-ok` atteste que les 4 checks de l'étape 1 sont réellement passés.
   Le hook ne s'en contente pas : il vérifie que le **reçu** couvre l'état exact du code. Poser
   le marqueur sans avoir lancé `pnpm verify` ne débloque donc rien.
 
 ```
-git commit -m "prefixe: message concis" -m "Co-Authored-By: Claude <noreply@anthropic.com>" # tiple-gate-ok
+git commit -m "prefixe: message concis" -m "Co-Authored-By: Claude <noreply@anthropic.com>" # checks-ok
 ```
 
 ## Étape 5 — Push
 
 ```
-git push -u origin <branche-courante> # tiple-gate-ok
+git push -u origin <branche-courante> # checks-ok
 ```
 
 En cas d'échec réseau : réessayer jusqu'à 4 fois (2s, 4s, 8s, 16s). En cas de conflit ou de

@@ -1,6 +1,6 @@
 ---
 name: tm-review
-description: "Code review adossée aux conventions : route .tiple/conventions/ par globs sur le diff, confronte le code aux règles lues, et indexe la gravité sur la source citée."
+description: "Code review adossée aux conventions : route .method/conventions/ par globs sur le diff, confronte le code aux règles lues, et indexe la gravité sur la source citée."
 when_to_use: "Après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation. Et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface — une relecture inline du diff suffit."
 allowed-tools: Read, Grep, Glob, Bash
 ---
@@ -8,7 +8,7 @@ allowed-tools: Read, Grep, Glob, Bash
 # tm-review — Code review adossée aux conventions
 
 **Principe : la review ne juge pas à l'instinct, elle confronte le code aux règles écrites.**
-Chaque problème remonté doit pointer une règle existante dans `.tiple/conventions/`, dans
+Chaque problème remonté doit pointer une règle existante dans `.method/conventions/`, dans
 `CLAUDE.md` ou dans les critères d'acceptation de la story. Sans source citée, ce n'est pas
 un défaut — c'est une suggestion, et elle ne bloque pas.
 
@@ -36,7 +36,7 @@ Produire la liste des fichiers **créés ou modifiés**. Les fichiers supprimés
 
 ## Étape 2 — Routing (obligatoire, avant toute lecture de code)
 
-1. Lire `.tiple/conventions/_index.md`.
+1. Lire `.method/conventions/_index.md`.
 2. Pour chaque fichier du périmètre, matcher la colonne **Globs** → liste de tags actifs.
 3. Résoudre les tags en fichiers de conventions, dédupliquer.
 4. Charger **en entier** :
@@ -74,7 +74,7 @@ Pour **chaque fichier de conventions chargé**, dérouler ses règles et les con
 fichiers du périmètre qui ont activé ce tag. Une règle non applicable est ignorée
 silencieusement — ne pas la lister comme « OK ».
 
-Puis passer `.tiple/checklists/code-review.md` — elle ne couvre que le transverse
+Puis passer `.method/checklists/code-review.md` — elle ne couvre que le transverse
 (périmètre du diff, hygiène, documentation de méthode). Tout le reste est déjà couvert par
 les conventions chargées : **ne pas re-vérifier, ne pas dupliquer**.
 
