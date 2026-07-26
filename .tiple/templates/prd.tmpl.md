@@ -1,6 +1,6 @@
 # PRD — [Nom du projet]
 
-<!-- INSTRUCTIONS : Ce PRD est généré par /tm-plan (phase 2) depuis le brief.
+<!-- INSTRUCTIONS : Ce PRD est généré par /tm-plan — artefact « PRD », depuis le brief.
      Organisé par PARCOURS UTILISATEUR : chaque parcours regroupe ses écrans,
      flows, exigences fonctionnelles et non-fonctionnelles.
      Statuts : ✅ Validé | 🔶 Draft | ⬜ Placeholder -->

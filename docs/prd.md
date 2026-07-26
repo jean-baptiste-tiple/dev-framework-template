@@ -1,4 +1,4 @@
 # PRD — Product Requirements Document
 
-> Ce fichier sera généré par la commande `/tm-plan` (phase 2).
+> Généré par `/tm-plan` — artefact « PRD ».
 > Template : .tiple/templates/prd.tmpl.md

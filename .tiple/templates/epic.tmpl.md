@@ -1,6 +1,6 @@
 # Epic [ID] — [Titre]
 
-<!-- INSTRUCTIONS : Créé par /tm-plan (phase 5), en mode initial ou évolution. -->
+<!-- INSTRUCTIONS : Créé par /tm-plan — artefact « epics/stories », en mode initial ou évolution. -->
 
 | Champ | Valeur |
 |-------|--------|

@@ -1,10 +1,10 @@
 # Sprint Status
 
-<!-- Initialisé par /tm-plan (phase 6). Mis à jour par /tm-dev à chaque story terminée. -->
+<!-- Initialisé au gate de sortie de /tm-plan. Mis à jour par /tm-dev à chaque story terminée. -->
 
 ## Sprint actuel
 
-> Pas de sprint actif. Lancer `/tm-plan` — la phase 6 initialise ce fichier.
+> Pas de sprint actif. Lancer `/tm-plan` — son gate de sortie initialise ce fichier.
 
 ### Informations
 - **Début :** —
@@ -15,7 +15,7 @@
 
 | ID | Titre | Statut | Assigné |
 |----|-------|--------|---------|
-<!-- Rempli par /tm-plan (phase 6), puis mis à jour par /tm-dev -->
+<!-- Rempli par /tm-plan, puis mis à jour par /tm-dev -->
 
 Statuts : ⚪ Backlog · 🟢 Ready · 🔵 In progress · ✅ Done · 🔴 Bloquée
 

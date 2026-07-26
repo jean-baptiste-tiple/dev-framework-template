@@ -1,6 +1,6 @@
 # Brief Produit — [Nom du projet]
 
-<!-- INSTRUCTIONS : Ce brief est généré par /tm-plan (phase 1).
+<!-- INSTRUCTIONS : Ce brief est généré par /tm-plan — artefact « brief ».
      Chaque section doit être remplie avec des informations concrètes, pas des généralités.
      Quantifier la douleur ("perd 2h/semaine" > "c'est lent"). -->
 

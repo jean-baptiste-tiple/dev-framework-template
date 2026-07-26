@@ -1,4 +1,4 @@
 # Architecture
 
-> Ce fichier sera généré par la commande `/tm-plan` (phase 3).
+> Généré par `/tm-plan` — artefact « architecture ».
 > Template : .tiple/templates/architecture.tmpl.md

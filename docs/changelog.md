@@ -10,6 +10,20 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Ménage : suppression des documents morts et des références obsolètes
+**Quoi :**
+- **`plan.md` supprimé** — plan d'implémentation ponctuel d'un chantier terminé (restructuration du PRD en parcours), laissé à la racine où Claude le lisait comme normatif.
+- **`files/` supprimé** (2 341 lignes) — PRD, architecture, stories et guide de migration de la Tiple Method elle-même. Ces documents décrivaient une version passée de la méthode, citaient trois commandes qui n'ont jamais existé dans le template (`/tm-evolve`, `/tm-status`, `/tm-sprint`) et n'étaient référencés par rien de normatif. Historique conservé dans git.
+- **`.gitignore`** : suppression de l'exception `!.claude/commands/` — le dossier n'existe plus.
+- **Références « phase N » de `/tm-plan` remplacées** dans les 4 templates, les 2 checklists, `.tiple/sprint/status.md` et les 6 placeholders de `docs/` : `tm-plan` ne fonctionne plus par phases numérotées mais par artefacts produits à la demande.
+- **`check:framework`** : l'exclusion de `files/` disparaît, seul le changelog reste exclu (son rôle de journal est de citer des commandes supprimées).
+
+**Pourquoi :** ces fichiers étaient lus comme source de vérité par Claude alors qu'ils décrivaient un état révolu du framework. Un template qui embarque 2 400 lignes de méta-documentation périmée fait porter cette dette à chaque projet cloné.
+
+**Fichiers :**
+- Supprimés : `plan.md`, `files/guide-mise-a-jour-framework.md`, `files/tiple-method-architecture.md`, `files/tiple-method-prd.md`, `files/tiple-method-stories.md`
+- Modifiés : `.gitignore`, `scripts/check-framework.mjs`, `.tiple/templates/{brief,prd,architecture,epic,story}.tmpl.md`, `.tiple/checklists/readiness-gate.md`, `.tiple/sprint/status.md`, `docs/{brief,prd,architecture}.md`, `docs/epics/_index.md`, `docs/design/{screens,components}/_index.md`
+
 ## [2026-07-26] — Simplification tm-dev / tm-plan : échelles au lieu de modes, cadrage à la carte
 **Quoi :**
 - **`tm-dev` : 5 modes → 2 modes × 3 échelles.** La détection par verbes français (`corrige`, `ajoute`, `nettoie`…) est supprimée : elle était fragile et ne changeait quasiment rien (fix et feature ne différaient que par une phrase de « review focus »). Restent 2 modes réels — lecture (read-only) et écriture — et 3 **échelles** déterminées par ce que le changement touche : **Micro** (1-2 fichiers, aucune nouvelle surface) · **Standard** (3-5 fichiers, ou création d'une fonction/composant/action) · **Module** (nouvelle surface, changement DB, ou ≥ 6 fichiers).

@@ -42,7 +42,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code
 .claude/*
-!.claude/commands/
 !.claude/settings.json
 !.claude/hooks/
 !.claude/skills/

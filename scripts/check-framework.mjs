@@ -113,7 +113,8 @@ for (const s of WORKFLOW_SKILLS) {
 // ------------------------------------------- 4. commandes / skills référencés
 const KNOWN = new Set([...skillDirs, 'commit-push'])
 const IGNORED_SLASH = new Set(['design-system', 'dashboard', 'auth', 'api'])
-const mdFiles = walk(ROOT).filter((p) => p.endsWith('.md') && !p.includes('/files/') && !p.includes('/docs/changelog.md'))
+// Le changelog est exclu : il cite des commandes supprimées, c'est son rôle de journal.
+const mdFiles = walk(ROOT).filter((p) => p.endsWith('.md') && !p.includes('/docs/changelog.md'))
 
 for (const p of mdFiles) {
   const rel = p.slice(ROOT.length + 1)
