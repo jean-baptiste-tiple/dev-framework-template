@@ -1,49 +1,30 @@
 # Story Done — Definition of Done
 
-<!-- Vérifier APRÈS l'implémentation d'une story.
-     La story ne passe en ✅ Done que si TOUS les items sont cochés. -->
+<!--
+  Passée par tm-dev (étape 7) avant de basculer une story en ✅ Done.
+  RÈGLE DE MAINTENANCE : ne réénumère JAMAIS les rubriques de code-review.md ni les règles des
+  conventions — elles sont confrontées au code par tm-review, qui route les fichiers par globs.
+  Cette checklist ne vérifie que ce qui n'est vérifiable qu'à la fin : livraison et traçabilité.
+-->
 
-## Code
+## Livraison
 
-- [ ] Le code est écrit et commité
-- [ ] Le code respecte les conventions de `.tiple/conventions/coding-standards.md`
-- [ ] Pas de code dupliqué (DRY vérifié via component-registry)
-- [ ] Pas de TODO/FIXME/HACK laissé sans explication
+- [ ] Tous les AC de la story sont couverts par le code livré
+- [ ] Tous les tests listés dans la section « Tests attendus » de la story existent et passent
+- [ ] Les 4 checks passent : `check:framework`, `type-check`, `lint`, `test`
+- [ ] Aucun test existant cassé (non-régression)
 
-## Tests
+## Review
 
-- [ ] Les tests unitaires listés dans la story sont écrits et passent
-- [ ] Les tests d'intégration listés dans la story sont écrits et passent
-- [ ] Les tests E2E listés dans la story sont écrits et passent (si applicable)
-- [ ] TOUS les tests existants passent (non-régression)
+- [ ] Le skill `tm-review` a été passé : routing annoncé, conventions chargées en entier, findings sourcés
+- [ ] Les findings HAUTE et MOYENNE sont corrigés, et les checks relancés après correction
+- [ ] Les findings BASSE restants sont signalés à l'utilisateur, pas appliqués d'office
 
-## Vérification triple (OBLIGATOIRE)
+## Traçabilité
 
-- [ ] **`pnpm type-check`** passe sans erreur
-- [ ] **`pnpm lint`** passe sans erreur
-- [ ] **`pnpm test`** — TOUS les tests passent (non-régression)
-
-## Documentation
-
-- [ ] La section "Post-implémentation" de la story est remplie
-- [ ] Le component-registry est à jour (nouveaux composants/hooks/actions ajoutés)
-- [ ] Le changelog est à jour
-- [ ] Un ADR est créé si un invariant d'architecture a été modifié
-
-## Code Review (OBLIGATOIRE)
-
-- [ ] La checklist `code-review.md` a été passée point par point par un **agent reviewer isolé** (`/tm-review`)
-- [ ] DRY & Réutilisation : vérifié
-- [ ] Qualité du code : vérifié
-- [ ] Sécurité : vérifié
-- [ ] Tests : vérifié
-- [ ] Design & UX : vérifié
-- [ ] Architecture : vérifié
-- [ ] Documentation : vérifié
-- [ ] Les problèmes HAUTE/MOYENNE identifiés sont corrigés
-- [ ] La vérification triple a été relancée après les corrections
-- [ ] Les 3 états UI sont gérés (loading, error, empty) pour les composants data-driven
-- [ ] (si maquette) L'implémentation respecte la référence UI
-- [ ] Les conventions tagées dans la story ont été respectées
-- [ ] Pas de secrets, tokens ou PII dans le code ou les logs
-- [ ] Le sprint status est à jour
+- [ ] Section « Post-implémentation » de la story remplie
+- [ ] `docs/changelog.md` à jour
+- [ ] `.tiple/conventions/component-registry.md` à jour si un composant, hook ou util réutilisable a été créé
+- [ ] ADR créé dans `docs/decisions/` si un invariant d'architecture a été touché
+- [ ] `.tiple/sprint/status.md` : story passée en ✅ Done
+- [ ] (si référence UI ≠ `N/A`) Les écarts avec la référence sont documentés dans la story

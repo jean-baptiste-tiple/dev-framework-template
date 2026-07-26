@@ -7,7 +7,7 @@ argument-hint: "[message de commit optionnel]"
 # commit-push — le seul chemin vers un commit
 
 Un `git commit` ou `git push` lancé hors de ce skill est **bloqué par le hook**
-`.claude/hooks/enforce-git-gate.sh`. Ce n'est pas une convention à respecter : c'est appliqué.
+`.claude/hooks/enforce-git-gate.mjs`. Ce n'est pas une convention à respecter : c'est appliqué.
 
 ## Étape 1 — Checks (bloquants, dans cet ordre)
 

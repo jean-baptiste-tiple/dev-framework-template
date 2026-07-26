@@ -6,11 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-bash-rules.sh\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-bash-rules.mjs\""
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-git-gate.sh\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-git-gate.mjs\""
           }
         ]
       }

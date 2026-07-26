@@ -15,7 +15,7 @@ Un design system **violet corporate** complet est inclus, prêt à l'emploi :
 
 ## Starters
 
-Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont activés automatiquement par `/tm-plan` (Phase 0) selon les besoins du projet.
+Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont **identifiés** par `/tm-plan` (qui ne fait que documenter) et **installés** par `/tm-dev` dans la story de setup technique.
 
 | Starter | Dossier | Ce qu'il ajoute |
 |---------|---------|-----------------|
@@ -58,7 +58,7 @@ stories. Claude le **propose** face à un besoin produit large, il ne le lance p
 
 ### Le gate de commit
 
-`git commit` et `git push` directs sont **bloqués** par `.claude/hooks/enforce-git-gate.sh`.
+`git commit` et `git push` directs sont **bloqués** par `.claude/hooks/enforce-git-gate.mjs`.
 Tout passe par le skill `commit-push`, qui exécute d'abord `check:framework`, `type-check`,
 `lint` et `test`. `--no-verify` et `--force` sont refusés sans échappement possible.
 
@@ -120,7 +120,7 @@ disparu, ou si la doc référence un `/skill` inexistant.
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
 ├── .claude/
 │   ├── skills/                  # 6 skills de workflow + 22 skills de tag (pointeurs conventions)
-│   ├── hooks/                   # enforce-git-gate.sh (gate commit/push) + enforce-bash-rules.sh
+│   ├── hooks/                   # enforce-git-gate.mjs (gate commit/push) + enforce-bash-rules.mjs
 │   └── settings.json            # Déclaration des hooks
 ├── scripts/
 │   └── check-framework.mjs      # Cohérence tags ↔ conventions ↔ skills ↔ hooks ↔ références
@@ -194,7 +194,7 @@ CI ne refait pas ce travail et se concentre sur ce qui ne peut être vérifié q
 Linux propre — le build de production.
 
 Deux hooks Claude Code appliquent ces règles sans dépendre du raisonnement du modèle :
-`enforce-git-gate.sh` (aucun commit/push hors du skill `commit-push`) et `enforce-bash-rules.sh`
+`enforce-git-gate.mjs` (aucun commit/push hors du skill `commit-push`) et `enforce-bash-rules.mjs`
 (sortie des checks jamais tronquée ni redirigée). Chaque hook documente ses propres règles.
 
 Le déploiement Vercel est automatique (connecter le repo). La CI migrations Supabase est ajoutée par le starter Supabase + Auth si activé.

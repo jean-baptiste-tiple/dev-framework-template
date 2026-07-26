@@ -113,6 +113,8 @@ Au-delà de 2 cycles sans converger → s'arrêter et remonter à l'utilisateur.
 | `.tiple/sprint/status.md` | — | si story | oui |
 | ADR `docs/decisions/` | — | si invariant touché | si invariant touché |
 
+En mode story, passer `.tiple/checklists/story-done.md` avant de basculer la story en ✅ Done.
+
 Le commit et le push passent par le skill `commit-push` — un `git commit`/`git push` direct est
 bloqué par le hook.
 

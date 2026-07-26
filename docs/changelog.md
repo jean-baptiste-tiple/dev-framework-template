@@ -10,6 +10,26 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Correctifs issus de l'audit multi-agents : gate git réparé et testé, 404 au premier lancement, lint impassable
+**Quoi :** neuf audits indépendants (4 scénarios d'usage, 4 lots de conventions, 1 sur l'architecture des skills) ont été passés sur le framework. Cette entrée ne couvre que les défauts **vérifiés et corrigés** ; le reste est arbitré séparément.
+
+- **Gate git réparé — c'était une régression introduite le jour même.** Le hook cherchait le marqueur d'échappement dans le payload JSON brut : `git commit -m "docs: expliquer tiple-gate-ok"` passait le gate sans qu'aucun check n'ait tourné. Trois autres contournements : `git -C /repo commit`, `git --no-pager push`, `git -c k=v push` (le motif exigeait `git` suivi immédiatement de la sous-commande). Et deux faux positifs : `grep -rn "git commit" docs/` était bloqué, et un message de commit contenant `--force` était bloqué définitivement.
+- **Les deux hooks passent de bash à Node.** La cause racine était unique : bash ne sait pas parser du JSON. Toute extraction du champ `command` par grep/sed est fausse dans un sens (troncature au premier guillemet échappé) ou dans l'autre (matching du JSON entier). `JSON.parse` supprime la classe de bug. Les chaînes entre quotes sont neutralisées avant analyse, et le marqueur n'est accepté qu'**en fin de commande**.
+- **`tests/unit/hooks.test.ts`** : 18 cas de non-régression sur les deux hooks, exécutés par `pnpm test`, donc par `commit-push`. Le gate ne peut plus se casser en silence.
+- **404 au premier lancement.** `src/app/page.tsx` et `src/app/(dashboard)/page.tsx` résolvaient tous les deux `/`. Next 15 n'échoue pas : il en choisit un silencieusement. `app/page.tsx` gagnait et redirigeait vers `/dashboard`, route qu'aucun fichier ne produit — un clone frais tombait donc sur un 404, et la page du route group ainsi que son layout n'étaient jamais rendus. `src/app/page.tsx` supprimé.
+- **`pnpm lint` impassable après un build.** `eslint.config.mjs` n'avait aucune liste `ignores` : `eslint .` parcourait `.next/`, remontait des milliers d'erreurs sur du code généré, et rendait le gate `commit-push` infranchissable dès qu'un `pnpm build` avait été lancé une fois.
+- **`vitest.config.ts` : `setupFiles` vide** alors que `tests/setup.ts` importe les matchers jest-dom. Le premier `expect(...).toBeInTheDocument()` écrit selon `testing-strategy.md` aurait échoué sur « is not a function ».
+- **`story-done.md` réécrit.** Checklist orpheline (référencée nulle part), elle avait échappé à la refonte : elle exigeait une review « par un agent reviewer isolé » que `tm-review` interdit explicitement, et cochait 7 rubriques de `code-review.md` supprimées depuis. Elle ne vérifie plus que livraison, review et traçabilité, et `tm-dev` la référence désormais.
+- **Contradiction sur les starters** : `README.md` annonçait une installation automatique par `/tm-plan`, alors que `tm-plan` s'interdit toute commande système et que l'installation revient à `tm-dev`. Aligné, et les mentions d'une « Phase 0 » qui n'existe plus sont supprimées.
+
+**Pourquoi :** le gate git est la seule garantie non probabiliste du framework — un contournement silencieux vaut pire que pas de gate, puisqu'il donne une fausse assurance. Les trois autres défauts cassaient l'expérience du premier jour sur un clone neuf.
+
+**Fichiers :**
+- `.claude/hooks/enforce-git-gate.mjs`, `.claude/hooks/enforce-bash-rules.mjs` (créés) — versions `.sh` supprimées
+- `.claude/settings.json`, `tests/unit/hooks.test.ts` (créé), `eslint.config.mjs`, `vitest.config.ts`
+- `src/app/page.tsx` (supprimé), `.tiple/checklists/story-done.md`, `.claude/skills/tm-dev/SKILL.md`
+- `CLAUDE.md`, `README.md`, `.claude/skills/commit-push/SKILL.md`, `.claude/skills/tm-verify/SKILL.md`
+
 ## [2026-07-26] — Ménage : suppression des documents morts et des références obsolètes
 **Quoi :**
 - **`plan.md` supprimé** — plan d'implémentation ponctuel d'un chantier terminé (restructuration du PRD en parcours), laissé à la racine où Claude le lisait comme normatif.

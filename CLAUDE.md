@@ -91,7 +91,7 @@ un besoin produit large, le **proposer** et attendre l'accord.
 
 ## Règles avant push
 1. Le commit et le push passent par le skill **`commit-push`** : `check:framework` + `type-check` + `lint` + `test`, changelog, commit, push.
-2. Ce n'est pas une convention mais un **gate appliqué** : `.claude/hooks/enforce-git-gate.sh` bloque tout `git commit`/`git push` direct. `--no-verify` et `--force` sont bloqués sans échappement possible.
+2. Ce n'est pas une convention mais un **gate appliqué** : `.claude/hooks/enforce-git-gate.mjs` bloque tout `git commit`/`git push` direct. `--no-verify` et `--force` sont bloqués sans échappement possible.
 3. Les 4 checks tournent **en local**. La CI ne lance que `pnpm build` (validation Vercel + erreurs spécifiques Linux). Pas de duplication.
 
 ## Règles Next.js
@@ -102,7 +102,7 @@ un besoin produit large, le **proposer** et attendre l'accord.
 
 ## Starters
 
-Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont **identifiés** par `/tm-plan` (Phase 0) et **installés** par `/tm-dev` lors de la story E01-S01 (Setup technique).
+Le template est minimal par défaut. Les starters dans `.tiple/starters/` ajoutent des fonctionnalités complètes. Ils sont **identifiés** par `/tm-plan` (qui ne fait que documenter) et **installés** par `/tm-dev` dans la story de setup technique.
 
 ### Supabase + Auth (`.tiple/starters/supabase-auth/`)
 Ajoute : base de données, auth (login/signup/reset), middleware, Server Actions, pages auth, CI migrations.

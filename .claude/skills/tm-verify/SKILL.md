@@ -41,4 +41,4 @@ marquer OK un check qui a échoué.
 - Ne jamais faire passer un check en désactivant une règle, en skippant un test, ou en
   élargissant un type. Si c'est la seule issue, c'est une décision utilisateur.
 - Exécution en foreground, sans pipe ni redirection : les erreurs sont souvent en fin de
-  sortie et la troncature les masque (règle appliquée par `.claude/hooks/enforce-bash-rules.sh`).
+  sortie et la troncature les masque (règle appliquée par `.claude/hooks/enforce-bash-rules.mjs`).
