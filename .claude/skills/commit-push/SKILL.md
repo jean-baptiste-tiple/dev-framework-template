@@ -104,9 +104,13 @@ CI        : déclenchée seulement sur `main` et les pull requests — sur une b
 
 ### Merge, rebase, revert, cherry-pick
 
-Le hook les traite **comme un commit** : ils en produisent un, et l'exclure laissait un chemin
-complet pour publier du code jamais vérifié. Même protocole — `pnpm verify` d'abord, puis la
+Le hook les traite **comme un commit** — ils en produisent un, et les exclure laissait un chemin
+complet pour publier du code jamais vérifié. Même protocole : `pnpm verify` d'abord, puis la
 commande suivie de ` # checks-ok`.
 
 Un `git rebase --continue` au milieu d'une résolution de conflit est concerné aussi. C'est
 voulu : c'est exactement le moment où l'arbre a bougé sans que rien ne l'ait revérifié.
+
+Le `push` de l'étape 5 est le seul verbe qui exige le marqueur **sans** exiger un reçu valide :
+le commit qui vient d'avoir lieu a changé `HEAD`, donc invalidé le reçu. Il ne publie que du
+déjà-commité, et chaque commit est passé par le contrôle ci-dessus.

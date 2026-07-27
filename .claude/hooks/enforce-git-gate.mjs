@@ -78,13 +78,13 @@ process.stdin.on('end', async () => {
   // Verbes qui créent ou publient des commits. `merge`, `revert`, `cherry-pick`, `rebase` et
   // `am` produisent des commits sans passer par `commit` : les exclure laissait un chemin
   // complet pour publier du code jamais vérifié.
-  const VERBES = 'commit|push|merge|revert|cherry-pick|rebase|am'
+  const VERBES_COMMIT = 'commit|merge|revert|cherry-pick|rebase|am'
+  const VERBES = `${VERBES_COMMIT}|push`
   // `git` peut porter des options globales avant la sous-commande : -C <path>, -c k=v, --no-pager…
-  const GIT_WRITE = new RegExp(
-    `(?:^|[;&|\\n]|\\s)git((?:\\s+-{1,2}[^\\s]+(?:\\s+[^-\\s][^\\s]*)?)*)\\s+(${VERBES})\\b`
-  )
+  const motif = (verbes) =>
+    new RegExp(`(?:^|[;&|\\n]|\\s)git((?:\\s+-{1,2}[^\\s]+(?:\\s+[^-\\s][^\\s]*)?)*)\\s+(${verbes})\\b`)
 
-  if (!GIT_WRITE.test(bare)) process.exit(0)
+  if (!motif(VERBES).test(bare)) process.exit(0)
 
   if (/\s--no-verify\b/.test(bare)) {
     deny(
@@ -106,10 +106,17 @@ process.stdin.on('end', async () => {
 
   if (!marked) deny(BLOCK_MESSAGE)
 
-  // Le marqueur est une déclaration ; le reçu est une preuve. Il est exigé sur TOUTES les
-  // écritures, y compris `push` : l'ancienne exemption reposait sur « le commit poussé a déjà
-  // passé ce contrôle », ce qui est faux dès que les commits viennent d'un merge, d'un revert
-  // ou d'un cherry-pick — lesquels ne passaient eux-mêmes par aucun gate.
+  // Le marqueur est une déclaration ; le reçu est une preuve. Il n'est exigé que des verbes qui
+  // PRODUISENT un commit.
+  //
+  // `push` en est exclu, et ce n'est pas un trou : il ne publie que du déjà-commité, et chaque
+  // verbe capable de produire un commit passe désormais lui-même par ce contrôle — c'est ce qui
+  // manquait en v2, où seul `commit` était couvert. L'exiger aussi du push le rendrait de toute
+  // façon impossible à satisfaire : le commit qui vient d'avoir lieu change HEAD, donc invalide
+  // le reçu. Il faudrait relancer `pnpm verify` entre le commit et le push — soit exactement la
+  // double exécution que le reçu existe pour supprimer.
+  if (!motif(VERBES_COMMIT).test(bare)) process.exit(0)
+
   let receipt
   try {
     receipt = await import('../../scripts/verify-receipt.mjs').then((m) => m.checkReceipt())

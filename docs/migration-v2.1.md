@@ -51,7 +51,7 @@ change :
 |------|----------------------|------------|
 | Verbes | `git merge`, `git revert`, `git cherry-pick`, `git rebase`, `git am` produisent des commits sans passer par `commit` — aucun n'était vu | `VERBES = 'commit|push|merge|revert|cherry-pick|rebase|am'` |
 | Force agglomérée | `git push -fu origin main` — la forme la plus courante — franchissait `-f\b`, qui ne coupe pas entre `f` et `u` | `-[a-zA-Z]*f[a-zA-Z]*\b` |
-| Reçu sur `push` | Le push était exempté (« le commit poussé a déjà passé le contrôle ») — faux dès qu'un merge ou un cherry-pick a produit les commits | Reçu exigé sur **toutes** les écritures git |
+| Reçu sur les verbes ajoutés | Seul `commit` réclamait un reçu ; un merge ou un cherry-pick produisait des commits sans qu'aucun contrôle ne s'applique | Reçu exigé de **tout verbe qui produit un commit**. `push` reste exclu : il ne publie que du déjà-commité, et l'exiger serait impossible à satisfaire — le commit qui vient d'avoir lieu change `HEAD`, donc invalide le reçu |
 | Contenu du reçu | Le champ `checks` était écrit puis jamais relu : un reçu déclarant `aucun-check` ouvrait le gate | `CHECKS_REQUIS` : les 4 checks doivent être déclarés |
 | Shell imbriqué | Le refus portait sur **tout** `bash -c` : `docker run … sh -c "ls"` était bloqué avec un message parlant de commit-push | Refus conditionné à `/\bgit\b/` dans la commande brute |
 
@@ -223,7 +223,7 @@ ajoute les cas manquants. 23 tests, dont ceux qui couvrent les corrections ci-de
 
 - verbes `merge` / `revert` / `cherry-pick` / `rebase` / `am` bloqués nus
 - `git push -fu` et `-uf` bloqués même marqués
-- reçu exigé sur `push`, pas seulement sur `commit`
+- reçu exigé de tout verbe qui produit un commit, mais pas du `push`
 - reçu déclarant un seul check → refusé
 - `bash -c "ls"` sans git → autorisé
 - `pnpm dev` en arrière-plan → autorisé ; `pnpm test` en arrière-plan → bloqué

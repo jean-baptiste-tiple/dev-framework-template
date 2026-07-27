@@ -119,13 +119,19 @@ describe("enforce-git-gate", () => {
     expect(gate(`git push -uf origin main ${MARKER}`)).toBe(BLOCKED)
   })
 
-  it("exige un reçu sur un push, pas seulement sur un commit", () => {
-    // L'exemption reposait sur « le commit poussé a déjà passé ce contrôle » — faux dès que les
-    // commits viennent d'un merge, d'un revert ou d'un cherry-pick.
+  it("exige un reçu de tout verbe qui produit un commit, mais pas du push", () => {
     expect(receipt("clear")).toBe(0)
-    expect(gate(`git push -u origin ma-branche ${MARKER}`)).toBe(BLOCKED)
-    expect(receipt("write")).toBe(0)
+    expect(gate(`git merge feature/x ${MARKER}`)).toBe(BLOCKED)
+    expect(gate(`git cherry-pick abc1234 ${MARKER}`)).toBe(BLOCKED)
+
+    // `push` ne publie que du déjà-commité, et chaque verbe qui produit un commit passe
+    // désormais par le contrôle ci-dessus. L'exiger du push serait impossible à satisfaire :
+    // le commit qui vient d'avoir lieu change HEAD, donc invalide le reçu — il faudrait
+    // relancer `pnpm verify` entre le commit et le push.
     expect(gate(`git push -u origin ma-branche ${MARKER}`)).toBe(ALLOWED)
+
+    expect(receipt("write")).toBe(0)
+    expect(gate(`git merge feature/x ${MARKER}`)).toBe(ALLOWED)
   })
 
   it("refuse un reçu qui ne déclare pas les 4 checks", () => {
