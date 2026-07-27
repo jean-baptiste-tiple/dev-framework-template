@@ -141,12 +141,12 @@ le second. Les deux artefacts faisaient doublon. Et depuis le routing par globs,
 de tag n'étaient plus qu'un niveau d'indirection : `dev` et `revue` matchent `_index.md`
 eux-mêmes.
 
-1. **Supprime `.claude/commands/` en entier**, y compris `dev.md` et `dev.md` (dépréciés).
+1. **Supprime `.claude/commands/` en entier**, y compris `tm-fix.md` et `tm-feature.md` (dépréciés).
 2. **Supprime les 22 skills de tag** : `a11y`, `api`, `auth`, `database`, `datetime`, `deploy`,
    `feedback`, `flags`, `forms`, `i18n`, `monitoring`, `nextjs`, `performance`, `realtime`,
    `security`, `seo`, `state`, `supabase`, `tables`, `testing`, `typescript`, `uploads`.
-3. Copie les 7 skills v2 : `dev`, `plan`, `revue`, `verify`, `wrap-up`,
-   `commit-push`, `conventions`.
+3. Copie les 8 skills v2 : `dev`, `plan`, `revue`, `verify`, `wrap-up`,
+   `commit-push`, `conventions`, `audit`.
 
 Après ce lot, **ne crée jamais de `.claude/skills/<tag>/`** : `check:framework` rejette tout
 skill inconnu. Ajouter une convention = une ligne dans `_index.md` + le fichier, rien d'autre.

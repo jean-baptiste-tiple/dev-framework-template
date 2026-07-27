@@ -1,6 +1,7 @@
 ---
 name: wrap-up
-description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). Déclenche-toi quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .method/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
+description: "Capturer les apprentissages méta d'une session (nouvelles conventions, ADR, composants du registry). TOUJOURS proposer d'abord et attendre validation : ne jamais écrire dans .method/conventions/, docs/decisions/ ou CLAUDE.md sans accord explicite."
+when_to_use: "Quand l'utilisateur signale une fin de chantier — 'on a fini', 'c'est bouclé', 'wrap up', 'on termine', 'on récapitule' — OU après la clôture de plusieurs stories/fix dans la même session. NE PAS déclencher : sur une session exploratoire ou de lecture seule (rien n'a été modifié) ; sur une micro-modif (typo, rename) ; si l'utilisateur a déjà refusé la proposition dans la session en cours ; s'il vient de lancer commit-push sans passer par wrap-up — respecter son choix."
 argument-hint: "[scope optionnel]"
 ---
 

@@ -102,6 +102,41 @@ describe("enforce-git-gate", () => {
     expect(gate(`git commit -m "fix: gerer --force" ${MARKER}`)).toBe(ALLOWED)
   })
 
+  it("couvre les verbes qui produisent un commit sans passer par `commit`", () => {
+    // `merge`, `revert`, `cherry-pick`, `rebase` et `am` écrivent des commits et peuvent les
+    // publier. Les laisser hors du motif ouvrait un chemin complet pour du code jamais vérifié.
+    expect(gate("git merge feature/x")).toBe(BLOCKED)
+    expect(gate("git revert HEAD")).toBe(BLOCKED)
+    expect(gate("git cherry-pick abc1234")).toBe(BLOCKED)
+    expect(gate("git rebase main")).toBe(BLOCKED)
+    expect(gate("git am patch.mbox")).toBe(BLOCKED)
+  })
+
+  it("refuse les formes agglomérées de --force", () => {
+    // `git push -fu origin main` est la forme la plus courante d'un push forcé. `-f\b` ne coupe
+    // pas entre `f` et `u` : elle franchissait l'interdit.
+    expect(gate(`git push -fu origin main ${MARKER}`)).toBe(BLOCKED)
+    expect(gate(`git push -uf origin main ${MARKER}`)).toBe(BLOCKED)
+  })
+
+  it("exige un reçu sur un push, pas seulement sur un commit", () => {
+    // L'exemption reposait sur « le commit poussé a déjà passé ce contrôle » — faux dès que les
+    // commits viennent d'un merge, d'un revert ou d'un cherry-pick.
+    expect(receipt("clear")).toBe(0)
+    expect(gate(`git push -u origin ma-branche ${MARKER}`)).toBe(BLOCKED)
+    expect(receipt("write")).toBe(0)
+    expect(gate(`git push -u origin ma-branche ${MARKER}`)).toBe(ALLOWED)
+  })
+
+  it("refuse un reçu qui ne déclare pas les 4 checks", () => {
+    // Le champ `checks` était écrit puis jamais relu : le reçu prouvait l'identité de l'arbre,
+    // pas que quoi que ce soit avait été vérifié.
+    execFileSync("node", [RECEIPT_SCRIPT, "write", "test"], { stdio: "pipe", env: RECEIPT_ENV })
+    expect(gate(`git commit -m "feat: x" ${MARKER}`)).toBe(BLOCKED)
+    expect(receipt("write")).toBe(0)
+    expect(gate(`git commit -m "feat: x" ${MARKER}`)).toBe(ALLOWED)
+  })
+
   it("refuse les shells imbriqués, qui rendent la commande inanalysable", () => {
     // La neutralisation des chaînes entre quotes efface le contenu de `bash -c "..."` :
     // sans ce refus, la commande git y devient invisible et le gate laisse tout passer.
@@ -109,6 +144,14 @@ describe("enforce-git-gate", () => {
     expect(gate('sh -c "git push"')).toBe(BLOCKED)
     expect(gate('eval "git push"')).toBe(BLOCKED)
     expect(gate('echo "git push" | bash')).toBe(BLOCKED)
+  })
+
+  it("ne refuse un shell imbriqué que s'il mentionne git", () => {
+    // Le refus portait sur TOUT shell imbriqué : `docker run … sh -c "ls"` était bloqué par un
+    // message parlant de commit-push. Un hook qui bloque l'anodin finit désactivé.
+    expect(gate('bash -c "ls -la"')).toBe(ALLOWED)
+    expect(gate('timeout 5 sh -c "echo ok"')).toBe(ALLOWED)
+    expect(gate('docker run alpine sh -c "cat /etc/os-release"')).toBe(ALLOWED)
   })
 })
 
@@ -148,24 +191,52 @@ describe("verify-receipt", () => {
   })
 
   it("détecte un renommage dans les deux sens", () => {
-    const from = join(process.cwd(), "src/lib/utils/.receipt-rename-a.ts")
-    const to = join(process.cwd(), "src/lib/utils/.receipt-rename-b.ts")
-    writeFileSync(from, "export const renamed = 1\n")
+    // Ce test EXIGE un dépôt jetable avec un vrai commit. Sa version précédente créait la
+    // fixture dans le dépôt courant et se contentait d'un `git add` : le chemin d'origine
+    // n'ayant jamais existé dans HEAD, git n'émettait aucune ligne `R` et `--no-renames` ne
+    // changeait rien. Le test passait sans jamais exercer la régression qu'il documente.
+    const repo = join(tmpdir(), `rename-repo-${process.pid}`)
+    rmSync(repo, { recursive: true, force: true })
+    const g = (...args: string[]) => execFileSync("git", args, { cwd: repo, stdio: "pipe" })
+    execFileSync("git", ["init", "--quiet", repo], { stdio: "pipe" })
     try {
-      execFileSync("git", ["add", from], { stdio: "pipe" })
-      expect(run(["write"])).toBe(0)
+      g("config", "user.email", "test@test")
+      g("config", "user.name", "test")
+      writeFileSync(join(repo, "a.ts"), "export const renamed = 1\n")
+      g("add", "a.ts")
+      g("commit", "--quiet", "--no-verify", "-m", "init")
 
-      // Renommer puis restaurer l'ancien chemin : les deux fichiers coexistent, donc le code a
-      // changé. Sans `--no-renames`, git n'émettait qu'une ligne R et la disparition de
-      // l'ancien chemin n'était jamais enregistrée — le reçu restait valide à tort.
-      execFileSync("git", ["mv", from, to], { stdio: "pipe" })
-      writeFileSync(from, "export const renamed = 1\n")
-      expect(run(["check"])).toBe(1)
-    } finally {
-      for (const f of [from, to]) {
-        execFileSync("git", ["rm", "-f", "--quiet", "--ignore-unmatch", f], { stdio: "pipe" })
-        rmSync(f, { force: true })
+      // `VERIFY_RECEIPT_ROOT` est indispensable : le script pointe git sur SA propre racine,
+      // pas sur le cwd. Sans cette variable, ce test hacherait le dépôt du template.
+      const env = {
+        ...process.env,
+        // Le reçu vit HORS du dépôt : dedans, il serait un fichier non suivi, donc compté dans
+        // sa propre empreinte — l'écrire l'invaliderait aussitôt. Dans le template, c'est
+        // `.gitignore` qui joue ce rôle pour `.claude/.verify-receipt.json`.
+        VERIFY_RECEIPT_PATH: `${repo}-receipt.json`,
+        VERIFY_RECEIPT_ROOT: repo,
       }
+      const receiptIn = (action: string): number => {
+        try {
+          execFileSync("node", [RECEIPT_SCRIPT, action], { cwd: repo, stdio: "pipe", env })
+          return 0
+        } catch (error) {
+          return (error as { status: number }).status
+        }
+      }
+      expect(receiptIn("write")).toBe(0)
+      expect(receiptIn("check")).toBe(0)
+
+      // `a.ts` est dans HEAD : le renommer produit bien un `R100 a.ts b.ts`. Restaurer `a.ts`
+      // à l'identique fait coexister les deux fichiers — le code a changé. Sans `--no-renames`,
+      // seule la destination était enregistrée, la disparition de la source jamais, et le
+      // contenu restauré à l'identique redonnait l'empreinte d'origine : reçu valide à tort.
+      g("mv", "a.ts", "b.ts")
+      writeFileSync(join(repo, "a.ts"), "export const renamed = 1\n")
+      expect(receiptIn("check")).toBe(1)
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+      rmSync(`${repo}-receipt.json`, { force: true })
     }
   })
 
@@ -177,7 +248,13 @@ describe("verify-receipt", () => {
     rmSync(repo, { recursive: true, force: true })
     execFileSync("git", ["init", "--quiet", repo], { stdio: "pipe" })
     try {
-      const env = { ...process.env, VERIFY_RECEIPT_PATH: join(repo, "receipt.json") }
+      // `VERIFY_RECEIPT_ROOT` : sans elle, le script hachait le dépôt du template et ce test
+      // n'exerçait jamais le cas « pas de HEAD » qu'il prétend couvrir.
+      const env = {
+        ...process.env,
+        VERIFY_RECEIPT_PATH: join(repo, "receipt.json"),
+        VERIFY_RECEIPT_ROOT: repo,
+      }
       execFileSync("node", [RECEIPT_SCRIPT, "write"], { cwd: repo, stdio: "pipe", env })
     } finally {
       rmSync(repo, { recursive: true, force: true })
@@ -212,5 +289,33 @@ describe("enforce-bash-rules", () => {
     expect(bashRules("pnpm add -D eslint-plugin-import")).toBe(ALLOWED)
     expect(bashRules('sed -i "s/a/b/" eslint.config.mjs > out.txt')).toBe(ALLOWED)
     expect(bashRules("cat vitest.config.ts | head -5")).toBe(ALLOWED)
+  })
+
+  it("ne bloque en arrière-plan que les checks, jamais un serveur", () => {
+    // La règle `run_in_background` était évaluée AVANT le filtre CHECK : elle bloquait toute
+    // commande longue, dont `pnpm dev` — étape 4 du Quick Start — et `npx supabase start`.
+    expect(bashRules("pnpm dev", { run_in_background: true })).toBe(ALLOWED)
+    expect(bashRules("npx supabase start", { run_in_background: true })).toBe(ALLOWED)
+    expect(bashRules("sleep 30", { run_in_background: true })).toBe(ALLOWED)
+    expect(bashRules("pnpm test", { run_in_background: true })).toBe(BLOCKED)
+  })
+
+  it("couvre `verify` et `verify:cached`, qui sont les commandes réellement utilisées", () => {
+    // Les 4 checks ne sont plus lancés séparément : `pnpm verify` les enchaîne. La règle ne
+    // visait que les commandes individuelles — la seule commande du workflow y échappait.
+    expect(bashRules("pnpm verify | tail -20")).toBe(BLOCKED)
+    expect(bashRules("pnpm verify:cached > out.txt")).toBe(BLOCKED)
+    expect(bashRules("pnpm check:framework | head")).toBe(BLOCKED)
+  })
+
+  it("ne voit un check qu'en position de commande", () => {
+    // Sans ancre, le simple mot `eslint` ou `vitest` n'importe où déclenchait la règle.
+    expect(bashRules("ls node_modules/.bin | grep eslint")).toBe(ALLOWED)
+    expect(bashRules("which vitest")).toBe(ALLOWED)
+    expect(bashRules("rg 'pnpm test' docs/ | head -20")).toBe(ALLOWED)
+    // …mais un check chaîné derrière `&&` ou un saut de ligne reste en position de commande :
+    // une Bash multi-lignes est une seule chaîne.
+    expect(bashRules("git status && pnpm type-check | tail -5")).toBe(BLOCKED)
+    expect(bashRules("git status\npnpm type-check | tail -5")).toBe(BLOCKED)
   })
 })

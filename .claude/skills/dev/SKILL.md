@@ -1,7 +1,7 @@
 ---
 name: dev
 description: "Écrire ou explorer du code en respectant les conventions du projet : conventions routées par globs, implémentation, tests, vérification, review, finalisation."
-when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .method/, README), ni pour répondre à une question sans toucher au code : c'est le skill conventions."
+when_to_use: "Avant toute modification de code applicatif — correction de bug, ajout de fonctionnalité, réorganisation, implémentation de story — et pour toute exploration read-only du code. NE PAS déclencher pour une modification purement documentaire (docs/, .method/, README) : voir CLAUDE.md § Modifications documentaires. NE PAS déclencher pour répondre à une question sans toucher au code : c'est le skill conventions. NE PAS déclencher sur 'audite' ou 'passe le projet en revue' : c'est le skill audit."
 argument-hint: "[E01-S01 | next | description de ce qu'il faut faire]"
 paths:
   - "src/**"
@@ -17,8 +17,11 @@ Deux modes seulement. **Lecture** (aucune écriture) ou **écriture**. Tout le r
 du process — est déterminé par l'**échelle du changement**, pas par les mots employés dans la
 demande.
 
-Si la demande contient `comprends`, `explique`, `analyse`, `audit`, `explore`, `lis` → mode
+Si la demande contient `comprends`, `explique`, `analyse`, `explore`, `lis`, `où est` → mode
 lecture. Sinon, mode écriture.
+
+`audit` n'est **pas** dans cette liste : le mot appartient au skill `audit`, qui confronte
+l'existant aux conventions par lots. Ce mode-ci décrit un code, il ne le juge pas.
 
 ---
 

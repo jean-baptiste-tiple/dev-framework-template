@@ -13,6 +13,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { verifierInvariants } from './check-framework-invariants.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const CONV = join(ROOT, '.method/conventions')
@@ -72,10 +73,21 @@ if (errors.length) report()
 /** @type {{tag:string, file:string, globs:string[]}[]} */
 const tags = []
 for (const line of tableLines.slice(headerIdx + 2)) {
-  if (!line.startsWith('|')) continue
+  // Un tableau markdown se termine à la première ligne qui n'en fait pas partie. Sans ce
+  // `break`, le contrôle de colonnes mordait sur les tableaux suivants du fichier.
+  if (!line.startsWith('|')) break
   if (/^\|[\s|:-]+\|$/.test(line)) continue
   const cells = line.split('|').slice(1, -1)
-  if (cells.length !== columns.length) continue
+  // Une ligne au mauvais nombre de colonnes était ignorée EN SILENCE : ajouter une colonne à
+  // l'en-tête sans la propager à toutes les lignes faisait disparaître 23 tags sur 24, exit 0.
+  // Le parsing par nom protège de l'ajout cohérent, pas de l'ajout partiel.
+  if (cells.length !== columns.length) {
+    err(
+      `_index.md : ligne « ${line.slice(0, 60).trim()}… » a ${cells.length} colonne(s) pour ` +
+        `${columns.length} en en-tête — elle serait ignorée en silence, donc son tag ne routerait plus.`
+    )
+    continue
+  }
   const tag = cells[COL.tag].trim().replace(/`/g, '')
   const file = cells[COL.file].trim().replace(/`/g, '')
   if (!tag || !file) continue
@@ -190,7 +202,10 @@ const mdFiles = walk(ROOT).filter((p) => p.endsWith('.md') && !p.includes('/docs
 for (const p of mdFiles) {
   const rel = p.slice(ROOT.length + 1)
   const src = read(p)
-  const motif = new RegExp(`(?<![\\w/\`~])\\/(${[...KNOWN_SLASH, ...SLASH_OBSOLETES].join('|')})\\b`, 'g')
+  // Le lookbehind excluait le backtick — or la doc écrit ces commandes EXCLUSIVEMENT entre
+  // backticks. Le contrôle ne pouvait donc jamais se déclencher : il coûtait de la lecture sans
+  // rien attraper. On n'exclut plus que ce qui fait d'un `/xxx` un chemin, pas une commande.
+  const motif = new RegExp(`(?<![\\w/~])\\/(${[...KNOWN_SLASH, ...SLASH_OBSOLETES].join('|')})\\b`, 'g')
   for (const m of src.matchAll(motif)) {
     if (!KNOWN_SLASH.has(m[1])) err(`${rel} : référence \`/${m[1]}\` qui n'existe pas dans .claude/skills/.`)
   }
@@ -211,21 +226,37 @@ for (const f of existsSync(CHECKLISTS) ? readdirSync(CHECKLISTS) : []) {
 // ------------------------------- 6. sections citées (`fichier.md § Section`)
 // La gravité HAUTE/MOYENNE d'une review repose sur une citation. Si la section a été renommée,
 // le blocage s'appuie sur une référence fantôme.
+// Les 4 formes de citation qui font foi en review sont `conventions/x.md § S`,
+// `CLAUDE.md § S`, `checklists/code-review.md § S` et un AC de story. Seule la première était
+// indexée : les deux autres formes vérifiables passaient sans contrôle.
 const headingsByFile = new Map()
-for (const f of readdirSync(CONV)) {
-  if (!f.endsWith('.md')) continue
+const indexerTitres = (nom, chemin) => {
+  if (!existsSync(chemin)) return
   headingsByFile.set(
-    f,
-    [...read(join(CONV, f)).matchAll(/^#{2,4}\s+(.+)$/gm)].map((m) => norm(m[1]))
+    nom,
+    [...read(chemin).matchAll(/^#{2,4}\s+(.+)$/gm)].map((m) => norm(m[1]))
   )
 }
+for (const f of readdirSync(CONV)) {
+  if (f.endsWith('.md')) indexerTitres(f, join(CONV, f))
+}
+if (existsSync(CHECKLISTS)) {
+  for (const f of readdirSync(CHECKLISTS)) {
+    if (f.endsWith('.md')) indexerTitres(f, join(CHECKLISTS, f))
+  }
+}
+indexerTitres('CLAUDE.md', join(ROOT, 'CLAUDE.md'))
+
 for (const p of mdFiles) {
   const rel = p.slice(ROOT.length + 1)
-  for (const m of read(p).matchAll(/([a-z0-9-]+\.md)\s*§\s*([^`|\n.]+)/g)) {
+  // `[A-Za-z0-9_-]` et pas `[a-z0-9-]` : `CLAUDE.md § X` ne matchait jamais, à cause des majuscules.
+  for (const m of read(p).matchAll(/([A-Za-z0-9_-]+\.md)\s*§\s*([^`|\n.]+)/g)) {
     const headings = headingsByFile.get(m[1])
     if (!headings) continue
     const wanted = norm(m[2])
-    if (wanted.includes('<') || wanted.includes('section')) continue
+    // `<` couvre les gabarits `§ <section>`. La clause `includes('section')` qui l'accompagnait
+    // désactivait le contrôle pour TOUT titre contenant le mot « section » — un trou, pas un garde.
+    if (wanted.includes('<')) continue
     if (!headings.some((h) => h === wanted || h.startsWith(wanted) || wanted.startsWith(h))) {
       err(`${rel} : cite \`${m[1]} § ${m[2].trim()}\` — aucune section de ce nom dans le fichier.`)
     }
@@ -277,6 +308,9 @@ for (const doc of ['CLAUDE.md', 'README.md']) {
     if (!existsSync(join(ROOT, target))) err(`${doc} : chemin cité inexistant — ${target}`)
   }
 }
+
+// ------- 10 & 11. invariants de code + chaîne d'application (module séparé)
+verifierInvariants({ ROOT, read, walk, err, warn })
 
 report()
 

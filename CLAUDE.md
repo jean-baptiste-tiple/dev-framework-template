@@ -29,6 +29,23 @@ Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 6. **Aucun artefact n'est obligatoire ; son absence est déclarée, pas subie.** Pas de maquette, pas de story, pas de base de données : le travail se fait quand même. Une référence UI à `N/A` n'est jamais un défaut et la review ne la pénalise pas.
 7. **Cadrage = documentation uniquement.** Pendant un `/plan` : aucune dépendance installée, aucun fichier de code créé, aucun build lancé. Seuls `docs/` et `.method/sprint/` sont modifiés.
 
+### Ce qui est appliqué, et ce qui ne l'est pas
+
+Ces règles n'ont pas la même force, et confondre les deux fait croire à des garanties qui
+n'existent pas.
+
+| Garanti par une machine | Tenu par jugement |
+|---|---|
+| `type-check`, `lint`, `test`, `check:framework` (`pnpm verify`) | Conventions réellement **lues** avant d'écrire (règles 1-2) |
+| Le gate de commit : reçu obligatoire, `--no-verify` / `--force` bloqués | Registry consulté avant de créer (règle 3) |
+| Routing, citations, globs morts, RLS, routes dupliquées (`check:framework`) | ADR posé sur un invariant touché (règle 4) |
+| | Échelle du changement correctement estimée |
+
+Rien ne vérifie qu'une convention a été lue — seulement qu'elle a été **annoncée**. L'annonce
+est donc la seule trace : la produire avant d'implémenter, et la produire fausse est un
+mensonge, pas un raccourci. Quand un doute existe sur la colonne de droite, le dire plutôt que
+de laisser supposer que la colonne de gauche le couvre.
+
 ## Échelle du changement
 
 L'ampleur du process dépend de **ce que le changement touche**, jamais des mots employés dans la
@@ -96,6 +113,25 @@ que personne n'a relu depuis. Mêmes sources citables, même barème de gravité
 
 `plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
 architecture et stories. Face à un besoin produit large, le **proposer** et attendre l'accord.
+
+## Modifications documentaires
+
+Éditer `docs/`, `.method/` ou `README.md` sans toucher au code ne déclenche **aucun skill** :
+`dev` s'en exclut, `revue` ne review pas de la prose, `conventions` répond mais n'écrit pas.
+C'est volontaire — mais trois règles s'appliquent quand même, et personne d'autre ne les porte :
+
+1. **Ne jamais écrire dans `.method/conventions/`, `docs/decisions/` ou `CLAUDE.md` sans accord
+   explicite de l'utilisateur.** Une règle ajoutée en silence sera lue comme vraie par toutes les
+   sessions suivantes. Proposer, attendre — c'est la règle 1 de `wrap-up`, qui ne se charge pas
+   ici.
+2. **`pnpm check:framework`** reste dû : le routing, les citations et les références de skills se
+   vérifient sur les documents, pas sur le code. Un glob mort ou un `§` inexistant ne se voit
+   qu'ici.
+3. **Une entrée de changelog** seulement si la modification change ce qu'un lecteur doit faire.
+   Une reformulation n'en mérite pas.
+
+`docs/changelog.md`, `.method/sprint/`, `docs/stories/`, `docs/decisions/` et le registry sont
+exclus du reçu de vérification : les éditer n'invalide pas des checks déjà passés.
 
 ## Vérifier, commiter, pousser
 

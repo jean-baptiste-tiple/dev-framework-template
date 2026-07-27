@@ -1,7 +1,7 @@
 ---
 name: revue
 description: "Code review adossée aux conventions : route .method/conventions/ par globs sur le diff, confronte le code aux règles lues, et indexe la gravité sur la source citée."
-when_to_use: "Après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface (route, table, action, composant), avant la finalisation. Et à toute demande de relecture : 'review', 'relis', 'vérifie le code', 'c'est correct ?'. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface — une relecture inline du diff suffit."
+when_to_use: "Après une implémentation qui dépasse 2 fichiers ou crée une nouvelle surface — route, table, Server Action, composant, ou fonction exportée — avant la finalisation. Et à toute demande de RELECTURE : 'review', 'relis', 'c'est correct ?', 'ça respecte les conventions ?'. Un 'vérifie' seul, 'ça compile ?', 'lance les tests' demande d'exécuter des commandes, pas de relire : c'est verify. NE PAS déclencher en lecture seule, sur une modification purement documentaire, ni sur un changement micro d'1-2 fichiers sans nouvelle surface — une relecture inline du diff suffit."
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
@@ -17,7 +17,8 @@ perte de recul est **la mécanique** : on ne demande pas au reviewer d'avoir des
 demande de dérouler des règles lues juste avant. Ne jamais reviewer de mémoire.
 
 **Échelle.** Ce protocole complet s'applique à partir de l'échelle Standard (≥ 3 fichiers, ou
-création d'une surface : route, table, action, composant). Sur un changement micro, `dev`
+création d'une surface : route, table, Server Action, composant, fonction exportée). Sur un
+changement micro, `dev`
 fait une relecture inline du diff contre les conventions chargées — mêmes règles, sans rapport
 formaté. La vérification ne disparaît jamais ; seul le cérémonial s'adapte.
 

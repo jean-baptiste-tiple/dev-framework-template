@@ -91,7 +91,8 @@ Tests     : OK
 Changelog : mis à jour
 Commit    : <hash> <message>
 Push      : <branche> → origin/<branche>
-CI        : pnpm build en cours
+CI        : déclenchée seulement sur `main` et les pull requests — sur une branche
+            de travail sans PR, ne rien annoncer
 ```
 
 ## Règles
@@ -100,3 +101,12 @@ CI        : pnpm build en cours
 - `--no-verify`, `--force`, `--force-with-lease` : bloqués par le hook, sans échappement
 - `--amend` : uniquement sur demande explicite de l'utilisateur
 - Ne jamais commiter sur `main` si une branche de travail est attendue
+
+### Merge, rebase, revert, cherry-pick
+
+Le hook les traite **comme un commit** : ils en produisent un, et l'exclure laissait un chemin
+complet pour publier du code jamais vérifié. Même protocole — `pnpm verify` d'abord, puis la
+commande suivie de ` # checks-ok`.
+
+Un `git rebase --continue` au milieu d'une résolution de conflit est concerné aussi. C'est
+voulu : c'est exactement le moment où l'arbre a bougé sans que rien ne l'ait revérifié.

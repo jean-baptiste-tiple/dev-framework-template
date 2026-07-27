@@ -1,0 +1,44 @@
+#!/bin/sh
+# Hook git pre-commit — dernier filet, celui que le hook PreToolUse ne peut pas remplacer.
+#
+# Le hook Claude Code ne reçoit qu'une chaîne de commande : un `git commit` écrit dans un `.sh`,
+# un Makefile ou un script npm lui est invisible (`bash deploy.sh` est une commande anodine).
+# Celui-ci s'exécute quel que soit l'appelant, y compris depuis un script.
+#
+# Il ne relance pas les checks — il vérifie que le reçu couvre l'état exact du code, ce qui
+# revient au même et coûte 200 ms au lieu de 12 s.
+#
+# Activation : `git config core.hooksPath .githooks`, faite par le script `prepare` de
+# package.json (donc à chaque `pnpm install`). Vérifier avec `git config core.hooksPath`.
+#
+# Reste franchissable par `git commit --no-verify` — c'est un garde-fou contre l'accident et
+# l'oubli, pas une barrière de sécurité. Le hook PreToolUse bloque `--no-verify` au niveau de
+# l'agent ; un humain déterminé passera, et c'est assumé.
+
+if [ -n "$SKIP_VERIFY_RECEIPT" ]; then
+  exit 0
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node introuvable, contrôle du reçu ignoré." >&2
+  exit 0
+fi
+
+RACINE=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+[ -f "$RACINE/scripts/verify-receipt.mjs" ] || exit 0
+
+if ! node "$RACINE/scripts/verify-receipt.mjs" check >/dev/null 2>&1; then
+  cat >&2 <<'MSG'
+
+BLOQUÉ (pre-commit) : aucun reçu de vérification ne couvre l'état actuel du code.
+
+  pnpm verify
+
+puis relancer le commit. Ce contrôle s'applique à tout commit, y compris ceux
+lancés depuis un script — c'est précisément ce que le hook de l'agent ne voit pas.
+
+MSG
+  exit 1
+fi
+
+exit 0

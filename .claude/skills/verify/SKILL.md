@@ -1,7 +1,7 @@
 ---
 name: verify
 description: "Lance les 4 vérifications du projet via `pnpm verify` : cohérence framework, type-check, lint, tests — puis écrit le reçu qui évite de les rejouer au commit."
-when_to_use: "Quand l'utilisateur demande de vérifier que tout passe : 'vérifie', 'ça compile ?', 'lance les tests', 'tout passe ?'. Et après avoir appliqué des corrections issues d'une review. NE PAS déclencher pour un commit : commit-push inclut déjà ces checks et réutilise le reçu."
+when_to_use: "Quand l'utilisateur demande d'EXÉCUTER les vérifications : 'vérifie', 'ça compile ?', 'lance les tests', 'tout passe ?'. Et après avoir appliqué des corrections issues d'une review. NE PAS déclencher pour un commit : commit-push inclut déjà ces checks et réutilise le reçu. NE PAS déclencher sur une demande de relecture — 'relis', 'review', 'c'est correct ?' — qui appelle un jugement sur le code et non l'exécution de commandes : c'est revue."
 ---
 
 # verify — Vérifications projet

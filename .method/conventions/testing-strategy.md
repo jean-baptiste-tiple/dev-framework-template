@@ -9,7 +9,10 @@
 ## Unit Tests (Vitest)
 
 - **Quoi :** Server Actions (mock Supabase), Zod schemas (edge cases), hooks custom, utils
-- **Où :** `tests/unit/` ou colocalisés (fichier.test.ts à côté du fichier)
+- **Où :** `tests/unit/`. La colocalisation (`fichier.test.ts` à côté du code) est tolérée par
+  `vitest.config.ts` mais **ne doit pas être utilisée** : un fichier de test placé sous `src/`
+  matche en plus les globs `registry`, `a11y` et `nextjs`, donc charge des conventions qui ne le
+  concernent pas ; et l'exemption `max-lines` d'`eslint.config.mjs` ne couvre que `tests/**`.
 - **Mock Supabase :** `vi.mock("@/lib/supabase/server")` → retourner des réponses fake
 - **Couverture cible :** >80% sur `lib/actions/` et `lib/schemas/`
 

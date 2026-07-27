@@ -65,7 +65,7 @@ reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 | `verify` | auto — « vérifie », « ça compile ? », après un fix | `check:framework` + `type-check` + `lint` + `test`. |
 | `commit-push` | auto — « commit », « push », « envoie » | Les 4 checks + changelog + commit + push. **Seul chemin autorisé** (gate par hook). |
 | `wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
-| `plan` | **explicite uniquement** (`/plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 3 niveaux — initial, évolution ciblée, ou **refus** quand ça n'en vaut pas la peine. |
+| `plan` | **explicite uniquement** (`/plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 4 niveaux — **refus**, **story seule**, évolution ciblée, initial. |
 | `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source, jamais de mémoire. |
 | `audit` | demande explicite (`/audit`) | Audite la **codebase existante** par lots : 10 axes, auto-réfutation avant de rendre. |
 

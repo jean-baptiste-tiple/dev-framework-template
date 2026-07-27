@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "type-check": "tsc --noEmit",
     "check:framework": "node scripts/check-framework.mjs",
     "verify": "pnpm check:framework && pnpm type-check && pnpm lint && pnpm test && node scripts/verify-receipt.mjs write",

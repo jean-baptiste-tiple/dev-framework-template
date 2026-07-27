@@ -10,6 +10,36 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-27] — Framework v2.1 : durcissement du gate et des vérifications
+
+**Quoi :** Exécution du challenge à trois axes (technique / DX / AX) et correction de tout ce
+qu'il a révélé. Gate de commit : 5 contournements fermés (`merge`/`revert`/`cherry-pick`/
+`rebase`/`am` non couverts, `-fu` agglomérée, `push` exempté de reçu, champ `checks` du reçu
+jamais relu) et 4 faux positifs supprimés. Nouveau `.githooks/pre-commit` pour les commits
+lancés depuis un script, invisibles au hook PreToolUse. `check:framework` vérifie désormais la
+chaîne d'application elle-même (scripts, hooks, `--max-warnings 0`) et trois invariants de
+`CLAUDE.md` (RLS, routes dupliquées, couleurs Tailwind numérotées). Routing : gate d'activation
+des capacités non installées, globs `nextjs` et `performance` complétés. Déclenchement des
+skills : 3 collisions tranchées, `when_to_use` de `wrap-up` porteur de ses exclusions.
+Nouveau `docs/migration-v2.1.md` pour les projets déjà en v2.
+
+**Pourquoi :** Le challenge a montré que la moitié supposée déterministe du framework était la
+plus faible. `check:framework` validait la cohérence documentaire sans jamais vérifier que les
+garanties étaient encore branchées : on pouvait remplacer `type-check` par `echo ok` et sortir
+en 0. Deux tests passaient sans exercer la régression qu'ils documentent.
+
+**Problèmes :** Retirer `src/lib/actions/**` du tag `supabase` aurait cassé les projets qui ont
+Supabase (`api-patterns.md` y référence `handleSupabaseError`) — l'activation est donc
+conditionnée à la dépendance plutôt que le glob supprimé. `check-framework.mjs` dépassait
+`max-lines` : sections 10-11 extraites dans un module plutôt qu'exemption de la règle.
+
+**Fichiers :** `.claude/hooks/enforce-git-gate.mjs`, `.claude/hooks/enforce-bash-rules.mjs`,
+`.githooks/pre-commit` (nouveau), `scripts/verify-receipt.mjs`, `scripts/check-framework.mjs`,
+`scripts/check-framework-invariants.mjs` (nouveau), `.method/conventions/_index.md`,
+`.method/conventions/testing-strategy.md`, `.claude/skills/{dev,revue,verify,wrap-up,commit-push}/SKILL.md`,
+`CLAUDE.md`, `README.md`, `package.json`, `tests/unit/hooks.test.ts`,
+`docs/migration-v2.1.md` (nouveau), `docs/migration-v2.md`
+
 ## [2026-07-26] — Prompt de challenge du framework (technique · DX · AX)
 **Quoi :** `docs/challenge-framework.md` — prompt pour auditer **le framework lui-même**, là où `audit` audite le code applicatif. Trois axes distribuables à trois agents parallèles.
 
