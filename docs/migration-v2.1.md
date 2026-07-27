@@ -88,10 +88,16 @@ Corrige aussi l'étape 6 si elle annonce `CI : pnpm build en cours` : la CI ne t
 
 `.claude/hooks/enforce-bash-rules.mjs` — reprends le fichier du template. Deux corrections :
 
-1. **`run_in_background` était testé AVANT le filtre CHECK.** Il bloquait donc *toute* commande
-   longue : `pnpm dev` (étape 4 du Quick Start), `npx supabase start`, `sleep`. Un hook qui
-   bloque l'anodin finit désactivé — c'est son mode d'échec le plus probable. Le test passe
-   après le filtre.
+1. **La règle `run_in_background` est SUPPRIMÉE.** Elle bloquait tout check lancé en arrière-plan,
+   au motif que « sa sortie serait invisible ». C'est faux : le harness notifie à la fin de la
+   commande et sa sortie reste récupérable. Surtout, ce n'est pas la lecture de la sortie qui
+   atteste qu'un check est passé — c'est le **reçu**, que `pnpm verify` écrit en arrière-plan
+   comme au premier plan, et que le gate de commit relit dans les deux cas. La garantie est
+   intacte ; le coût, lui, était réel (une suite de tests ou un build long monopolisait la
+   session). Au passage, la règle était en plus évaluée *avant* le filtre CHECK et bloquait donc
+   `pnpm dev`, `npx supabase start` et `sleep`.
+   Les trois autres règles (troncature, redirection, polling) restent actives, y compris sur une
+   commande en arrière-plan.
 2. **Le motif CHECK est ancré en position de commande** (`^`, `\n`, `;`, `&&`, `||`, `|`). Sans
    ancre, le simple mot `eslint` ou `vitest` n'importe où déclenchait la règle : `which vitest`,
    `ls node_modules/.bin | grep eslint`, `rg "pnpm test" docs/` étaient bloqués. Le motif couvre
@@ -226,7 +232,7 @@ ajoute les cas manquants. 23 tests, dont ceux qui couvrent les corrections ci-de
 - reçu exigé de tout verbe qui produit un commit, mais pas du `push`
 - reçu déclarant un seul check → refusé
 - `bash -c "ls"` sans git → autorisé
-- `pnpm dev` en arrière-plan → autorisé ; `pnpm test` en arrière-plan → bloqué
+- `run_in_background` autorisé sur tout, y compris `pnpm test` / `pnpm verify` / `pnpm build`
 - `pnpm verify | tail` et `pnpm verify:cached > out` → bloqués
 - `which vitest`, `grep eslint` → autorisés ; check derrière `&&` ou `\n` → bloqué
 
@@ -262,7 +268,8 @@ Puis les quatre contrôles manuels que rien n'automatise :
 
 1. `git push` nu dans une session Claude → **bloqué**.
 2. `git merge une-branche` nu → **bloqué** (c'est le trou principal de la v2).
-3. `pnpm dev` en arrière-plan → **autorisé** (c'était le faux positif principal).
+3. `pnpm test` **et** `pnpm dev` en arrière-plan → **autorisés** (`run_in_background` n'est plus
+   bloqué du tout).
 4. `SKIP_VERIFY_RECEIPT=1 git commit` → passe. C'est l'échappement documenté du hook git, pas
    une régression.
 

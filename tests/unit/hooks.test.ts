@@ -279,7 +279,6 @@ describe("enforce-bash-rules", () => {
   it("empêche de tronquer ou rediriger la sortie d'un check", () => {
     expect(bashRules("pnpm type-check | tail -20")).toBe(BLOCKED)
     expect(bashRules("pnpm test > out.txt")).toBe(BLOCKED)
-    expect(bashRules("pnpm lint", { run_in_background: true })).toBe(BLOCKED)
   })
 
   it("laisse passer les checks bruts et les pipes hors checks", () => {
@@ -297,13 +296,19 @@ describe("enforce-bash-rules", () => {
     expect(bashRules("cat vitest.config.ts | head -5")).toBe(ALLOWED)
   })
 
-  it("ne bloque en arrière-plan que les checks, jamais un serveur", () => {
-    // La règle `run_in_background` était évaluée AVANT le filtre CHECK : elle bloquait toute
-    // commande longue, dont `pnpm dev` — étape 4 du Quick Start — et `npx supabase start`.
+  it("autorise `run_in_background`, y compris sur un check", () => {
+    // La règle qui le bloquait reposait sur « sa sortie serait invisible » — faux : le harness
+    // notifie à la fin et la sortie reste récupérable. Et ce n'est pas la lecture de la sortie
+    // qui atteste qu'un check est passé, c'est le reçu, écrit dans les deux cas.
+    expect(bashRules("pnpm test", { run_in_background: true })).toBe(ALLOWED)
+    expect(bashRules("pnpm verify", { run_in_background: true })).toBe(ALLOWED)
+    expect(bashRules("pnpm build", { run_in_background: true })).toBe(ALLOWED)
     expect(bashRules("pnpm dev", { run_in_background: true })).toBe(ALLOWED)
     expect(bashRules("npx supabase start", { run_in_background: true })).toBe(ALLOWED)
     expect(bashRules("sleep 30", { run_in_background: true })).toBe(ALLOWED)
-    expect(bashRules("pnpm test", { run_in_background: true })).toBe(BLOCKED)
+
+    // Les autres règles restent actives sur une commande en arrière-plan.
+    expect(bashRules("pnpm test | tail -20", { run_in_background: true })).toBe(BLOCKED)
   })
 
   it("couvre `verify` et `verify:cached`, qui sont les commandes réellement utilisées", () => {

@@ -10,6 +10,22 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-27] — `run_in_background` autorisé sur les checks
+
+**Quoi :** Suppression de la règle 1 de `enforce-bash-rules.mjs`, qui bloquait tout check lancé
+en arrière-plan. Les trois autres règles (troncature, redirection, polling) restent actives, y
+compris sur une commande en arrière-plan.
+
+**Pourquoi :** Sa prémisse — « sa sortie serait invisible » — est fausse : le harness notifie à
+la fin de la commande et la sortie reste récupérable. Surtout, ce n'est pas la lecture de la
+sortie qui atteste qu'un check est passé, c'est le **reçu** : `pnpm verify` l'écrit en
+arrière-plan comme au premier plan, et le gate de commit le relit dans les deux cas. La garantie
+est intacte ; le coût, lui, était réel — une suite de tests ou un build long monopolisait la
+session.
+
+**Fichiers :** `.claude/hooks/enforce-bash-rules.mjs`, `tests/unit/hooks.test.ts`, `README.md`,
+`docs/migration-v2.1.md`
+
 ## [2026-07-27] — Framework v2.1 : durcissement du gate et des vérifications
 
 **Quoi :** Exécution du challenge à trois axes (technique / DX / AX) et correction de tout ce

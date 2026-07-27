@@ -257,7 +257,8 @@ jamais vérifié.
 ### Les deux hooks
 
 `enforce-git-gate.mjs` — aucun commit ni push hors du skill `commit-push`.
-`enforce-bash-rules.mjs` — sortie des checks jamais tronquée, redirigée ou lancée en arrière-plan.
+`enforce-bash-rules.mjs` — sortie des checks jamais tronquée ni redirigée. L'arrière-plan est
+autorisé : c'est le reçu qui atteste qu'un check est passé, pas la lecture de sa sortie.
 
 Ils sont écrits en Node, pas en bash : le payload est du JSON, et toute extraction du champ
 `command` par grep ou sed est fausse dans un sens (troncature au premier guillemet échappé) ou

@@ -5,9 +5,11 @@
  * Exit 0 = autorisé, exit 2 = bloqué (stderr renvoyé à Claude).
  * Ce fichier EST la source de vérité de ces règles — ne pas les dupliquer dans CLAUDE.md.
  *
- * PÉRIMÈTRE : les 4 règles ne s'appliquent QU'AUX COMMANDES DE CHECK. Un hook qui bloque une
+ * PÉRIMÈTRE : les 3 règles ne s'appliquent QU'AUX COMMANDES DE CHECK. Un hook qui bloque une
  * commande légitime finit désactivé — c'est son mode d'échec le plus probable, et il coûte plus
  * cher que la règle ne rapporte.
+ *
+ * `run_in_background` n'est PAS bloqué — voir la justification en ligne plus bas.
  */
 
 // Le motif doit matcher un check EN POSITION DE COMMANDE. Sans les ancres, le simple mot
@@ -50,31 +52,28 @@ process.stdin.on('end', () => {
   // et un heredoc qui écrit un workflow contenant `pnpm build` n'en est pas un non plus.
   const bare = command.replace(/'[^']*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""')
 
-  // Toutes les règles sont conditionnées au fait qu'il s'agisse d'un check. La règle
-  // `run_in_background` était testée AVANT ce filtre : elle bloquait toute commande longue,
-  // dont `pnpm dev` — étape 4 du Quick Start — et `npx supabase start`.
+  // Toutes les règles sont conditionnées au fait qu'il s'agisse d'un check.
   if (!CHECK.test(bare)) process.exit(0)
 
-  // --- Règle 1 : pas de check en arrière-plan ---
-  // Sa sortie deviendrait invisible et l'échec passerait inaperçu.
-  if (input?.tool_input?.run_in_background === true) {
-    deny(
-      "BLOQUÉ: check lancé en arrière-plan, sa sortie serait invisible. Relancer en foreground (timeout: 120000, jusqu'à 600000 pour un build). Les commandes qui ne sont pas des checks — `pnpm dev`, un serveur — ne sont pas concernées."
-    )
-  }
+  // `run_in_background` EST AUTORISÉ, y compris sur un check. La règle qui le bloquait reposait
+  // sur « sa sortie serait invisible » — c'est faux : le harness notifie à la fin de la commande
+  // et sa sortie reste récupérable. Et surtout, ce n'est pas la lecture de la sortie qui atteste
+  // qu'un check est passé, c'est le REÇU : `pnpm verify` l'écrit en arrière-plan comme au
+  // premier plan, et le gate de commit le relit dans les deux cas. La garantie est intacte.
+  // Le coût, lui, était réel : une suite de tests ou un build long monopolisait la session.
 
-  // --- Règle 2 : pas de troncature de la sortie d'un check ---
+  // --- Règle 1 : pas de troncature de la sortie d'un check ---
   // Les erreurs sont souvent en fin de sortie : la tronquer les masque.
   if (/\|\s*(?:tail|head|less|more|wc)\b/.test(bare)) {
     deny('BLOQUÉ: sortie de check tronquée par un pipe. Exécuter la commande brute.')
   }
 
-  // --- Règle 3 : pas de redirection fichier pour un check ---
+  // --- Règle 2 : pas de redirection fichier pour un check ---
   if (/(?:^|[^0-9>])>{1,2}\s*\S/.test(bare) || /\|\s*tee\b/.test(bare)) {
     deny('BLOQUÉ: sortie de check redirigée vers un fichier. Elle doit rester dans le terminal.')
   }
 
-  // --- Règle 4 : pas de boucle d'attente / polling ---
+  // --- Règle 3 : pas de boucle d'attente / polling ---
   if (/\bwhile\s+(?:true|:)|(?:^|[;&\s])watch\s|\buntil\s+.*;\s*do/.test(bare)) {
     deny("BLOQUÉ: boucle d'attente/polling. Exécuter la commande une fois et lire le résultat.")
   }
