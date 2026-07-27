@@ -88,7 +88,11 @@ Tout vit dans `.claude/skills/`. Un skill se déclenche **sur l'intention** et r
 | `commit-push` | auto — « commit », « push », « envoie » | Checks (sans les rejouer) + changelog + commit + push |
 | `wrap-up` | auto — « on a fini », « c'est bouclé » | **Propose** de capturer les apprentissages, n'écrit jamais sans accord |
 | `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source |
+| `audit` | demande explicite d'audit large | Confronte la **codebase existante** aux conventions, par lots |
 | `plan` | **explicite uniquement** | Cadrage : refus / story seule / évolution / initial |
+
+`revue` audite un **diff**, `audit` audite **l'existant** — du code écrit avant les conventions,
+que personne n'a relu depuis. Mêmes sources citables, même barème de gravité.
 
 `plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
 architecture et stories. Face à un besoin produit large, le **proposer** et attendre l'accord.

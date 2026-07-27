@@ -10,6 +10,23 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Skill `audit` : auditer l'existant, pas seulement le diff
+**Quoi :** `revue` ne sait auditer qu'un diff. Sur une codebase déjà écrite — reprise d'un projet, code antérieur aux conventions, préparation d'une mise en production — il n'y avait aucun outil. `audit` comble ce trou en réutilisant exactement la même mécanique : routing par globs, sources citables, barème de gravité identique.
+
+Ce qu'il apporte au-delà de `revue` :
+
+- **Étape 1 — contraintes du projet, avant tout le reste.** Lire les ADR, la config d'exemptions ESLint, les tokens de design réellement définis, `.env.example`. Trois questions doivent avoir une réponse explicite avant de commencer : *où se joue l'autorisation réelle* (une garde d'ergonomie UI n'est jamais une frontière de sécurité — mais l'inverse compte aussi : ne pas signaler comme non protégée une action qui l'est côté serveur), *le schéma de base est-il partagé* (si oui, toute évolution est additive et un `DROP` est HAUTE d'office), *quelle dette est gelée* (un fichier exempté n'est pas un défaut, c'est une décision écrite).
+- **Découpage en lots par frontière technique**, pas par volume : au-delà de ~15 fichiers la lecture « en entier » devient une fiction. Chaque lot refait son routing, produit son rapport, et peut être confié à un agent séparé — sans jamais supposer qu'un autre lot a déjà vérifié quelque chose.
+- **Étape d'auto-réfutation obligatoire.** Chaque finding candidat doit survivre à une tentative de le détruire : le chemin d'échec existe-t-il vraiment ou l'ai-je supposé · une garde en amont le rend-elle impossible · la section citée dit-elle littéralement ce qu'on lui fait dire · un test couvre-t-il déjà le cas · est-ce déjà attrapé par ESLint ou TypeScript. Dans le doute, le finding est supprimé et bascule en « angle mort ».
+- **Grille de 10 axes** — sécurité et autorisation, intégrité des données, frontières Next.js, robustesse, contrats de types, tests, accessibilité, performance, duplication, opérations. Chaque axe liste ce qu'il faut chercher concrètement, pas une checklist décorative.
+- **Section « Angles morts » obligatoire** dans la sortie : ce que le lot n'a pas pu couvrir, et pourquoi. Un audit qui ne déclare aucune limite ment sur sa couverture.
+
+**Principe directeur :** un audit qui produit 40 findings dont 12 sont faux vaut moins qu'un audit qui en produit 15 tous vrais. Un faux positif ne coûte pas un finding, il coûte la confiance dans toute la liste.
+
+**Lecture seule, sans exception.** Aucun fix appliqué, aucun commit. Les corrections se décident après, par gravité, et passent par `dev` qui rechargera les conventions sur les fichiers réellement touchés.
+
+**Fichiers :** `.claude/skills/audit/SKILL.md` (créé) · `scripts/check-framework.mjs` (`audit` ajouté aux skills connus) · `CLAUDE.md`, `README.md`
+
 ## [2026-07-26] — Renommage : `.tiple/` devient `.method/`
 **Quoi :** le nom commercial du framework disparaît de l'arborescence et du code. Il ne subsiste que dans le `README.md`, seul endroit où il est assumé.
 

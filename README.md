@@ -67,9 +67,28 @@ reste invocable explicitement en `/<nom>` quand tu veux forcer le passage.
 | `wrap-up` | auto — « on a fini », « c'est bouclé » | Propose de capturer les apprentissages. N'écrit jamais sans accord. |
 | `plan` | **explicite uniquement** (`/plan`) | Cadrage à la carte : brief, PRD par parcours, archi, design, epics/stories. 3 niveaux — initial, évolution ciblée, ou **refus** quand ça n'en vaut pas la peine. |
 | `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source, jamais de mémoire. |
+| `audit` | demande explicite (`/audit`) | Audite la **codebase existante** par lots : 10 axes, auto-réfutation avant de rendre. |
 
 `plan` est le seul à ne jamais s'auto-déclencher : un cadrage réécrit PRD, architecture et
 stories. Claude le **propose** face à un besoin produit large, il ne le lance pas.
+
+### `revue` et `audit`
+
+`revue` confronte un **diff** aux conventions routées sur les fichiers touchés — c'est le
+cérémonial de fin d'implémentation, à partir de l'échelle Standard.
+
+`audit` confronte **l'existant** : du code écrit avant que les conventions n'existent, ou repris
+d'ailleurs. Il découpe en lots par frontière technique (actions, données, routes, composants,
+tests), refait le routing pour chacun, et passe 10 axes — sécurité, intégrité des données,
+frontières Next, robustesse, types, tests, accessibilité, performance, duplication, ops.
+
+Les deux partagent la même règle : **pas de source citable, pas de gravité**. Et `audit` ajoute
+une étape d'**auto-réfutation** avant de rendre — chaque finding candidat doit survivre à une
+tentative de le détruire. Un faux positif ne coûte pas un finding, il coûte la confiance dans
+toute la liste.
+
+Sa première étape est de lire les **contraintes du projet** — ADR, config d'exemptions ESLint,
+tokens réellement définis — parce que c'est ce qui distingue un défaut réel d'une dette assumée.
 
 ### Le gate de commit
 
@@ -141,7 +160,7 @@ dépasse 400 lignes, si une checklist n'est appelée par rien, si un composant d
 ```
 ├── CLAUDE.md                    # Instructions Claude Code (Tiple Method)
 ├── .claude/
-│   ├── skills/                  # 6 skills de workflow + conventions
+│   ├── skills/                  # 6 skills de workflow + conventions + audit
 │   ├── hooks/                   # enforce-git-gate.mjs (gate commit/push) + enforce-bash-rules.mjs
 │   └── settings.json            # Déclaration des hooks
 ├── scripts/

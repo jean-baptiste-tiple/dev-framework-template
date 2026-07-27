@@ -44,7 +44,7 @@ if (!existsSync(INDEX)) {
 const indexSrc = read(INDEX)
 const BASE_CONVENTIONS = ['coding-standards.md']
 const WORKFLOW_SKILLS = ['dev', 'plan', 'revue', 'verify', 'wrap-up', 'commit-push']
-const STANDALONE_SKILLS = ['conventions']
+const STANDALONE_SKILLS = ['conventions', 'audit']
 
 // ------------------------------------------------- 1. parsing de _index.md
 // Parsing par NOM DE COLONNE, pas par position : ajouter une colonne au tableau ne doit pas
