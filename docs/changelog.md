@@ -10,6 +10,21 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-26] — Prompt de challenge du framework (technique · DX · AX)
+**Quoi :** `docs/challenge-framework.md` — prompt pour auditer **le framework lui-même**, là où `audit` audite le code applicatif. Trois axes distribuables à trois agents parallèles.
+
+- **Technique** — les hooks tiennent-ils face à des payloads construits (et pas relus) · les scripts résistent-ils aux cas dégradés (dépôt sans commit, renommage, chemin illisible) · le vérificateur de cohérence détecte-t-il ce qu'il prétend, et surtout **que rate-t-il** · les seuils annoncés « appliqués par l'outillage » le sont-ils vraiment, ou configurés en avertissement.
+- **DX** — la question centrale n'est pas « est-ce bien conçu » mais **« où se fait-il contourner, et pourquoi »**. Coût d'entrée, rapport cérémonial/valeur sur le changement le plus fréquent, qualité des messages d'échec (un blocage qui n'indique pas la sortie enseigne le contournement), et capacité du framework à **se refuser** quand il n'apporte rien.
+- **AX** — l'angle le plus déterminant, parce qu'un agent ne se plaint pas : il dérive en silence. Budget de contexte avant la première ligne de code · **observabilité de la conformité** : lister les instructions dont on ne peut pas vérifier l'exécution (annoncer les conventions chargées est visible, les avoir lues ne l'est pas) · tri des garanties entre celles qui survivent à un agent compacté (hook, script, test, type) et celles qui reposent sur son raisonnement · contradictions entre deux conventions chargées par le même glob · fiabilité et chevauchement des descriptions de déclenchement · reprise après perte de contexte · instructions invérifiables (« le plus bas possible », « si nécessaire », « complexe ») à reformuler en binaire ou à supprimer.
+
+**Contraintes du prompt :** mesurer plutôt qu'opiner — un jugement sans chiffre ni scénario reproductible est refusé · six scénarios à **dérouler**, pas à relire (jour 1, micro, module, session interrompue, douze mois, refus de story) · étape adversariale où les contournements sont **exécutés** · **cinq propositions maximum**, classées par gain/coût, chacune devant nommer **ce qu'elle casse** — toute modification du framework en dégrade un autre point.
+
+Une section « à supprimer » est demandée séparément : retirer 40 lignes périmées vaut souvent mieux qu'en ajouter 10 justes.
+
+**Pourquoi un document et pas un skill :** c'est un exercice périodique — après un chantier structurant, avant diffusion, ou quand quelqu'un cesse de se servir du framework. Une neuvième description de déclenchement permanente en contexte pour deux passages par an coûte plus qu'elle ne rapporte.
+
+**Fichiers :** `docs/challenge-framework.md`
+
 ## [2026-07-26] — Skill `audit` : auditer l'existant, pas seulement le diff
 **Quoi :** `revue` ne sait auditer qu'un diff. Sur une codebase déjà écrite — reprise d'un projet, code antérieur aux conventions, préparation d'une mise en production — il n'y avait aucun outil. `audit` comble ce trou en réutilisant exactement la même mécanique : routing par globs, sources citables, barème de gravité identique.
 
