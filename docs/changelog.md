@@ -10,6 +10,22 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-28] — CLAUDE.md : section « Après une erreur »
+
+**Quoi :** Boucle « erreur → correction de ce qui l'a rendue possible » : deux questions à
+réponse écrite après chaque fix (qu'est-ce qui l'a rendue possible, qu'est-ce qui l'empêchera
+de revenir), table apprentissage → emplacement de capture (ADR, conventions, checklists,
+registry, story) avec accord requis aligné sur § Modifications documentaires, et trois écueils
+nommés (ne rien écrire, contourner l'accord, règle non contrôlable). Ajout d'un garde « base à
+jour avant un chantier documentaire » dans § Avant de coder.
+
+**Pourquoi :** Une erreur soldée par la seule correction de son instance revient sous une autre
+forme, là où personne ne fera le lien. Le garde « base à jour » sort de cette session même : la
+première version de la section a été écrite sur une arborescence 15 commits derrière
+`origin/main`, et citait des chemins que la v2 avait supprimés.
+
+**Fichiers :** `CLAUDE.md`
+
 ## [2026-07-28] — check-framework : portabilité Windows
 
 **Quoi :** `read()` normalise les CRLF et `walk()` renvoie des chemins en `/`. Sous Windows

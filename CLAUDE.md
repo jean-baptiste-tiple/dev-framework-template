@@ -18,6 +18,28 @@ Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 - **Edits chirurgicaux.** Chaque ligne changée trace à la demande. Pas de cleanup adjacent, pas de reformatage opportuniste, pas de refacto non demandé. Dead code repéré : le mentionner, pas le supprimer.
 - **Critères de succès vérifiables d'abord.** Reformuler la tâche en checks concrets : test qui reproduit le bug, assertion qui valide la feature, type-check qui passe. Pas de « make it work » flou.
 - **Push back quand c'est justifié.** Approche plus simple disponible ou dette évidente créée : le dire avant d'exécuter.
+- **Base à jour avant un chantier documentaire.** `git fetch` et écart avec `origin/main` constatés avant d'écrire dans `docs/`, `.method/` ou `CLAUDE.md`. Une règle écrite sur une base périmée cite des chemins morts.
+
+## Après une erreur
+
+- **Corriger l'instance ne solde pas l'erreur** — qu'elle soit commise par l'agent, repérée dans le code ou signalée par l'utilisateur. Après le fix, s'arrêter avant de reprendre le fil : qu'est-ce qui a rendu l'erreur possible, et qu'est-ce qui l'empêchera de revenir ? Tant que la seconde question n'a pas de réponse **écrite**, la récidive est garantie — sous une autre forme, dans un contexte où personne ne fera le lien.
+- **L'apprentissage s'écrit là où il sera relu au bon moment**, pas là où c'est commode. Une garde posée dans une convention routée ou une checklist devient **citable en review** (`conventions/<fichier>.md § <section>`) — c'est ce qui la fait relire au bon moment.
+
+| Apprentissage | Emplacement | Accord requis |
+|---|---|---|
+| Invariant d'architecture absent, flou ou violé | ADR dans `docs/decisions/` (`.method/templates/adr.tmpl.md`) + màj `docs/architecture.md` | Oui — l'ADR est dû (règle absolue 4), son texte se propose (§ Modifications documentaires) |
+| Règle technique manquante ou fausse | Fichier du tag dans `.method/conventions/` (globs : `_index.md`) | Oui (§ Modifications documentaires) |
+| Point de contrôle absent de la review | `.method/checklists/code-review.md` | Oui |
+| Story acceptée alors qu'elle était floue | `.method/checklists/story-ready.md` | Oui |
+| Composant recréé au lieu de réutilisé | `.method/conventions/component-registry.md` | Non — dû au fil du code (workflow, étape 8) |
+| Règle de travail globale / gotcha projet | `CLAUDE.md` | Oui (§ Modifications documentaires) |
+| Contexte de l'erreur sur la story concernée | Section « Post-implémentation », `docs/stories/` | Non — dû (workflow, étape 8) |
+
+- **Une erreur avérée vaut occurrence suffisante.** Le seuil « 2+ occurrences » de `wrap-up` vise les patterns observés, pas les gardes anti-récidive. Le plafond de 400 lignes par fichier de conventions s'applique en revanche à l'identique : si la garde fait déborder, élaguer plutôt qu'empiler. `wrap-up` reste le filet de fin de chantier ; il ne remplace pas cette boucle immédiate.
+- **Trois écueils :**
+  1. **Ne rien écrire parce que « ça ne se reproduira pas ».** La bonne foi n'est pas un mécanisme.
+  2. **Contourner l'accord — dans les deux sens.** Écrire sans le go, ou ne rien proposer sous prétexte qu'il faut un go : l'analyse et la proposition sont dues sur-le-champ, seule l'écriture attend.
+  3. **Écrire une règle qui décrit l'erreur au lieu de la rendre détectable.** « Faire attention à X » ne vaut rien. Test avant d'écrire : en relisant la règle, peut-on contrôler si elle a été tenue — par une machine (`pnpm verify`) ou par une citation en review ? « Toute affirmation porte sa source ou est marquée hypothèse » se contrôle ; « être rigoureux » non.
 
 ## Règles absolues
 
