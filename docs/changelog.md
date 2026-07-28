@@ -10,6 +10,24 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-07-28] — check-framework : portabilité Windows
+
+**Quoi :** `read()` normalise les CRLF et `walk()` renvoie des chemins en `/`. Sous Windows
+(`autocrlf=true`), le frontmatter des 8 skills était déclaré absent (regex ancrée sur `\n`) et
+toutes les comparaisons de chemins échouaient : exclusion du changelog morte (8 fausses
+références `/tm-*`), registry ↔ `src/components/` entièrement en erreur (40 faux positifs),
+dédup de routes de l'invariant Next inopérante en silence. 56 erreurs au total — `pnpm verify`
+impossible, donc aucun commit possible depuis Windows.
+
+**Pourquoi :** La v2 a été écrite et vérifiée sous Linux ; la machine principale du projet est
+sous Windows. Le gate bloquait tout commit tant que le checker se bloquait lui-même.
+
+**Problèmes :** Pas de test ajouté : le checker n'a pas de seam de racine (contrairement à
+`VERIFY_RECEIPT_ROOT`) et un fixture complet pour 2 lignes serait disproportionné. Critère de
+succès : `pnpm verify` passe sur les deux OS.
+
+**Fichiers :** `scripts/check-framework.mjs`
+
 ## [2026-07-27] — `run_in_background` autorisé sur les checks
 
 **Quoi :** Suppression de la règle 1 de `enforce-bash-rules.mjs`, qui bloquait tout check lancé

@@ -26,13 +26,17 @@ const warnings = []
 const err = (m) => errors.push(m)
 const warn = (m) => warnings.push(m)
 
-const read = (p) => readFileSync(p, 'utf8')
+// CRLF normalisés : sous Windows (autocrlf), les fichiers arrivent en \r\n et toute regex
+// ancrée sur \n (frontmatter des skills, notamment) ne matchait plus rien — 8 faux « absent ».
+const read = (p) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n')
 const walk = (dir, out = []) => {
   for (const e of readdirSync(dir)) {
     if (['node_modules', '.git', '.next', 'dist', 'coverage'].includes(e)) continue
     const p = join(dir, e)
     if (statSync(p).isDirectory()) walk(p, out)
-    else out.push(p)
+    // Séparateurs POSIX : toutes les comparaisons du checker (exclusions, registry ↔ src/,
+    // dédup de routes) sont écrites en `/` — en `\` elles échouaient toutes sous Windows.
+    else out.push(p.replaceAll('\\', '/'))
   }
   return out
 }
