@@ -23,7 +23,15 @@
 - [ ] Pas de TODO / FIXME / HACK sans explication ni ticket
 - [ ] Pas de code mort ajouté (fonction, import, variable, prop non utilisée)
 - [ ] Aucun fichier sensible dans le diff (`.env`, credentials, clés, dumps)
-- [ ] Pas de dépendance ajoutée sans nécessité (vérifier `package.json` dans le diff)
+- [ ] Pas de dépendance ajoutée sans nécessité (vérifier `package.json` dans le diff) — sa justification relève de § Arbitrage de complexité
+
+## Arbitrage de complexité
+
+Point de contrôle de `CLAUDE.md § Justifier une surface nouvelle` — ne pas y redire la règle.
+
+- [ ] Chaque surface nouvelle du diff (fichier, composant, hook, util, abstraction, prop optionnelle, option de config, table, colonne, flag, dépendance) porte, dans le récap ou le rapport de review, **ce qui casse sans elle aujourd'hui**
+- [ ] Aucune surface justifiée au futur (« on pourrait vouloir », « pour rester générique », « ce sera utile quand ») — une telle surface est **à retirer**, pas à documenter
+- [ ] (hors Micro) Le récap **nomme l'option d'un cran plus simple écartée** et la raison de l'écarter. Une seule solution présentée = aucun arbitrage rendu
 
 ## Conformité à la demande
 
@@ -39,4 +47,4 @@
 - [ ] `.method/conventions/component-registry.md` mis à jour si nouveau composant réutilisable
 - [ ] (mode story) Section « Post-implémentation » de la story remplie
 - [ ] ADR créé dans `docs/decisions/` si un invariant d'architecture a été touché
-- [ ] Si une règle a dû être inventée pendant l'implémentation → la signaler (candidate à `wrap-up`), ne pas l'écrire d'office dans les conventions
+- [ ] Si une règle a dû être inventée pendant l'implémentation → elle est écrite dans la convention concernée **et annoncée** (fichier, section, règle en une phrase), pas laissée implicite

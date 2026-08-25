@@ -159,3 +159,5 @@ simplement le critère « conforme à la maquette ».
 - RLS sur toute nouvelle table
 - Les 3 états UI gérés : loading, error, empty
 - Pas d'abstraction prématurée — factoriser à partir de 2 occurrences
+- Toute surface nouvelle porte ce qui casse sans elle aujourd'hui, et le récap nomme l'option
+  d'un cran plus simple écartée (`CLAUDE.md § Justifier une surface nouvelle`)

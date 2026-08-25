@@ -31,6 +31,6 @@ Le dire franchement plutôt que d'inventer une réponse vraisemblable. Deux suit
 
 ## Ce que ce skill ne fait pas
 
-- Il n'écrit **jamais** dans `.method/conventions/` — c'est le rôle de `wrap-up`, sur accord explicite.
+- Il n'écrit **jamais** dans `.method/conventions/` — répondre à une question ne modifie pas la règle. L'écriture appartient au chantier en cours ou à `wrap-up`.
 - Il ne remplace pas le routing par globs. Si la question mène à une modification de code,
   passer la main à `dev`, qui repartira des fichiers touchés.

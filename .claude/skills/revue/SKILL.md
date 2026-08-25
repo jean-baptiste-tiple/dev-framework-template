@@ -113,6 +113,7 @@ citations présentes dans les fichiers versionnés, pas celles produites à la v
 
 Périmètre   : <n> fichiers
 Conventions : <liste>
+Arbitrage   : <option d'un cran plus simple écartée> — <raison de l'écarter>
 
 ### Problèmes
 
@@ -127,6 +128,11 @@ Conventions : <liste>
 HAUTE : 1 · MOYENNE : 1 · BASSE : 1
 ❌ CHANGES REQUESTED
 ```
+
+La ligne **Arbitrage** est due dès l'échelle Standard : elle nomme l'option d'un cran plus
+simple qui a été écartée et pourquoi. `— aucune surface nouvelle` est une réponse valable ; une
+ligne absente, ou remplie d'un « pas d'alternative » sans option nommée, vaut MOYENNE au titre de
+`code-review.md § Arbitrage de complexité` — aucun arbitrage n'a été rendu.
 
 Verdict = ✅ **APPROVED** si 0 HAUTE et 0 MOYENNE. Les BASSE ne bloquent jamais.
 

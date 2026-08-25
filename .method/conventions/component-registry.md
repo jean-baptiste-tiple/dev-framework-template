@@ -1,6 +1,6 @@
 # Component Registry
 
-> Derniere MAJ : 2026-04-06
+> Derniere MAJ : 2026-08-05
 > VERIFIER ce fichier AVANT de creer un composant/hook/util.
 
 ## UI Components (Shadcn/ui — installes)
@@ -41,6 +41,28 @@
 | Toggle | `src/components/ui/toggle.tsx` | Bouton toggle |
 | ToggleGroup | `src/components/ui/toggle-group.tsx` | Groupe de toggles |
 | Tooltip | `src/components/ui/tooltip.tsx` | Info-bulle |
+
+## Icones animees (lucide-animated)
+
+Registry shadcn distinct de celui de Shadcn/ui, meme commande. Les fichiers atterrissent dans
+`src/components/ui/` et sont vendored : ne pas les modifier a la main, les reinstaller.
+
+```bash
+pnpm dlx shadcn@latest add "https://lucide-animated.com/r/<nom>.json"
+```
+
+466 icones disponibles (`https://lucide-animated.com/r/registry.json` liste les noms). Chacune
+tire `motion` et s'anime au hover ; la ref exposee (`startAnimation` / `stopAnimation`) permet
+de piloter l'animation depuis le parent.
+
+| Composant | Path | Notes |
+|-----------|------|-------|
+| DeleteIcon | `src/components/ui/delete.tsx` | Poubelle, couvercle qui se souleve. Client component |
+| SettingsIcon | `src/components/ui/settings.tsx` | Engrenage qui tourne. Client component |
+
+Ces composants rendent un `<div>` decoratif, sans role ni label : l'appelant porte
+l'accessibilite — `<button aria-label="...">` autour, `aria-hidden` sur l'icone
+(`accessibility-patterns.md` § Images).
 
 ## Composants metier partages
 

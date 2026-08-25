@@ -71,6 +71,10 @@ trois traitements contradictoires du même cas (throw / return / redirect).
 - Types : générés depuis Supabase (`database.ts`), enrichis dans `types/index.ts`
 - Composants : vérifier `component-registry.md` AVANT de créer
 - Factoriser à partir de 2 occurrences, pas avant (pas d'abstraction prématurée)
+- Toute surface nouvelle — composant, hook, util, abstraction, prop optionnelle, option de
+  config, dépendance — porte **ce qui casse sans elle aujourd'hui**
+  (`CLAUDE.md § Justifier une surface nouvelle`). Pas de justification au présent → retirer la
+  surface, ne pas la documenter
 
 ## Imports
 

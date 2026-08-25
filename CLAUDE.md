@@ -20,25 +20,52 @@ Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 - **Push back quand c'est justifié.** Approche plus simple disponible ou dette évidente créée : le dire avant d'exécuter.
 - **Base à jour avant un chantier documentaire.** `git fetch` et écart avec `origin/main` constatés avant d'écrire dans `docs/`, `.method/` ou `CLAUDE.md`. Une règle écrite sur une base périmée cite des chemins morts.
 
+## Justifier une surface nouvelle
+
+Est une **surface** tout ce qui devra ensuite être lu, maintenu ou désappris : fichier,
+composant, hook, util, abstraction, prop optionnelle, option de config, table, colonne,
+feature flag, dépendance.
+
+1. **Toute surface nouvelle porte ce qui casse sans elle aujourd'hui.** Une phrase, écrite dans
+   le récap de livraison — dans le rapport de `revue` dès l'échelle Standard : quel comportement
+   demandé n'existe pas si la surface n'existe pas. Un besoin au futur — « on pourrait vouloir »,
+   « pour rester générique », « ce sera utile quand » — n'est pas une justification : **la surface
+   se retire, elle ne se documente pas.**
+2. **Au-delà d'un changement Micro, le récap nomme l'option d'un cran plus simple qui a été
+   écartée, et la raison de l'écarter.** Un cran plus simple = la même livraison avec une surface
+   en moins : valeur en dur au lieu d'une option, composant existant étendu au lieu d'un nouveau,
+   code en ligne au lieu d'une abstraction, aucune dépendance ajoutée. **Une seule solution
+   présentée = aucun arbitrage rendu**, et la review le traite comme tel
+   (`checklists/code-review.md § Arbitrage de complexité`).
+
+Ces deux obligations ne remplacent ni « réutiliser avant de créer »
+(`.method/conventions/component-registry.md`) ni « factoriser à partir de 2 occurrences »
+(`coding-standards.md § DRY`) : elles en sont la **trace**. Sans elles, rien ne permet de dire,
+en relisant un diff, si l'arbitrage a eu lieu ou si personne n'y a pensé.
+
 ## Après une erreur
 
 - **Corriger l'instance ne solde pas l'erreur** — qu'elle soit commise par l'agent, repérée dans le code ou signalée par l'utilisateur. Après le fix, s'arrêter avant de reprendre le fil : qu'est-ce qui a rendu l'erreur possible, et qu'est-ce qui l'empêchera de revenir ? Tant que la seconde question n'a pas de réponse **écrite**, la récidive est garantie — sous une autre forme, dans un contexte où personne ne fera le lien.
 - **L'apprentissage s'écrit là où il sera relu au bon moment**, pas là où c'est commode. Une garde posée dans une convention routée ou une checklist devient **citable en review** (`conventions/<fichier>.md § <section>`) — c'est ce qui la fait relire au bon moment.
 
-| Apprentissage | Emplacement | Accord requis |
-|---|---|---|
-| Invariant d'architecture absent, flou ou violé | ADR dans `docs/decisions/` (`.method/templates/adr.tmpl.md`) + màj `docs/architecture.md` | Oui — l'ADR est dû (règle absolue 4), son texte se propose (§ Modifications documentaires) |
-| Règle technique manquante ou fausse | Fichier du tag dans `.method/conventions/` (globs : `_index.md`) | Oui (§ Modifications documentaires) |
-| Point de contrôle absent de la review | `.method/checklists/code-review.md` | Oui |
-| Story acceptée alors qu'elle était floue | `.method/checklists/story-ready.md` | Oui |
-| Composant recréé au lieu de réutilisé | `.method/conventions/component-registry.md` | Non — dû au fil du code (workflow, étape 8) |
-| Règle de travail globale / gotcha projet | `CLAUDE.md` | Oui (§ Modifications documentaires) |
-| Contexte de l'erreur sur la story concernée | Section « Post-implémentation », `docs/stories/` | Non — dû (workflow, étape 8) |
+| Apprentissage | Emplacement |
+|---|---|
+| Invariant d'architecture absent, flou ou violé | ADR dans `docs/decisions/` (`.method/templates/adr.tmpl.md`) + màj `docs/architecture.md` |
+| Règle technique manquante ou fausse | Fichier du tag dans `.method/conventions/` (globs : `_index.md`) |
+| Point de contrôle absent de la review | `.method/checklists/code-review.md` |
+| Story acceptée alors qu'elle était floue | `.method/checklists/story-ready.md` |
+| Composant recréé au lieu de réutilisé | `.method/conventions/component-registry.md` |
+| Règle de travail globale / gotcha projet | `CLAUDE.md` |
+| Contexte de l'erreur sur la story concernée | Section « Post-implémentation », `docs/stories/` |
+
+L'écriture ne se demande pas et ne s'ajourne pas : la garde s'écrit dans la foulée du fix, et le
+récap dit **quel fichier, quelle section, quelle règle en une phrase** (§ Modifications
+documentaires).
 
 - **Une erreur avérée vaut occurrence suffisante.** Le seuil « 2+ occurrences » de `wrap-up` vise les patterns observés, pas les gardes anti-récidive. Le plafond de 400 lignes par fichier de conventions s'applique en revanche à l'identique : si la garde fait déborder, élaguer plutôt qu'empiler. `wrap-up` reste le filet de fin de chantier ; il ne remplace pas cette boucle immédiate.
 - **Trois écueils :**
   1. **Ne rien écrire parce que « ça ne se reproduira pas ».** La bonne foi n'est pas un mécanisme.
-  2. **Contourner l'accord — dans les deux sens.** Écrire sans le go, ou ne rien proposer sous prétexte qu'il faut un go : l'analyse et la proposition sont dues sur-le-champ, seule l'écriture attend.
+  2. **Repousser l'écriture à plus tard.** « Je le noterai au wrap-up » laisse la garde à l'état d'intention. Elle s'écrit dans la foulée du fix, et cette écriture est annoncée — c'est l'annonce, pas un accord préalable, qui la rend relisible.
   3. **Écrire une règle qui décrit l'erreur au lieu de la rendre détectable.** « Faire attention à X » ne vaut rien. Test avant d'écrire : en relisant la règle, peut-on contrôler si elle a été tenue — par une machine (`pnpm verify`) ou par une citation en review ? « Toute affirmation porte sa source ou est marquée hypothèse » se contrôle ; « être rigoureux » non.
 
 ## Règles absolues
@@ -125,7 +152,7 @@ Tout vit dans `.claude/skills/`. Un skill se déclenche **sur l'intention** et r
 | `revue` | auto — fin d'implémentation dès l'échelle Standard | Conventions routées, confrontées au diff |
 | `verify` | auto — « vérifie », « ça compile ? », après un fix | `pnpm verify` : 4 checks + reçu |
 | `commit-push` | auto — « commit », « push », « envoie » | Checks (sans les rejouer) + changelog + commit + push |
-| `wrap-up` | auto — « on a fini », « c'est bouclé » | **Propose** de capturer les apprentissages, n'écrit jamais sans accord |
+| `wrap-up` | auto — « on a fini », « c'est bouclé » | Capture les apprentissages de fin de chantier : conventions, ADR, registry |
 | `conventions` | auto — question sur une règle, sans fichier touché | Répond depuis `.method/conventions/` en citant la source |
 | `audit` | demande explicite d'audit large | Confronte la **codebase existante** aux conventions, par lots |
 | `plan` | **explicite uniquement** | Cadrage : refus / story seule / évolution / initial |
@@ -136,16 +163,34 @@ que personne n'a relu depuis. Mêmes sources citables, même barème de gravité
 `plan` ne s'auto-déclenche jamais (`disable-model-invocation`) : un cadrage réécrit PRD,
 architecture et stories. Face à un besoin produit large, le **proposer** et attendre l'accord.
 
+## Qui exécute : Fable pilote, Opus écrit
+
+Le **modèle de la session** décide du rôle, pas la taille de la demande.
+
+- **Session Fable** — Fable ne modifie **jamais** `src/` ni `tests/` lui-même. Il découpe le
+  travail en lots indépendants, écrit pour chacun les critères vérifiables, lance des `Agent`
+  avec `model: "opus"` — tous dans le même message quand les lots ne se touchent pas, pour
+  qu'ils tournent en parallèle — puis relit les diffs, arbitre, et porte la finalisation :
+  review, changelog, registry, `commit-push`. Restent à sa main : `docs/`, `.method/`, les
+  vérifications, les décisions.
+- **Session Opus** — pas de délégation imposée : Opus écrit lui-même, et délègue quand un lot
+  est réellement parallélisable, pas par principe.
+- **`model: "opus"` s'écrit explicitement** sur chaque `Agent` lancé depuis une session Fable :
+  sans ce champ le sous-agent hérite du modèle du parent, et le pilotage ne sert à rien.
+- **Un sous-agent reçoit la méthode, pas seulement la tâche** : échelle annoncée, conventions
+  routées à charger, critères de succès, interdiction de commiter. Le commit reste au pilote.
+
 ## Modifications documentaires
 
 Éditer `docs/`, `.method/` ou `README.md` sans toucher au code ne déclenche **aucun skill** :
 `dev` s'en exclut, `revue` ne review pas de la prose, `conventions` répond mais n'écrit pas.
 C'est volontaire — mais trois règles s'appliquent quand même, et personne d'autre ne les porte :
 
-1. **Ne jamais écrire dans `.method/conventions/`, `docs/decisions/` ou `CLAUDE.md` sans accord
-   explicite de l'utilisateur.** Une règle ajoutée en silence sera lue comme vraie par toutes les
-   sessions suivantes. Proposer, attendre — c'est la règle 1 de `wrap-up`, qui ne se charge pas
-   ici.
+1. **Écrire dans `.method/`, `docs/` et `CLAUDE.md` ne demande aucun accord préalable** —
+   conventions, checklists et ADR compris. En contrepartie, **aucune écriture n'est silencieuse** :
+   le récap nomme le fichier, la section, et la règle en une phrase. Sans cette annonce, une règle
+   ajoutée sera lue comme vraie par toutes les sessions suivantes sans que personne ne l'ait vue
+   passer. Une règle qui en contredit une existante la **remplace** ; elle ne s'empile pas à côté.
 2. **`pnpm check:framework`** reste dû : le routing, les citations et les références de skills se
    vérifient sur les documents, pas sur le code. Un glob mort ou un `§` inexistant ne se voit
    qu'ici.

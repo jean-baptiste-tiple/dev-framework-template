@@ -179,9 +179,17 @@ nextItem?.focus()
 
 | Élément | Ratio minimum | Outil de vérification |
 |---------|--------------|----------------------|
-| Texte normal | 4.5:1 | Lighthouse, axe |
-| Grand texte (> 18px bold) | 3:1 | Lighthouse, axe |
-| Éléments UI (bordures, icônes) | 3:1 | Lighthouse, axe |
+| Texte normal | 4.5:1 | `pnpm audit:lh` (audit `color-contrast`) |
+| Grand texte (> 18px bold) | 3:1 | `pnpm audit:lh` |
+| Éléments UI (bordures, icônes) | 3:1 | contrôle manuel (hors périmètre de l'audit automatique) |
+
+**La règle porte sur les paires réellement utilisées en markup** — `text-muted-foreground` sur
+`bg-card`, `text-primary-foreground` sur `bg-primary` — pas sur les tokens pris isolément.
+Un token « prévu pour » ne garantit rien : la paire se mesure.
+
+**À relancer après tout changement de token de couleur** dans `src/app/globals.css`, et dans les
+**deux thèmes**. Une paire qui passe de justesse (4.4:1) est invisible à l'œil et indétectable en
+relisant les tokens — seule la mesure la voit.
 
 **Règle :** Ne JAMAIS utiliser la couleur seule pour transmettre une information.
 ```tsx

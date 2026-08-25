@@ -64,7 +64,11 @@ import Image from "next/image"
 **Règles :**
 - Toujours utiliser `next/image` (jamais `<img>`)
 - Toujours renseigner `width` + `height` ou `fill` + `sizes`
-- `priority` uniquement pour le LCP (Largest Contentful Paint)
+- **Exactement une image `priority` par page** : celle du LCP, au-dessus de la ligne de
+  flottaison. Zéro laisse le hero en lazy — `next/image` est lazy **par défaut**, et ce défaut
+  est faux pour le hero. Deux mettent les deux images en concurrence sur la même bande passante
+  et dégradent le LCP au lieu de l'améliorer.
+  **Vérifiable au call-site :** compter les `priority` dans le sous-arbre rendu par une `page.tsx`
 - Format : laisser Next.js optimiser (WebP/AVIF automatique)
 
 ## Fonts
@@ -82,6 +86,50 @@ const inter = Inter({
 
 **Règle :** Toujours utiliser `next/font` — pas de `<link>` vers Google Fonts (bloque le rendu).
 
+## Scripts tiers
+
+- `next/script` avec `strategy="afterInteractive"` par défaut ; `"lazyOnload"` pour tout ce
+  qui n'a aucun effet sur le premier rendu (chat support, heatmap, widget d'avis).
+  `beforeInteractive` est réservé à un polyfill sans lequel la page ne s'affiche pas.
+- **Analytics et tag managers : build de production réelle uniquement.** Les monter en dev ou en
+  preview pollue les statistiques et fausse toute mesure ultérieure.
+  Garde : `process.env.VERCEL_ENV === "production"`, pas `NODE_ENV` — une preview est un build
+  de production.
+- **Embed tiers lourd (YouTube, Maps, Calendly) : façade.** Miniature + bouton focusable ;
+  l'`iframe` n'est montée qu'au clic. **Un seul embed lourd par page.** Une iframe YouTube tire
+  ~1 Mo de JS tiers avant la moindre interaction, et ce JS n'est pas dans le bundle — il
+  n'apparaît donc dans aucune analyse de bundle.
+
+## Audit Lighthouse
+
+```bash
+pnpm build && pnpm audit:lh
+```
+
+`lighthouserc.json` lance Lighthouse CI sur l'app buildée (`pnpm start`) et **échoue** sous les
+seuils : performance, accessibility, best-practices, seo ≥ 0.95. C'est ce qui rend les cibles
+ci-dessus opposables — sans mesure, « bundle trop gros » ou « contraste insuffisant » restent des
+opinions, et une review ne peut pas les bloquer.
+
+**Quand le lancer :** avant une mise en production, et après tout changement de layout, de hero,
+de police ou de token de couleur. **Pas** dans `pnpm verify` ni dans le gate de commit : un build
+complet suivi de l'audit se compte en minutes, le payer à chaque push pour un diff qui ne touche
+ni rendu ni asset est du gaspillage (arbitrage assumé, pas un oubli).
+
+**Une page ajoutée au site ne s'audite pas toute seule** : la liste des URLs auditées est dans
+`lighthouserc.json`. Y ajouter tout nouvel archétype de page (une page de contenu, pas la
+dix-septième page produit).
+
+**Exemption :** `/design-system` rend l'intégralité du catalogue de composants — sa note de
+performance ne décrit aucune page réelle et bloquerait sur un artefact. Elle est auditée sur
+accessibility, best-practices et SEO seulement (même exemption qu'en
+`coding-standards.md § Complexité`). L'accessibilité, elle, n'est **jamais** exemptée : un
+composant du catalogue sans nom accessible l'est aussi dans les pages qui l'utilisent.
+
+**Ce que l'audit local ne couvre pas** — tout ce qui dépend de l'hébergeur : compression, cache
+`immutable`, HTTP/2+, chaînes de redirection. Ça se vérifie sur l'URL déployée
+(`deployment-patterns.md § Contrôles post-déploiement`).
+
 ## Bundle Size
 
 ### Analyser
@@ -98,7 +146,8 @@ const inter = Inter({
 ### Tailles cibles — objectifs mesurés en CI / Lighthouse
 
 > Ces seuils exigent une mesure : ils sont **hors périmètre d'une review de diff**. Ne pas
-> produire de finding « bundle trop gros » sans chiffre à l'appui.
+> produire de finding « bundle trop gros » sans chiffre à l'appui. Le chiffre s'obtient avec
+> `pnpm audit:lh` (§ Audit Lighthouse).
 
 | Métrique | Cible | Comment |
 |----------|-------|---------|

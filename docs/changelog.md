@@ -10,6 +10,85 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-08-25] — SEO/GEO agentic + audit Lighthouse contrôlé
+
+**Quoi :** Portage des acquis de `web-framework-template` (commit `931fbba`), adaptés à Next 15.
+- `seo-patterns.md` : sections **GEO — moteurs génératifs** (TL;DR autonome, FAQ en JSON-LD
+  `FAQPage`, entités nommées, `app/llms.txt/route.ts` dérivé de la même source que
+  `app/sitemap.ts`) et **Agentic readiness** (aucun crawler IA exclu de `robots.ts` sans ADR,
+  404 réelle, mesure `npx is-agentic <domaine> --json`). Trois règles SEO rendues contrôlables :
+  canonical à forme unique, preview jamais indexable, 301 via `next.config.ts`.
+- `performance-patterns.md` : **exactement une image `priority` par page** (vérifiable au
+  call-site), section **Scripts tiers** (`next/script`, analytics en prod réelle uniquement,
+  façade pour les embeds lourds), section **Audit Lighthouse**.
+- `accessibility-patterns.md` : le contraste passe d'un tableau de ratios à un contrôle machine
+  (`pnpm audit:lh`, audit `color-contrast`), portant sur les **paires réellement utilisées en
+  markup**, à relancer après tout changement de token de couleur.
+- `deployment-patterns.md` : section **Contrôles post-déploiement** (404 réelle, preview
+  `noindex`, Lighthouse sur l'URL de prod, en-têtes servis, `is-agentic`).
+- Outillage : `pnpm audit:lh` (`npx --yes @lhci/cli`, aucune dépendance ajoutée) +
+  `lighthouserc.json` — seuils ≥ 0.95 en assertion. `/design-system` est exempté de la
+  catégorie performance (page catalogue), jamais de l'accessibilité.
+
+**Pourquoi :** les cibles de performance et de contraste étaient déclarées « hors périmètre d'une
+review » faute de mesure — donc tenues par personne. Le GEO et l'agentic readiness n'existaient
+nulle part alors que les moteurs génératifs et les agents lisent déjà les pages publiques.
+
+**Problèmes :** premier passage de l'audit → `/` verte sur les 4 catégories ;
+`/design-system` **rouge en accessibilité (0.87)**, 4 défauts réels non corrigés ici :
+contraste du token `--success` (`#008e3e` sur blanc = 4.25:1, et `#f6f9f7` sur `#008e3e` =
+4.01:1 — sous 4.5:1, et le token touche toutes les pages qui l'utilisent), boutons icône sans
+nom accessible, `Progress` sans `aria-label`, ordre de titres non séquentiel.
+
+**Fichiers :** `.method/conventions/seo-patterns.md`,
+`.method/conventions/performance-patterns.md`,
+`.method/conventions/accessibility-patterns.md`,
+`.method/conventions/deployment-patterns.md`, `lighthouserc.json`, `package.json`,
+`.gitignore`
+
+## [2026-08-21] — Arbitrage de complexité + rôles d'exécution + écriture documentaire sans accord
+
+**Quoi :** Trois changements de méthode.
+1. Nouvelle section `CLAUDE.md § Justifier une surface nouvelle` : toute surface créée (fichier,
+   composant, hook, util, abstraction, prop optionnelle, option de config, table, colonne, flag,
+   dépendance) porte **ce qui casse sans elle aujourd'hui**, et, au-delà du Micro, le récap nomme
+   **l'option d'un cran plus simple écartée**. Son point de contrôle est
+   `checklists/code-review.md § Arbitrage de complexité`, et le rapport de `revue` porte une
+   ligne `Arbitrage` — absente ou vide, elle vaut MOYENNE.
+2. Nouvelle section `CLAUDE.md § Qui exécute : Fable pilote, Opus écrit` : en session Fable, le
+   code passe par des `Agent` en `model: "opus"` ; en session Opus, pas de délégation imposée.
+3. L'accord préalable pour écrire dans `.method/`, `docs/` et `CLAUDE.md` est supprimé, et
+   remplacé par une obligation d'**annonce** (fichier, section, règle en une phrase). `wrap-up`
+   écrit puis annonce au lieu de proposer et d'attendre.
+
+**Pourquoi :** « Ne pas over-engineerer » et « s'autochallenger » ne se contrôlent pas en
+relisant un diff : ce qui se contrôle est la **trace de l'arbitrage** — la justification au
+présent, et l'option plus simple nommée. Symétriquement, l'accord préalable freinait l'écriture
+des gardes sans rien garantir : ce qui protège les sessions suivantes est que l'ajout soit **vu**,
+donc annoncé.
+
+**Fichiers :** `CLAUDE.md`, `.method/conventions/coding-standards.md`,
+`.method/checklists/code-review.md`, `.claude/skills/revue/SKILL.md`,
+`.claude/skills/dev/SKILL.md`, `.claude/skills/wrap-up/SKILL.md`,
+`.claude/skills/conventions/SKILL.md`, `README.md`
+
+## [2026-08-05] — Icônes animées (lucide-animated)
+
+**Quoi :** Ajout de la dépendance `motion` (^13) et des deux premières icônes animées tirées du
+registry shadcn de lucide-animated : `DeleteIcon` (poubelle, couvercle qui se soulève) et
+`SettingsIcon` (engrenage qui tourne). Nouvelle section « Icones animees » dans le registry de
+composants, avec la commande d'ajout et la règle d'accessibilité qui incombe à l'appelant.
+
+**Pourquoi :** Besoin d'icônes animées au hover, épurées et cohérentes avec `lucide-react` déjà
+en place. lucide-animated retenu parce qu'il s'installe par le registry shadcn — une icône à la
+fois, copiée dans le repo, sans barrel de 466 composants ni dépendance d'icônes supplémentaire.
+
+**Problèmes :** Les composants sont `"use client"` (motion) — ils ne s'utilisent qu'en feuille
+d'arbre, sous une frontière client déjà existante (`CLAUDE.md` § Invariants techniques, point 1).
+
+**Fichiers :** `package.json`, `pnpm-lock.yaml`, `src/components/ui/delete.tsx`,
+`src/components/ui/settings.tsx`, `.method/conventions/component-registry.md`
+
 ## [2026-07-28] — CLAUDE.md : section « Après une erreur »
 
 **Quoi :** Boucle « erreur → correction de ce qui l'a rendue possible » : deux questions à
