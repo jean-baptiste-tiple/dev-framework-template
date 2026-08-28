@@ -46,6 +46,34 @@
 - Voir `.method/conventions/coding-standards.md` — section [X]
 - Voir `.method/conventions/api-patterns.md` — section [X]
 
+## Rayon d'impact
+
+<!-- Obligatoire dès l'échelle Standard (CLAUDE.md § Avant de coder). Chaque item est
+     observable : une commande citée, un verdict écrit. « Rien » se prouve, ne s'affirme pas. -->
+
+### Appelants
+<!-- Par fonction / table / colonne / composant / Server Action modifié : commande de recherche
+     (chemin absolu), usages trouvés, ce qui change pour chacun. « Aucun autre appelant » se
+     prouve par la commande. -->
+- `nom` — `rg "nom" c:/apps/dev-framework/src` → [n] usages : …
+
+### Doublons
+<!-- Ce qui fait déjà la même chose : .method/conventions/component-registry.md + recherche sur
+     le concept. Verdict : réutiliser / fusionner / laisser, et pourquoi. -->
+- …
+
+### Effet produit
+<!-- Quel parcours voit une différence hors de l'écran modifié : autre route ou layout partagé,
+     Server Action appelée ailleurs, policy RLS, webhook ou cron, email transactionnel,
+     export / sitemap / SEO. Un projet dérivé remplace cette liste par ses propres systèmes
+     (CLAUDE.md § Projet). « Aucun » avec la raison. -->
+- …
+
+### Refacto
+<!-- Proposé ou écarté, écrit. Proposé ⇒ question posée via AskUserQuestion, avec le coût et ce
+     qui se passe sans lui. Jamais fait sans accord, jamais tu. -->
+- …
+
 ## Tests attendus
 
 ### Unit tests

@@ -10,6 +10,33 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-08-28] — Méthode : rayon d'impact avant d'éditer, arbitrages posés en question
+
+**Quoi :** deux règles de méthode portées depuis `app-pmo-luciole`, sans code.
+
+- **Rayon d'impact** (`CLAUDE.md § Avant de coder`, `dev § 2 bis`, `story.tmpl.md`,
+  `story-ready.md`, `plan`) : dès l'échelle Standard, avant la première ligne, quatre items
+  observables — appelants avec **commande de recherche citée**, doublons avec verdict, effet
+  produit hors de l'écran modifié, refacto proposé ou écarté. Micro reste exempt.
+- **Décisions via `AskUserQuestion`** (`CLAUDE.md § Avant de coder`, `dev § 2`, `plan`,
+  consignes sous-agents) : tout arbitrage qui revient à l'utilisateur se pose avec l'outil —
+  contexte par option, coût, recommandation en premier — jamais en prose dans un récap. Un
+  sous-agent ne tranche pas, il remonte.
+
+**Ce que ça change pour un lecteur :** une story ou un plan d'échelle Standard qui n'a pas ses
+quatre items, ou dont l'item « Appelants » affirme sans citer la commande, n'est pas prêt — la
+checklist `story-ready.md` le bloque. Et « j'ai choisi X » ou « à toi de voir » écrit dans un
+récap n'est plus une décision rendue : c'est une violation visible sur la trace. La règle
+« edits chirurgicaux » est amendée en conséquence — un refacto **repéré** n'est pas un refacto
+**fait**, il se nomme dans le rayon d'impact et devient une question, pas un silence.
+
+**Pourquoi :** « edits chirurgicaux » appliqué N fois sans regarder autour produit un
+Frankenstein — doublons, appelants oubliés, effets de bord jamais nommés. « Prendre du recul »
+ne se contrôle pas ; la trace d'un rayon d'impact, si.
+
+**Fichiers :** `CLAUDE.md`, `.claude/skills/dev/SKILL.md`, `.claude/skills/plan/SKILL.md`,
+`.method/templates/story.tmpl.md`, `.method/checklists/story-ready.md`
+
 ## [2026-08-25] — SEO/GEO agentic + audit Lighthouse contrôlé
 
 **Quoi :** Portage des acquis de `web-framework-template` (commit `931fbba`), adaptés à Next 15.

@@ -81,10 +81,31 @@ story, vérifier `.method/checklists/story-ready.md`, ajouter les tags de son ch
 (union avec les globs), lire sa référence UI **si elle n'est pas `N/A`**.
 
 **Sinon** — reformuler la demande en **critères de succès vérifiables** (test qui reproduit,
-assertion qui valide, type-check qui passe). Nommer les ambiguïtés et proposer les options :
-ne pas trancher en silence. À partir de l'échelle Standard, **proposer le plan avant d'éditer**.
+assertion qui valide, type-check qui passe). Les ambiguïtés se posent via `AskUserQuestion`
+avec le contexte pour trancher (`CLAUDE.md § Avant de coder`) : ne pas trancher en silence, ne
+pas trancher en prose. À partir de l'échelle Standard, **proposer le plan avant d'éditer**.
 
 Lire `docs/architecture.md` uniquement sur les sections concernées.
+
+### 2 bis. Rayon d'impact — dès Standard, avant la première ligne
+
+Dans la story (section « Rayon d'impact », gate `story-ready.md`) ou dans le plan proposé en
+live. Quatre items, tous observables (`CLAUDE.md § Avant de coder`) :
+
+1. **Appelants** — pour chaque fonction, table, colonne, composant, Server Action modifié : la
+   commande de recherche citée (chemin absolu), les usages trouvés, ce qui change pour chacun.
+   « Aucun autre appelant » se prouve par la commande, jamais par affirmation.
+2. **Doublons** — ce qui fait déjà la même chose (`component-registry.md` + recherche sur le
+   concept) ; verdict réutiliser / fusionner / laisser, et pourquoi.
+3. **Effet produit** — quel parcours voit une différence hors de l'écran modifié : autre route
+   ou layout partagé, Server Action appelée ailleurs, policy RLS, webhook ou cron, email
+   transactionnel, export / sitemap / SEO. Un projet dérivé de ce template remplace cette liste
+   par ses propres systèmes (`CLAUDE.md § Projet`).
+4. **Refacto** — proposé ou écarté. Proposé ⇒ `AskUserQuestion` avec coût et conséquence de ne
+   pas le faire. Le refacto reste non fait sans accord ; il n'est jamais tu.
+
+Micro en est exempt (1-2 fichiers, aucune surface nouvelle). Un sous-agent produit ce rayon dans
+son rapport et **remonte** l'item 4 sans le trancher.
 
 ### 3. Implémenter
 
@@ -94,7 +115,9 @@ tests unit → composants + tests unit → page + tests d'intégration → E2E s
 Placement des tests (`testing-strategy.md`) : `tests/unit/` · `tests/integration/` · `tests/e2e/`.
 
 **Edits chirurgicaux** : chaque ligne changée trace à la demande. Pas de cleanup adjacent, pas de
-reformatage opportuniste. Dead code repéré → le mentionner, pas le supprimer.
+reformatage opportuniste. Dead code repéré → le mentionner, pas le supprimer. Un refacto repéré
+n'est pas un refacto fait : il se nomme dans le rayon d'impact (§ 2 bis) et devient une question,
+pas un silence.
 
 ### 4. Garde-fous conditionnels
 

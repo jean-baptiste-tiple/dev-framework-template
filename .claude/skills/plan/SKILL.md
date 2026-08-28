@@ -31,8 +31,15 @@ la demande touche :
 
 **Story seule** est le niveau attendu quand `dev` propose « je cadre une story d'abord » :
 écrire la story depuis `.method/templates/story.tmpl.md` — AC en Given/When/Then, fichiers à
-créer, tests attendus, tags `Conventions` — **sans toucher au PRD ni à l'architecture**. Gate
-réduit à `.method/checklists/story-ready.md`. Puis **rendre la main à `dev`** sur cette story.
+créer, tests attendus, tags `Conventions`, **rayon d'impact** (appelants avec commande citée,
+doublons, effet produit, refacto proposé ou écarté — `CLAUDE.md § Avant de coder`) — **sans
+toucher au PRD ni à l'architecture**. Gate réduit à `.method/checklists/story-ready.md`. Puis
+**rendre la main à `dev`** sur cette story.
+
+Tout arbitrage rencontré pendant le cadrage — produit, périmètre, refacto — se pose via
+`AskUserQuestion` avec le contexte pour trancher, **avant** d'écrire la décision dans un
+document. Un cadrage qui tranche en prose fige un choix que personne n'a validé, et le document
+le rend ensuite vrai pour toutes les sessions suivantes.
 
 Ne jamais déclencher une évolution de PRD complète pour une demande qui n'ouvre pas de parcours :
 c'est le piège qui rend la proposition de story dissuasive.

@@ -14,8 +14,9 @@ Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
 
 ## Avant de coder
 
-- **Nommer les hypothèses.** Demande ambiguë ou à plusieurs lectures : dire le doute, proposer les options, demander. Ne jamais trancher en silence.
-- **Edits chirurgicaux.** Chaque ligne changée trace à la demande. Pas de cleanup adjacent, pas de reformatage opportuniste, pas de refacto non demandé. Dead code repéré : le mentionner, pas le supprimer.
+- **Toute décision qui revient à l'utilisateur passe par `AskUserQuestion`, jamais par une phrase dans un récap.** Demande à plusieurs lectures, arbitrage produit, refacto proposé, option écartée qui coûterait à rattraper : la question porte le contexte nécessaire pour trancher — par option, sa conséquence et son coût — et la recommandation en premier. Le filtre reste « des lectures différentes mènent à un travail matériellement différent » ; le reste se tranche seul et s'écrit dans le récap. Un **sous-agent ne tranche pas** : il s'arrête et remonte l'arbitrage au pilote, qui pose la question ; la consigne se met dans son prompt. Contrôlable sur la trace : un arbitrage rendu en prose (« j'ai choisi X », « à toi de voir ») sans appel à l'outil est une violation. *(Demande JB 2026-08-28.)*
+- **Edits chirurgicaux.** Chaque ligne changée trace à la demande. Pas de cleanup adjacent, pas de reformatage opportuniste, pas de refacto non demandé. Dead code repéré : le mentionner, pas le supprimer. Un refacto **repéré** n'est pas un refacto **fait** : il se nomme dans le rayon d'impact et devient une question (§ ci-dessus), pas un silence.
+- **Rayon d'impact avant d'éditer, dès l'échelle Standard.** Le plus petit changement local, répété N fois sans regarder autour, produit un Frankenstein : doublons, appelants oubliés, effets de bord que personne n'a nommés. Avant la première ligne — dans la story (section « Rayon d'impact ») ou dans le plan proposé en live — quatre items, chacun observable : **(1) Appelants** : pour chaque fonction, table, colonne, composant ou Server Action modifié, les usages trouvés (**commande de recherche citée**, chemin absolu) et ce qui change pour chacun ; « aucun autre appelant » se prouve par la commande, jamais par affirmation. **(2) Doublons** : ce qui fait déjà la même chose (`component-registry.md` + recherche sur le concept), avec le verdict réutiliser / fusionner / laisser et sa raison. **(3) Effet produit** : quel parcours voit une différence hors de l'écran modifié — autre route ou layout partagé, Server Action appelée ailleurs, policy RLS, webhook ou cron, email transactionnel, export / sitemap / SEO ; **un projet dérivé de ce template remplace cette liste par ses propres systèmes** (§ Projet). **(4) Refacto** : proposé ou écarté, écrit ; s'il est proposé, il est posé en question avec son coût et ce qui se passe sans lui. Contrôlable : un plan ou une story Standard+ sans ces quatre items, ou un item (1) sans commande citée, est une violation. Micro en est exempt — sinon plus personne ne le fait. *(Demande JB 2026-08-28.)*
 - **Critères de succès vérifiables d'abord.** Reformuler la tâche en checks concrets : test qui reproduit le bug, assertion qui valide la feature, type-check qui passe. Pas de « make it work » flou.
 - **Push back quand c'est justifié.** Approche plus simple disponible ou dette évidente créée : le dire avant d'exécuter.
 - **Base à jour avant un chantier documentaire.** `git fetch` et écart avec `origin/main` constatés avant d'écrire dans `docs/`, `.method/` ou `CLAUDE.md`. Une règle écrite sur une base périmée cite des chemins morts.
@@ -178,7 +179,10 @@ Le **modèle de la session** décide du rôle, pas la taille de la demande.
 - **`model: "opus"` s'écrit explicitement** sur chaque `Agent` lancé depuis une session Fable :
   sans ce champ le sous-agent hérite du modèle du parent, et le pilotage ne sert à rien.
 - **Un sous-agent reçoit la méthode, pas seulement la tâche** : échelle annoncée, conventions
-  routées à charger, critères de succès, interdiction de commiter. Le commit reste au pilote.
+  routées à charger, critères de succès, interdiction de commiter, **interdiction de trancher un
+  arbitrage** — il s'arrête et le remonte, le pilote pose la question via `AskUserQuestion`
+  (§ Avant de coder). Dès l'échelle Standard, il produit son **rayon d'impact** dans son rapport.
+  Le commit reste au pilote.
 
 ## Modifications documentaires
 
