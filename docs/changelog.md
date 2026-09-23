@@ -10,6 +10,14 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-09-23] — Starter supabase-auth : schémas partagés, suffixe Action, callback sans redirection ouverte ; reçu en un seul appel git
+
+**Quoi :** quatre correctifs reportés depuis oto-platform (E01-S01). (1) `scripts/verify-receipt.mjs` hache tous les fichiers en un seul `git hash-object --stdin-paths` (repli fichier par fichier si git refuse un chemin) ; le helper `git` accepte des options (`input`). (2) `auth-callback-route.ts` n'accepte `next` que s'il commence par `/` et pas par `//`, sinon `/dashboard`. (3) Nouveau `schemas-auth.ts` (→ `src/lib/schemas/auth.ts`) : `loginSchema`, `signupSchema`, `forgotPasswordSchema`, `resetPasswordSchema` (mot de passe 8 à 72 caractères, confirmation par `.refine`) ; `auth-actions.ts` et les quatre pages font le même `safeParse`, les règles recopiées à la main dans les pages disparaissent. (4) Actions renommées `loginAction`, `signupAction`, `forgotPasswordAction`, `resetPasswordAction`, `logoutAction`. (5) `signupAction` et `forgotPasswordAction` renvoient `{ data: { message } }` au lieu de `{ success }` ; les pages signup et forgot-password lisent `result.data`. (6) `auth-patterns.md` : l'exemple du callback valide `next` (§ Auth Callback) ; les schémas d'exemple bornent l'email à 255 et le mot de passe à 72 (§ Schemas de validation Auth), regex majuscule/chiffre inchangées.
+
+**Pourquoi :** trouvés en review de E01-S01 d'oto-platform. `next` concaténé à `origin` faisait du callback une redirection ouverte (`//hote`, `@hote`) — `security-patterns.md § XSS Prevention` sur la validation des URL. Schémas inline dans l'action et longueur du mot de passe recopiée dans les pages : violation de l'invariant n°3 (`CLAUDE.md § Invariants techniques`, `forms-patterns.md § Principe`). Noms d'actions sans suffixe : `coding-standards.md § Naming`. Reçu : un processus git par fichier coûtait 1,5 s par empreinte sur un arbre non commité de 40 fichiers, et les tests de `tests/unit/hooks.test.ts` dépassaient leur délai. `{ success }` contredisait `coding-standards.md § Error Handling` et `api-patterns.md § Type de retour standard`, et la page forgot-password copiée ne compilait pas (TS2339 sur `result.error`). La convention `auth` montrait encore le callback vulnérable et des schémas sans borne (`security-patterns.md § Validation des inputs`).
+
+**Fichiers :** `scripts/verify-receipt.mjs`, `.method/starters/supabase-auth/{schemas-auth.ts (créé), auth-actions.ts, auth-callback-route.ts, login-page.tsx, signup-page.tsx, forgot-password-page.tsx, reset-password-page.tsx, README.md}`, `.method/conventions/auth-patterns.md`, `docs/changelog.md`
+
 ## [2026-09-23] — Starter MCP et convention `mcp`, avec les mesures du banc
 
 **Quoi :** port depuis `mcp-template` (commit `e1d2f3d`), sans code applicatif.

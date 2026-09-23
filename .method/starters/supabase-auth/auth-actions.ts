@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect, unstable_rethrow } from "next/navigation"
-import { z } from "zod"
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  resetPasswordSchema,
+  signupSchema,
+} from "@/lib/schemas/auth"
 import { createClient } from "@/lib/supabase/server"
 
 /**
@@ -14,22 +19,14 @@ import { createClient } from "@/lib/supabase/server"
 const GENERIC_ERROR = "Une erreur est survenue. Réessayez."
 const INVALID_CREDENTIALS = "Email ou mot de passe incorrect."
 
-const credentialsSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "8 caractères minimum"),
-})
-
-const emailSchema = z.object({ email: z.string().email() })
-const passwordSchema = z.object({ password: z.string().min(8, "8 caractères minimum") })
-
 function siteUrl(): string {
   const url = process.env.NEXT_PUBLIC_SITE_URL
   if (!url) throw new Error("NEXT_PUBLIC_SITE_URL manquant — voir .env.example")
   return url.replace(/\/$/, "")
 }
 
-export async function login(formData: FormData) {
-  const parsed = credentialsSchema.safeParse(Object.fromEntries(formData))
+export async function loginAction(formData: FormData) {
+  const parsed = loginSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) return { error: INVALID_CREDENTIALS }
 
   const supabase = await createClient()
@@ -40,28 +37,29 @@ export async function login(formData: FormData) {
   redirect("/dashboard")
 }
 
-export async function signup(formData: FormData) {
-  const parsed = credentialsSchema.safeParse(Object.fromEntries(formData))
+export async function signupAction(formData: FormData) {
+  const parsed = signupSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Données invalides" }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signUp({
-    ...parsed.data,
+    email: parsed.data.email,
+    password: parsed.data.password,
     options: { emailRedirectTo: `${siteUrl()}/auth/callback` },
   })
   // Réponse identique que le compte existe ou non : pas d'oracle d'énumération.
   if (error) return { error: GENERIC_ERROR }
 
   revalidatePath("/", "layout")
-  return { success: "Vérifiez votre email pour confirmer votre compte." }
+  return { data: { message: "Vérifiez votre email pour confirmer votre compte." } }
 }
 
-export async function forgotPassword(formData: FormData) {
-  const parsed = emailSchema.safeParse(Object.fromEntries(formData))
+export async function forgotPasswordAction(formData: FormData) {
+  const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData))
   // Message de succès même sur email invalide ou inconnu : l'existence d'un compte ne fuite pas.
-  const confirmation = { success: "Si un compte existe, un email vous a été envoyé." }
+  const confirmation = { data: { message: "Si un compte existe, un email vous a été envoyé." } }
   if (!parsed.success) return confirmation
 
   const supabase = await createClient()
@@ -72,8 +70,8 @@ export async function forgotPassword(formData: FormData) {
   return confirmation
 }
 
-export async function resetPassword(formData: FormData) {
-  const parsed = passwordSchema.safeParse(Object.fromEntries(formData))
+export async function resetPasswordAction(formData: FormData) {
+  const parsed = resetPasswordSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Mot de passe invalide" }
   }
@@ -92,7 +90,7 @@ export async function resetPassword(formData: FormData) {
   }
 }
 
-export async function logout() {
+export async function logoutAction() {
   const supabase = await createClient()
   await supabase.auth.signOut()
   revalidatePath("/", "layout")

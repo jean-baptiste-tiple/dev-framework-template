@@ -121,7 +121,10 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") ?? "/dashboard"
+  // `next` vient de l'URL : seul un chemin relatif du site est accepté. `//hote` ou `@hote`
+  // concaténés à `origin` feraient de cette route une redirection ouverte.
+  const requested = searchParams.get("next")
+  const next = requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard"
 
   if (code) {
     const supabase = await createClient()
@@ -187,16 +190,17 @@ export const config = {
 import { z } from "zod"
 
 export const loginSchema = z.object({
-  email: z.string().email("Email invalide"),
-  password: z.string().min(1, "Mot de passe requis"),
+  email: z.string().email("Email invalide").max(255),
+  password: z.string().min(1, "Mot de passe requis").max(72),
 })
 
 export const signupSchema = z.object({
   fullName: z.string().min(2, "Nom trop court").max(100),
-  email: z.string().email("Email invalide"),
+  email: z.string().email("Email invalide").max(255),
   password: z
     .string()
     .min(8, "Minimum 8 caractères")
+    .max(72) // bcrypt (Supabase Auth) ignore tout au-delà de 72 octets
     .regex(/[A-Z]/, "Au moins une majuscule")
     .regex(/[0-9]/, "Au moins un chiffre"),
   confirmPassword: z.string(),
@@ -206,7 +210,7 @@ export const signupSchema = z.object({
 })
 
 export const updatePasswordSchema = z.object({
-  password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/),
+  password: z.string().min(8).max(72).regex(/[A-Z]/).regex(/[0-9]/),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",

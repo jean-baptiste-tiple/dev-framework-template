@@ -15,7 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { login } from "@/lib/actions/auth"
+import { loginAction } from "@/lib/actions/auth"
+import { loginSchema } from "@/lib/schemas/auth"
 
 export default function LoginPage() {
   const [error, setError] = React.useState<string | null>(null)
@@ -27,7 +28,14 @@ export default function LoginPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const result = await login(formData)
+    const parsed = loginSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Données invalides")
+      setLoading(false)
+      return
+    }
+
+    const result = await loginAction(formData)
 
     if (result?.error) {
       setError(result.error)

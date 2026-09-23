@@ -18,8 +18,9 @@ pnpm add @supabase/supabase-js @supabase/ssr
 | `supabase-server.ts` | `src/lib/supabase/server.ts` | Client Supabase côté serveur |
 | `supabase-client.ts` | `src/lib/supabase/client.ts` | Client Supabase côté navigateur |
 | `middleware.ts` | `src/middleware.ts` | Middleware auth (session refresh + protection routes) |
-| `auth-actions.ts` | `src/lib/actions/auth.ts` | Server Actions : login, signup, forgotPassword, resetPassword, logout |
-| `auth-callback-route.ts` | `src/app/auth/callback/route.ts` | Route callback OAuth/email verification |
+| `auth-actions.ts` | `src/lib/actions/auth.ts` | Server Actions : `loginAction`, `signupAction`, `forgotPasswordAction`, `resetPasswordAction`, `logoutAction` |
+| `schemas-auth.ts` | `src/lib/schemas/auth.ts` | Schémas Zod partagés : formulaires et actions valident avec le même `safeParse` |
+| `auth-callback-route.ts` | `src/app/auth/callback/route.ts` | Route callback OAuth/email verification — `next` accepté seulement s'il commence par `/` et pas par `//` (sinon redirection ouverte) |
 | `auth-layout.tsx` | `src/app/(auth)/layout.tsx` | Layout centré pour pages auth |
 | `login-page.tsx` | `src/app/(auth)/login/page.tsx` | Page de connexion |
 | `signup-page.tsx` | `src/app/(auth)/signup/page.tsx` | Page d'inscription |

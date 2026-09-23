@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") ?? "/dashboard"
+  // `next` vient de l'URL : seul un chemin relatif du site est accepté. `//hote` ou `@hote`
+  // concaténés à `origin` feraient de cette route une redirection ouverte.
+  const requested = searchParams.get("next")
+  const next = requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/dashboard"
 
   if (code) {
     const supabase = await createClient()

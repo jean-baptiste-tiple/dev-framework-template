@@ -50,7 +50,7 @@ const EXCLUS = [
 ]
 const estExclu = (path) => EXCLUS.some((r) => r.test(path))
 
-const git = (args) =>
+const git = (args, options = {}) =>
   execFileSync(
     'git',
     // `core.quotePath=false` : sinon git échappe les noms non-ASCII en octal
@@ -63,6 +63,7 @@ const git = (args) =>
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
       stdio: ['pipe', 'pipe', 'pipe'], // sans ça, les erreurs git polluent la sortie de `pnpm verify`
+      ...options, // `input` pour `hash-object --stdin-paths`
     }
   )
 
@@ -125,16 +126,39 @@ export function worktreeHash() {
 
   const uniques = [...new Set([...paths, ...supprimes])].filter((f) => !estExclu(f)).sort()
 
-  const entries = uniques.map((path) => {
-    if (supprimes.has(path)) return `${path}:supprimé`
+  // Un processus git par fichier : lent (~40 ms chacun), mais isole un chemin que git ne sait
+  // pas hacher (symlink cassé, socket, permission) et le signale dans l'empreinte plutôt que de
+  // faire échouer toute la vérification.
+  const hashUnParUn = (paths) =>
+    new Map(
+      paths.map((path) => {
+        try {
+          return [path, git(['hash-object', '--', path]).trim()]
+        } catch {
+          return [path, 'illisible']
+        }
+      })
+    )
+
+  // Un seul processus git pour tous les fichiers : `hash-object --stdin-paths` renvoie une
+  // empreinte par ligne, dans l'ordre des chemins reçus — la même empreinte que fichier par
+  // fichier. Sur un arbre non commité de 40 fichiers, le processus par fichier coûtait 1,5 s par
+  // empreinte, et les tests du gate, qui en enchaînent plusieurs, dépassaient leur délai
+  // (E01-S01, 2026-09-23). Si git refuse un chemin, il échoue en bloc : repli fichier par fichier.
+  const hashEnLot = (paths) => {
+    if (!paths.length) return new Map()
     try {
-      return `${path}:${git(['hash-object', '--', path]).trim()}`
+      const out = git(['hash-object', '--stdin-paths'], { input: `${paths.join('\n')}\n` })
+      return new Map(lines(out).map((hash, i) => [paths[i], hash]))
     } catch {
-      // Chemin que git ne sait pas hacher (symlink cassé, socket, permission). Le signaler
-      // dans l'empreinte plutôt que de faire échouer toute la vérification.
-      return `${path}:illisible`
+      return hashUnParUn(paths)
     }
-  })
+  }
+
+  const hashes = hashEnLot(uniques.filter((path) => !supprimes.has(path)))
+  const entries = uniques.map((path) =>
+    supprimes.has(path) ? `${path}:supprimé` : `${path}:${hashes.get(path) ?? 'illisible'}`
+  )
 
   return createHash('sha256').update([head, ...entries].join('\n')).digest('hex')
 }

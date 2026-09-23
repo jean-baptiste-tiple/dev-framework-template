@@ -14,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { resetPassword } from "@/lib/actions/auth"
+import { resetPasswordAction } from "@/lib/actions/auth"
+import { resetPasswordSchema } from "@/lib/schemas/auth"
 
 export default function ResetPasswordPage() {
   const [error, setError] = React.useState<string | null>(null)
@@ -26,22 +27,14 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const password = formData.get("password") as string
-    const confirmPassword = formData.get("confirmPassword") as string
-
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.")
+    const parsed = resetPasswordSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Mot de passe invalide")
       setLoading(false)
       return
     }
 
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.")
-      setLoading(false)
-      return
-    }
-
-    const result = await resetPassword(formData)
+    const result = await resetPasswordAction(formData)
 
     if (result?.error) {
       setError(result.error)

@@ -15,7 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { forgotPassword } from "@/lib/actions/auth"
+import { forgotPasswordAction } from "@/lib/actions/auth"
+import { forgotPasswordSchema } from "@/lib/schemas/auth"
 
 export default function ForgotPasswordPage() {
   const [error, setError] = React.useState<string | null>(null)
@@ -29,13 +30,17 @@ export default function ForgotPasswordPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const result = await forgotPassword(formData)
-
-    if (result?.error) {
-      setError(result.error)
-    } else if (result?.success) {
-      setSuccess(result.success)
+    const parsed = forgotPasswordSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Email invalide")
+      setLoading(false)
+      return
     }
+
+    const result = await forgotPasswordAction(formData)
+
+    // L'action ne renvoie jamais d'erreur : même réponse que le compte existe ou non.
+    setSuccess(result.data.message)
     setLoading(false)
   }
 

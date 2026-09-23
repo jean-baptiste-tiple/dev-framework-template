@@ -15,7 +15,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { signup } from "@/lib/actions/auth"
+import { signupAction } from "@/lib/actions/auth"
+import { signupSchema } from "@/lib/schemas/auth"
 
 export default function SignupPage() {
   const [error, setError] = React.useState<string | null>(null)
@@ -29,28 +30,17 @@ export default function SignupPage() {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const password = formData.get("password") as string
-    const confirmPassword = formData.get("confirmPassword") as string
-
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.")
+    const parsed = signupSchema.safeParse(Object.fromEntries(formData))
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Données invalides")
       setLoading(false)
       return
     }
 
-    if (password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.")
-      setLoading(false)
-      return
-    }
+    const result = await signupAction(formData)
 
-    const result = await signup(formData)
-
-    if (result?.error) {
-      setError(result.error)
-    } else if (result?.success) {
-      setSuccess(result.success)
-    }
+    if (result.data) setSuccess(result.data.message)
+    else setError(result.error)
     setLoading(false)
   }
 
