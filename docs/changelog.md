@@ -10,6 +10,16 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-09-23] — mcp-patterns : mesures des bancs E04 et E03
+
+**Quoi :** report dans `mcp-patterns.md` des mesures du banc E04 (serveur proto, 23/09/2026 : prompts par host, code expiré à rappeler « avec la même demande », borne de description entre plusieurs serveurs, annotations et autorisations claude.ai, `confirm` accepté après approbation du contenu, blocages OpenAI, plafond de 45 000 caractères lus en entier, données en champs dans `structuredContent`, ton suivi à 100 %, consigne des candidats question/action, geste de rafraîchissement confirmé, phrase de préférences) et du banc E03 (OAuth, 23/09 : découverte par la forme suffixée, enregistrement par host, Supabase suffit, organisation par l'adresse et appartenance à chaque appel, jeton non lié à la ressource, révocation au rafraîchissement). Checklist de conception `mcp-design.md` mise à jour en conséquence, lien vers la nouvelle page Recette.
+
+**Pourquoi :** les conventions `mcp` portent les faits mesurés par les deux campagnes du dépôt `mcp-test`, datés et statués.
+
+**Écarté :** réécrire les sections existantes ; seuls des ajouts datés et statués.
+
+**Fichiers :** `.method/conventions/mcp-patterns.md`, `.method/checklists/mcp-design.md`, `docs/changelog.md`
+
 ## [2026-09-23] — Starter supabase-auth : schémas partagés, suffixe Action, callback sans redirection ouverte ; reçu en un seul appel git
 
 **Quoi :** quatre correctifs reportés depuis oto-platform (E01-S01). (1) `scripts/verify-receipt.mjs` hache tous les fichiers en un seul `git hash-object --stdin-paths` (repli fichier par fichier si git refuse un chemin) ; le helper `git` accepte des options (`input`). (2) `auth-callback-route.ts` n'accepte `next` que s'il commence par `/` et pas par `//`, sinon `/dashboard`. (3) Nouveau `schemas-auth.ts` (→ `src/lib/schemas/auth.ts`) : `loginSchema`, `signupSchema`, `forgotPasswordSchema`, `resetPasswordSchema` (mot de passe 8 à 72 caractères, confirmation par `.refine`) ; `auth-actions.ts` et les quatre pages font le même `safeParse`, les règles recopiées à la main dans les pages disparaissent. (4) Actions renommées `loginAction`, `signupAction`, `forgotPasswordAction`, `resetPasswordAction`, `logoutAction`. (5) `signupAction` et `forgotPasswordAction` renvoient `{ data: { message } }` au lieu de `{ success }` ; les pages signup et forgot-password lisent `result.data`. (6) `auth-patterns.md` : l'exemple du callback valide `next` (§ Auth Callback) ; les schémas d'exemple bornent l'email à 255 et le mot de passe à 72 (§ Schemas de validation Auth), regex majuscule/chiffre inchangées.
