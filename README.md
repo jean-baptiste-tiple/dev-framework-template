@@ -28,6 +28,7 @@ Le template est minimal par défaut. Les starters dans `.method/starters/` ajout
 | Starter | Dossier | Ce qu'il ajoute |
 |---------|---------|-----------------|
 | **Supabase + Auth** | `.method/starters/supabase-auth/` | Base de données, auth (login/signup/reset), middleware, Server Actions, pages auth, CI migrations |
+| **Canal MCP** | `.method/starters/mcp/` | Endpoint MCP (Streamable HTTP, stateless par défaut), tool démo câblé schéma Zod → service → tool, résultats texte et structurés, widgets MCP Apps pour Claude et ChatGPT, auth OAuth 2.1 (avec Supabase + Auth), test `InMemoryTransport` et smoke HTTP |
 
 ## Quick Start
 

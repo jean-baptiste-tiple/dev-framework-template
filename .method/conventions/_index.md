@@ -48,6 +48,7 @@ déduits des globs — c'est le seul moyen d'activer les tags marqués **non rou
 | `datetime` | `datetime-patterns.md` | `src/lib/utils/*date*.ts`, `src/lib/utils/*format*.ts`, `src/lib/utils/*currency*.ts` | Dates, timezones, formatage, devises |
 | `i18n` | `i18n-patterns.md` | `messages/**`, `src/i18n/**`, `src/middleware.ts` | Traductions, pluriels, locale, RTL |
 | `flags` | `feature-flags-patterns.md` | `src/lib/flags/**`, `src/lib/*flag*.ts` | Feature flags, A/B testing, rollouts |
+| `mcp` | `mcp-patterns.md` | `src/mcp/**`, `src/app/api/[transport]/**`, `src/app/.well-known/**`, `widgets/**` | Tools MCP, AX et découverte par les hosts, résultats, widgets dual-host, OAuth, transport, golden queries |
 
 ### Tags non routables par chemin
 
@@ -75,6 +76,7 @@ La condition d'activation est dans la colonne de droite : elle se vérifie en un
 | `i18n` | `next-intl` ou équivalent | dépendance dans `package.json` |
 | `flags` | librairie de feature flags | dépendance dans `package.json` |
 | `monitoring` | Sentry ou provider d'analytics | dépendance dans `package.json` |
+| `mcp` | starter `mcp` installé | `mcp-handler` dans `package.json` |
 
 **Dès que la capacité est installée, retirer le tag de ce tableau** : il redevient soumis à la
 vérification des globs, et un chemin devenu faux échouera au lieu de passer inaperçu.

@@ -17,3 +17,17 @@
 | pnpm | 9.x | Package manager | Rapide, strict, disk-efficient |
 
 <!-- PERSONNALISER : ajouter les libs spécifiques au projet (ex: @tanstack/query, date-fns, etc.) -->
+
+## Canal MCP (si le produit expose un serveur MCP)
+
+> Squelette prêt : `.method/starters/mcp/` (endpoint, tool démo, widgets, bridge, test), installé par la story « Setup technique ».
+> Versions `1.x` / `latest` à figer à l'installation : mettre à jour ce tableau avec les versions exactes.
+
+| Techno | Version | Rôle | Justification |
+|--------|---------|------|---------------|
+| @modelcontextprotocol/sdk | 1.x (réf. connue-bonne : 1.26.0) | Serveur MCP (tools, resources) | SDK TypeScript officiel — épingler sur le peer de `mcp-handler` |
+| mcp-handler | 1.x (réf. : 1.1.0) | Endpoint MCP dans Next.js (`/api/mcp`) | Transport Streamable HTTP sur route handler (`src/app/api/[transport]`), stateless par défaut, stateful via `redisUrl` — compatible Vercel |
+| MCP Apps (GA 2026-01-26) — resources `ui://` | via SDK | Widgets visuels dans Claude/ChatGPT | Bundles `ui://` en `text/html;profile=mcp-app` + variante `-skybridge` (`text/html+skybridge`, ChatGPT), triple méta (`ui.resourceUri` + alias plat déprécié + `openai/outputTemplate`). Pas de dépendance `@mcp-ui/*` |
+| @modelcontextprotocol/ext-apps | 1.x à FIGER (réf. : 1.7.4) | SDK officiel côté widget (bridge MCP Apps) | Le bridge `widgets/shared/bridge.ts` en dépend entièrement (handshake `ui/initialize`, tool-result, thème, autoResize) — ne PAS réimplémenter le protocole. Entrée `app-with-deps` (évite le conflit de peer avec le SDK serveur) |
+| Vite + vite-plugin-singlefile | latest | Build des widgets en HTML single-file (`widgets/build.mjs` → `generated.ts` inliné) | CSP des hosts = zéro requête externe, zéro fs à runtime |
+| jose | latest (réf. : 6.x) | Validation JWT (JWKS Supabase) dans `src/mcp/auth.ts` | OAuth 2.1 resource server, RLS au JWT utilisateur |

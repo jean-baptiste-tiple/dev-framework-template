@@ -132,6 +132,14 @@ ne pas copier les pages auth du starter).
 
 **Non** → le template fonctionne sans base de données. Ne rien prévoir.
 
+Le produit expose-t-il un serveur MCP (Claude ou ChatGPT comme interface) ?
+
+**Oui** → lire `.method/starters/mcp/README.md` et `.method/conventions/mcp-patterns.md` ; passer
+`.method/checklists/mcp-design.md` pendant le brief et le PRD (phrases réelles des utilisateurs, une
+fiche par outil, golden queries créées depuis `.method/templates/mcp-golden-queries.tmpl.md`) ;
+figer par ADR l'auth, le transport et l'absence d'IA serveur (mcp-patterns §4 bis, §6, §7) ; la
+story « Setup technique » installe le starter.
+
 ## Gate de sortie
 
 Passer `.method/checklists/readiness-gate.md` (+ `prd-evolution.md` en Évolution). Vérifier la

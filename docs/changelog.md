@@ -10,6 +10,39 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-09-23] — Starter MCP et convention `mcp`, avec les mesures du banc
+
+**Quoi :** port depuis `mcp-template` (commit `e1d2f3d`), sans code applicatif.
+
+- **Starter** `.method/starters/mcp/` : endpoint MCP, tool démo, résultats, widgets dual-host,
+  auth OAuth 2.1, tests. Identifié par `plan`, installé par la story « Setup technique ».
+- **Convention** `mcp-patterns.md`, tag `mcp` routé sur les dossiers MCP et déclaré sous
+  « Capacités non installées » tant que `mcp-handler` n'est pas dans `package.json`. Elle porte
+  les mesures du banc MCP du 22/09/2026 (notice serveur non fiable, troncatures par host,
+  contenu en texte ET structuré, levier « mode d'emploi » + code exigé, geste de rafraîchissement
+  par host) et remplace les règles MCP numérotées du `CLAUDE.md` de l'ancien template.
+- **Gabarit** des golden queries, **checklist** `mcp-design.md` tirée de la « Recette : concevoir
+  un bon MCP », section « Canal MCP » de `tech-stack.md`, bloc MCP dans `plan`, une ligne dans
+  `CLAUDE.md` et le README.
+
+**Pourquoi :** les ERP et la plateforme MCP d'entreprise partent de ce template ; sans le starter
+ni la convention, chaque projet MCP repartait de `mcp-template` ou de rien.
+
+**Problèmes :** ce template lint aussi `.method/`, contrairement à `mcp-template` : le `catch {}`
+vide de `smoke-mcp.mjs` (attente du serveur) échouait sur `no-empty` ; il porte désormais un
+commentaire qui dit pourquoi l'erreur est ignorée.
+
+**Écarté :** copier aussi les neuf règles MCP dans `CLAUDE.md`, comme `mcp-template` — écarté : ce
+template charge les règles par les fichiers touchés, et la convention les détaille déjà toutes.
+Porter les lignes `@anthropic-ai/sdk` et PDF de la pile MCP — écarté : options de produit, pas
+dépendances du starter.
+
+**Fichiers :** `.method/starters/mcp/**` (nouveau), `.method/conventions/mcp-patterns.md`
+(nouveau), `.method/templates/mcp-golden-queries.tmpl.md` (nouveau),
+`.method/checklists/mcp-design.md` (nouveau), `.method/conventions/_index.md`,
+`.method/conventions/tech-stack.md`, `.claude/skills/plan/SKILL.md`, `CLAUDE.md`, `README.md`,
+`docs/changelog.md`
+
 ## [2026-08-28] — Méthode : rayon d'impact avant d'éditer, arbitrages posés en question
 
 **Quoi :** deux règles de méthode portées depuis `app-pmo-luciole`, sans code.

@@ -5,6 +5,7 @@
 
 Stack : Next.js 15 (App Router) · TypeScript strict · Tailwind · Shadcn/ui.
 Base de données et auth optionnelles via `.method/starters/supabase-auth/`.
+Canal MCP optionnel (Claude, ChatGPT) via `.method/starters/mcp/` ; ses règles sont dans le tag `mcp`.
 
 ## Style de réponse
 
