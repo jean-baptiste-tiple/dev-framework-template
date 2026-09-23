@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process"
-import { rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
@@ -262,6 +262,47 @@ describe("verify-receipt", () => {
         VERIFY_RECEIPT_ROOT: repo,
       }
       execFileSync("node", [RECEIPT_SCRIPT, "write"], { cwd: repo, stdio: "pipe", env })
+    } finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  })
+
+  // Six appels au hook et un dépôt jetable : 3,6 s au calme, au-delà des 5 s par défaut sous charge.
+  it("juge un commit sur le reçu du dépôt qu'il vise (`cd <dir> &&`, `git -C <dir>`)", { timeout: 30_000 }, () => {
+    // Un worktree a son propre arbre et son propre reçu. Le gate lisait toujours celui du
+    // checkout de la session : un commit dans le worktree était refusé après un `pnpm verify`
+    // vert, et aurait été accepté sur un arbre jamais vérifié si l'autre reçu était frais (E05-S01).
+    const repo = join(tmpdir(), `worktree-repo-${process.pid}`)
+    rmSync(repo, { recursive: true, force: true })
+    const g = (...args: string[]) => execFileSync("git", args, { cwd: repo, stdio: "pipe" })
+    execFileSync("git", ["init", "--quiet", repo], { stdio: "pipe" })
+    try {
+      g("config", "user.email", "test@test")
+      g("config", "user.name", "test")
+      // Le reçu vit DANS le dépôt, comme dans un vrai worktree : ignoré, sinon il compterait
+      // dans sa propre empreinte.
+      writeFileSync(join(repo, ".gitignore"), ".claude/.verify-receipt.json\n")
+      writeFileSync(join(repo, "a.ts"), "export const a = 1\n")
+      g("add", ".")
+      g("commit", "--quiet", "--no-verify", "-m", "init")
+      mkdirSync(join(repo, ".claude"))
+      execFileSync("node", [RECEIPT_SCRIPT, "write"], {
+        stdio: "pipe",
+        env: { ...process.env, VERIFY_RECEIPT_ROOT: repo, VERIFY_RECEIPT_PATH: join(repo, ".claude/.verify-receipt.json") },
+      })
+
+      expect(run(["clear"])).toBe(0) // le reçu du template ne couvre plus rien
+      expect(gate(`git commit -m "feat: x" ${MARKER}`)).toBe(BLOCKED)
+      expect(gate(`cd ${repo} && git commit -m "feat: x" ${MARKER}`)).toBe(ALLOWED)
+      expect(gate(`git -C "${repo}" commit -m "feat: x" ${MARKER}`)).toBe(ALLOWED)
+      if (process.platform === "win32") {
+        // La forme Git Bash (`/c/…`) que produisent les sessions sous Windows.
+        const posix = repo.replace(/\\/g, "/").replace(/^([a-zA-Z]):/, (_, d: string) => `/${d.toLowerCase()}`)
+        expect(gate(`cd ${posix} && git commit -m "feat: x" ${MARKER}`)).toBe(ALLOWED)
+      }
+
+      writeFileSync(join(repo, "a.ts"), "export const a = 2\n")
+      expect(gate(`cd ${repo} && git commit -m "feat: x" ${MARKER}`)).toBe(BLOCKED)
     } finally {
       rmSync(repo, { recursive: true, force: true })
     }

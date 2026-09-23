@@ -32,7 +32,19 @@ const ROOT = process.env.VERIFY_RECEIPT_ROOT ?? join(dirname(fileURLToPath(impor
 // écrivait dans le vrai reçu un document déclarant les 4 checks passés alors que seul vitest
 // avait tourné : un `pnpm test` interrompu laissait derrière lui un reçu valide, et le gate
 // autorisait un commit sans que type-check ni lint n'aient jamais été lancés.
-const RECEIPT = process.env.VERIFY_RECEIPT_PATH ?? join(ROOT, '.claude/.verify-receipt.json')
+//
+// Une autre racine que celle du script — un worktree visé par `cd <dir> &&` ou `git -C <dir>`,
+// passé par le hook — a toujours SON reçu : l'override n'y vaut pas, sinon le reçu de test ou
+// celui du checkout principal validerait un arbre qu'il n'a jamais vu (E05-S01).
+const memeRacine = (a, b) => {
+  const norm = (p) => (process.platform === 'win32' ? resolve(p).toLowerCase() : resolve(p))
+  return norm(a) === norm(b)
+}
+const receiptPath = (root = ROOT) =>
+  memeRacine(root, ROOT) && process.env.VERIFY_RECEIPT_PATH
+    ? process.env.VERIFY_RECEIPT_PATH
+    : join(root, '.claude/.verify-receipt.json')
+const RECEIPT = receiptPath()
 const MAX_AGE_MS = 60 * 60 * 1000 // 1 h : au-delà, l'environnement a pu bouger (deps, node)
 
 // Documents de méthode écrits APRÈS les checks, par la finalisation puis par `commit-push` :
@@ -50,7 +62,7 @@ const EXCLUS = [
 ]
 const estExclu = (path) => EXCLUS.some((r) => r.test(path))
 
-const git = (args, options = {}) =>
+const git = (args, options = {}, root = ROOT) =>
   execFileSync(
     'git',
     // `core.quotePath=false` : sinon git échappe les noms non-ASCII en octal
@@ -59,7 +71,7 @@ const git = (args, options = {}) =>
     // différentes produisaient la même empreinte, donc un reçu valide sur du code modifié.
     ['-c', 'core.quotePath=false', ...args],
     {
-      cwd: ROOT,
+      cwd: root,
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
       stdio: ['pipe', 'pipe', 'pipe'], // sans ça, les erreurs git polluent la sortie de `pnpm verify`
@@ -71,12 +83,13 @@ const git = (args, options = {}) =>
  * Empreinte de tout ce qui est susceptible de faire échouer un check :
  * le HEAD, le diff complet (indexé et non indexé), et le contenu des fichiers non suivis.
  */
-export function worktreeHash() {
+export function worktreeHash(root = ROOT) {
+  const g = (args, options) => git(args, options, root)
   // Hors dépôt git, aucune empreinte n'a de sens. Le cas arrive quand le template est récupéré
   // en ZIP ou via degit, sans `git init` : `ls-files` levait alors une exception APRÈS que les
   // 4 checks soient passés, et le gate refusait ensuite tout commit en boucle.
   try {
-    git(['rev-parse', '--is-inside-work-tree'])
+    g(['rev-parse', '--is-inside-work-tree'])
   } catch {
     throw new Error(
       "hors d'un dépôt git — le reçu ne peut pas être calculé. Lancer `git init` (le framework " +
@@ -90,7 +103,7 @@ export function worktreeHash() {
   // puisque `--no-verify` est bloqué.
   let head = 'sans-commit'
   try {
-    head = git(['rev-parse', 'HEAD']).trim()
+    head = g(['rev-parse', 'HEAD']).trim()
   } catch {
     /* dépôt sans commit : tout le contenu est « non suivi », ce qui suffit à l'empreinte */
   }
@@ -111,7 +124,7 @@ export function worktreeHash() {
   // restaurer l'ancien fichier à côté du nouveau laissait le reçu valide alors que les deux
   // coexistaient. Sans détection de rename, git émet un D et un A distincts.
   if (head !== 'sans-commit') {
-    for (const line of lines(git(['diff', 'HEAD', '--name-status', '--no-renames']))) {
+    for (const line of lines(g(['diff', 'HEAD', '--name-status', '--no-renames']))) {
       const [status, path] = line.split('\t')
       if (!path) continue
       if (status.startsWith('D')) supprimes.add(path)
@@ -121,7 +134,7 @@ export function worktreeHash() {
 
   const paths = [
     ...modifies, // modifié ou ajouté, indexé ou non
-    ...lines(git(['ls-files', '--others', '--exclude-standard'])), // jamais commité
+    ...lines(g(['ls-files', '--others', '--exclude-standard'])), // jamais commité
   ]
 
   const uniques = [...new Set([...paths, ...supprimes])].filter((f) => !estExclu(f)).sort()
@@ -133,7 +146,7 @@ export function worktreeHash() {
     new Map(
       paths.map((path) => {
         try {
-          return [path, git(['hash-object', '--', path]).trim()]
+          return [path, g(['hash-object', '--', path]).trim()]
         } catch {
           return [path, 'illisible']
         }
@@ -148,7 +161,7 @@ export function worktreeHash() {
   const hashEnLot = (paths) => {
     if (!paths.length) return new Map()
     try {
-      const out = git(['hash-object', '--stdin-paths'], { input: `${paths.join('\n')}\n` })
+      const out = g(['hash-object', '--stdin-paths'], { input: `${paths.join('\n')}\n` })
       return new Map(lines(out).map((hash, i) => [paths[i], hash]))
     } catch {
       return hashUnParUn(paths)
@@ -163,18 +176,18 @@ export function worktreeHash() {
   return createHash('sha256').update([head, ...entries].join('\n')).digest('hex')
 }
 
-function readReceipt() {
-  if (!existsSync(RECEIPT)) return null
+function readReceipt(path = RECEIPT) {
+  if (!existsSync(path)) return null
   try {
-    return JSON.parse(readFileSync(RECEIPT, 'utf8'))
+    return JSON.parse(readFileSync(path, 'utf8'))
   } catch {
     return null
   }
 }
 
 /** @returns {{valid: boolean, reason: string, receipt: object|null}} */
-export function checkReceipt() {
-  const receipt = readReceipt()
+export function checkReceipt(root = ROOT) {
+  const receipt = readReceipt(receiptPath(root))
   if (!receipt) return { valid: false, reason: "aucun reçu — les checks n'ont pas été lancés", receipt: null }
 
   // Un reçu tronqué, vide ou daté n'importe comment affichait « reçu périmé (NaN min) » :
@@ -194,7 +207,7 @@ export function checkReceipt() {
 
   let current
   try {
-    current = worktreeHash()
+    current = worktreeHash(root)
   } catch (error) {
     return { valid: false, reason: `empreinte de l'arbre illisible : ${error.message}`, receipt }
   }

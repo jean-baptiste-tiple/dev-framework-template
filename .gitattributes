@@ -1,0 +1,5 @@
+# Fichiers lancés par un shebang : en CRLF (checkout Windows, autocrlf=true), la première ligne
+# devient `#!/usr/bin/env node\r` et le script ne se charge plus. Constaté sur un projet issu du framework.
+*.mjs text eol=lf
+*.sh text eol=lf
+.githooks/* text eol=lf

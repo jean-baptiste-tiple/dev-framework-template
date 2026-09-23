@@ -24,7 +24,37 @@
  * sécurité — quelqu'un de déterminé écrira le reçu à la main.
  */
 
+import { execFileSync } from 'node:child_process'
+import { resolve } from 'node:path'
+
 const MARKER = /#\s*checks-ok\s*$/
+
+/**
+ * Le dépôt que la commande VISE : `cd <dir> &&` en tête, puis `git -C <dir>`, depuis le cwd de
+ * la session. Le hook tourne depuis le dossier de la session ; sans ce calcul, un commit lancé
+ * dans un worktree était jugé sur le reçu du checkout principal — refusé même après un `pnpm
+ * verify` vert, ou accepté sur un arbre jamais vérifié (E05-S01). `undefined` : racine du script.
+ */
+function racineVisee(command, cwd) {
+  const chemin = (m) => (m ? (m[1] ?? m[2] ?? m[3]) : undefined)
+  // Git Bash écrit `/c/apps/…` ; git.exe lancé par Node attend `c:/apps/…`.
+  const natif = (p) => (process.platform === 'win32' ? p.replace(/^\/([a-zA-Z])(?=\/|$)/, '$1:') : p)
+  const ARG = `(?:"([^"]+)"|'([^']+)'|([^\\s;&|]+))`
+  let dir = cwd
+  const cd = chemin(new RegExp(`^\\s*cd\\s+${ARG}\\s*&&`).exec(command))
+  if (cd) dir = resolve(dir, natif(cd))
+  const c = chemin(new RegExp(`\\bgit\\s+(?:-{1,2}[^\\s]+(?:\\s+[^-\\s][^\\s]*)?\\s+)*?-C\\s+${ARG}`).exec(command))
+  if (c) dir = resolve(dir, natif(c))
+  if (!cd && !c) return undefined
+  try {
+    return execFileSync('git', ['-C', dir, 'rev-parse', '--show-toplevel'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+  } catch {
+    return undefined
+  }
+}
 
 /** Les 4 checks que `pnpm verify` enchaîne. Un reçu qui n'en déclare pas la totalité est refusé. */
 const CHECKS_REQUIS = ['check:framework', 'type-check', 'lint', 'test']
@@ -48,8 +78,11 @@ process.stdin.setEncoding('utf8')
 process.stdin.on('data', (c) => (raw += c))
 process.stdin.on('end', async () => {
   let command = ''
+  let cwd = process.cwd()
   try {
-    command = JSON.parse(raw)?.tool_input?.command ?? ''
+    const payload = JSON.parse(raw)
+    command = payload?.tool_input?.command ?? ''
+    if (typeof payload?.cwd === 'string') cwd = payload.cwd
   } catch {
     process.exit(0) // payload illisible : ne pas bloquer un appel qu'on ne comprend pas
   }
@@ -119,7 +152,9 @@ process.stdin.on('end', async () => {
 
   let receipt
   try {
-    receipt = await import('../../scripts/verify-receipt.mjs').then((m) => m.checkReceipt())
+    receipt = await import('../../scripts/verify-receipt.mjs').then((m) =>
+      m.checkReceipt(racineVisee(command, cwd))
+    )
   } catch {
     process.exit(0) // outillage absent ou illisible : ne pas bloquer sur le framework lui-même
   }

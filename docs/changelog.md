@@ -10,6 +10,12 @@
 **Fichiers :** Liste des fichiers créés/modifiés
 -->
 
+## [2026-09-23] — Gate git : le reçu du dépôt visé ; `.gitattributes` en LF
+
+**Quoi :** le gate (`.claude/hooks/enforce-git-gate.mjs`) juge un commit sur le reçu du dépôt que la commande vise — `cd <dir> &&` en tête ou `git -C <dir>`, chemins Git Bash `/c/…` compris — et non plus toujours sur celui du checkout de la session ; `scripts/verify-receipt.mjs` prend la racine en paramètre. `.gitattributes` force LF sur `*.mjs`, `*.sh` et `.githooks/*`. Ligne « Worktree » dans CLAUDE.md.
+**Pourquoi :** constaté sur oto-platform (E05-S01, commit 5e541d1, repris tel quel). Un commit dans un worktree était refusé après un `pnpm verify` vert, et aurait été accepté sur un arbre jamais vérifié si le reçu du checkout principal était frais. Un checkout Windows (`autocrlf=true`) cassait le shebang des scripts `.mjs`.
+**Fichiers :** `.claude/hooks/enforce-git-gate.mjs`, `scripts/verify-receipt.mjs`, `tests/unit/hooks.test.ts`, `.gitattributes`, `CLAUDE.md`, `docs/changelog.md`.
+
 ## [2026-09-23] — mcp-patterns : mesures des bancs E04 et E03
 
 **Quoi :** report dans `mcp-patterns.md` des mesures du banc E04 (serveur proto, 23/09/2026 : prompts par host, code expiré à rappeler « avec la même demande », borne de description entre plusieurs serveurs, annotations et autorisations claude.ai, `confirm` accepté après approbation du contenu, blocages OpenAI, plafond de 45 000 caractères lus en entier, données en champs dans `structuredContent`, ton suivi à 100 %, consigne des candidats question/action, geste de rafraîchissement confirmé, phrase de préférences) et du banc E03 (OAuth, 23/09 : découverte par la forme suffixée, enregistrement par host, Supabase suffit, organisation par l'adresse et appartenance à chaque appel, jeton non lié à la ressource, révocation au rafraîchissement). Checklist de conception `mcp-design.md` mise à jour en conséquence, lien vers la nouvelle page Recette.
